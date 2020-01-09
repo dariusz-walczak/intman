@@ -1,0 +1,16 @@
+{
+    "jira": {
+        "scheme": "https",
+        "host":   "openness.atlassian.net",
+        "user": {
+            "name": null,
+            "token": null
+        }
+    },
+    "board": {
+        "id": 3
+    },
+    "project": {
+        "key": "OP"
+    }
+}
