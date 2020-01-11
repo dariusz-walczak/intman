@@ -44,6 +44,7 @@ def make_common_parser(defaults):
         help="Print the results serialized to JSON")
     parser.add_argument(
         "--data-dir", action="store", metavar="PATH", dest="data_dir_path",
+        default=default_data_path,
         help="Toolchain data directory PATH (default: '{0:s}')".format(default_data_path))
 
     return parser
@@ -108,3 +109,8 @@ def make_cj_request(cfg, url):
         return (2, response)
 
     return (0, response)
+
+
+def schema_load(cfg, name):
+    schema_path = os.path.join(cfg["path"]["data"], "cjm", "schema", name)
+    return simplejson.load(open(schema_path))
