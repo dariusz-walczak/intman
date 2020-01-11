@@ -6,6 +6,7 @@ import os.path
 import sys
 
 # Third party imports
+import jsonschema
 import requests
 import simplejson
 import tabulate
@@ -94,6 +95,9 @@ def main(options):
             "name": project_json["name"]
         }
     }
+
+    sprint_schema = cjm.schema_load(cfg, "sprint.json")
+    jsonschema.validate(sprint, sprint_schema)
 
     if options.json_output:
         print(simplejson.dumps(sprint, indent=4, sort_keys=False))

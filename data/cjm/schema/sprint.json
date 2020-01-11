@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+
+    "type": "object",
+    "properties": {
+        "start date": {
+            "type": "string",
+            "format": "date"
+        },
+        "end date": {
+            "type": "string",
+            "format": "date"
+        },
+        "name": {
+            "type": "string"
+        },
+        "project": {
+            "type": "object",
+            "properties": {
+                "key": {"type": "string"},
+                "name": {"type": "string"}
+            },
+            "required": ["key", "name"]
+        }
+    },
+    "required": ["start date", "end date", "name", "project"]
+}
