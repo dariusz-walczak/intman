@@ -12,14 +12,15 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.request
 
 
 DEFAULTS_FILE_NAME = ".cjm.json"
 
 
 def parse_options(args):
-    defaults = cjm.load_defaults()
-    parser = cjm.make_common_parser(defaults)
+    defaults = cjm.cfg.load_defaults()
+    parser = cjm.cfg.make_common_parser(defaults)
 
     default_project_key = defaults.get("project", {}).get("key")
 
@@ -28,7 +29,7 @@ def parse_options(args):
         default=default_project_key,
         help=(
             "Project to list the boards for{0:s}"
-            "".format(cjm.fmt_dft(default_project_key))))
+            "".format(cjm.cfg.fmt_dft(default_project_key))))
     parser.add_argument(
         "--all", action="store_true", dest="all_boards",
         help="List boards for all projects (overrides --project-key)")
@@ -37,11 +38,11 @@ def parse_options(args):
 
 
 def main(options):
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_default(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["project"]["key"] = options.project_key
 
     response = requests.get(
-        cjm.make_cj_agile_url(cfg, "board"),
+        cjm.request.make_cj_agile_url(cfg, "board"),
         auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"])
     )
 

@@ -13,14 +13,15 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.request
 
 
 DEFAULTS_FILE_NAME = ".cjm.json"
 
 
 def parse_options(args):
-    defaults = cjm.load_defaults()
-    parser = cjm.make_common_parser(defaults)
+    defaults = cjm.cfg.load_defaults()
+    parser = cjm.cfg.make_common_parser(defaults)
 
     default_sprint_id = defaults.get("sprint", {}).get("id")
     sprint_arg_name = "sprint"
@@ -30,7 +31,7 @@ def parse_options(args):
         default=default_sprint_id,
         help=(
             "IDentifier of the sprint to list the issues for{0:s}"
-            "".format(cjm.fmt_dft(default_sprint_id))))
+            "".format(cjm.cfg.fmt_dft(default_sprint_id))))
 
     options = parser.parse_args(args)
 
@@ -43,11 +44,11 @@ def parse_options(args):
 
 
 def main(options):
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_default(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["sprint"]["id"] = options.sprint_id
 
     response = requests.get(
-        cjm.make_cj_agile_url(cfg, "sprint/{0:d}/issue".format(cfg["sprint"]["id"])),
+        cjm.request.make_cj_agile_url(cfg, "sprint/{0:d}/issue".format(cfg["sprint"]["id"])),
         params={"startAt": 10},
         auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"])
     )

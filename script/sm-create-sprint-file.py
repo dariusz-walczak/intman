@@ -14,14 +14,16 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.request
+import cjm.schema
 import cjm.sprint
 
 
 _PROJECT_KEY_ARG_NAME = "--project-key"
 
 def parse_options(args):
-    defaults = cjm.load_defaults()
-    parser = cjm.make_common_parser(defaults)
+    defaults = cjm.cfg.load_defaults()
+    parser = cjm.cfg.make_common_parser(defaults)
 
     default_length = 14
     default_project_key = defaults.get("project", {}).get("key")
@@ -52,7 +54,7 @@ def parse_options(args):
         default=default_project_key,
         help=(
             "Project with which the sprint will be associated{0:s}"
-            "".format(cjm.fmt_dft(default_project_key))))
+            "".format(cjm.cfg.fmt_dft(default_project_key))))
 
     return parser.parse_args(args)
 
@@ -67,7 +69,7 @@ def determine_start_date(options):
 
 
 def main(options):
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_default(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["project"]["key"] = options.project_key
 
     if cfg["project"]["key"] is None:
@@ -76,8 +78,8 @@ def main(options):
             " file to specify it".format(_PROJECT_KEY_ARG_NAME))
         return 1
 
-    project_data_url = cjm.make_cj_url(cfg, "project", cfg["project"]["key"])
-    result_code, response = cjm.make_cj_request(cfg, project_data_url)
+    project_data_url = cjm.request.make_cj_url(cfg, "project", cfg["project"]["key"])
+    result_code, response = cjm.request.make_cj_request(cfg, project_data_url)
 
     if result_code:
         return 1+result_code
@@ -96,7 +98,7 @@ def main(options):
         }
     }
 
-    sprint_schema = cjm.schema_load(cfg, "sprint.json")
+    sprint_schema = cjm.schema.load(cfg, "sprint.json")
     jsonschema.validate(sprint, sprint_schema)
 
     if options.json_output:

@@ -12,23 +12,24 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.request
 
 
 DEFAULTS_FILE_NAME = ".cjm.json"
 
 
 def parse_options(args):
-    defaults = cjm.load_defaults()
-    parser = cjm.make_common_parser(defaults)
+    defaults = cjm.cfg.load_defaults()
+    parser = cjm.cfg.make_common_parser(defaults)
 
     return parser.parse_args(args)
 
 
 def main(options):
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_default(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
 
     response = requests.get(
-        cjm.make_cj_url(cfg, "project/search"),
+        cjm.request.make_cj_url(cfg, "project/search"),
         auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"])
     )
 

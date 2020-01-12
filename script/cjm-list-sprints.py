@@ -13,14 +13,15 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.request
 
 
 DEFAULTS_FILE_NAME = ".cjm.json"
 
 
 def parse_options(args):
-    defaults = cjm.load_defaults()
-    parser = cjm.make_common_parser(defaults)
+    defaults = cjm.cfg.load_defaults()
+    parser = cjm.cfg.make_common_parser(defaults)
 
     default_board_id = defaults.get("board", {}).get("id")
     board_arg_name = "board"
@@ -30,7 +31,7 @@ def parse_options(args):
         default=default_board_id,
         help=(
             "IDentifier of the board to list the sprints for{0:s}"
-            "".format(cjm.fmt_dft(default_board_id))))
+            "".format(cjm.cfg.fmt_dft(default_board_id))))
 
     options = parser.parse_args(args)
 
@@ -43,11 +44,11 @@ def parse_options(args):
 
 
 def main(options):
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_default(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["board"]["id"] = options.board_id
 
     response = requests.get(
-        cjm.make_cj_agile_url(cfg, "board/{0:d}/sprint".format(cfg["board"]["id"])),
+        cjm.request.make_cj_agile_url(cfg, "board/{0:d}/sprint".format(cfg["board"]["id"])),
         auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"])
     )
 
