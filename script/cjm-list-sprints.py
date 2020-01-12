@@ -61,10 +61,17 @@ def main(options):
             sprint_data = {
                 "id": sprint["id"],
                 "name": sprint["name"],
-                "start_date": dateutil.parser.parse(sprint["startDate"]),
-                "end_date": dateutil.parser.parse(sprint["endDate"]),
+                "state": sprint["state"],
+                "start_date": (
+                    dateutil.parser.parse(sprint["startDate"]).date().isoformat()
+                    if "startDate" in sprint
+                    else None),
+                "end_date": (
+                    dateutil.parser.parse(sprint["endDate"]).date().isoformat()
+                    if "endDate" in sprint
+                    else None),
                 "complete_date": (
-                    dateutil.parser.parse(sprint["completeDate"])
+                    dateutil.parser.parse(sprint["completeDate"]).date().isoformat()
                     if "completeDate" in sprint
                     else None),
                 "state": sprint["state"]
@@ -75,9 +82,11 @@ def main(options):
     if options.json_output:
         print(simplejson.dumps(sprints, indent=4, sort_keys=False))
     else:
+        __fmt_opt = lambda v: "" if v is None else str(v)
+
         print(tabulate.tabulate(
-            [(s["id"], s["name"], s["state"], s["start_date"].date().isoformat(),
-              s["end_date"].date().isoformat()) for s in sprints],
+            [(s["id"], s["name"], s["state"], __fmt_opt(s["start_date"]), __fmt_opt(s["end_date"]))
+             for s in sprints],
             headers=["Id", "Name", "State", "Start", "End"], tablefmt="orgtbl"))
 
     return 0
