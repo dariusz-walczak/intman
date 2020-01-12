@@ -14,6 +14,9 @@
         "name": {
             "type": "string"
         },
+        "id": {
+            "type": "integer"
+        },
         "project": {
             "type": "object",
             "properties": {
