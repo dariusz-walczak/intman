@@ -49,7 +49,7 @@ def main(options):
 
     response = requests.get(
         cjm.request.make_cj_agile_url(cfg, "sprint/{0:d}/issue".format(cfg["sprint"]["id"])),
-        params={"startAt": 10},
+        params={"startAt": 0},
         auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"])
     )
 
@@ -58,29 +58,12 @@ def main(options):
     import pdb; pdb.set_trace()
 
     for issue in response.json()["issues"]:
-        #project_key = cfg["project"]["key"]
-
         issue_data = {
             "id": issue["id"],
             "key": issue["key"],
             "summary": issue["fields"]["summary"]
         }
         issues.append(issue_data)
-            
-#        if (issue["originBoardId"] == cfg["board"]["id"]):
-#            issue_data = {
-#                "id": issue["id"],
-#                "name": issue["name"],
-#                "start_date": dateutil.parser.parse(issue["startDate"]),
-#                "end_date": dateutil.parser.parse(issue["endDate"]),
-#                "complete_date": (
-#                    dateutil.parser.parse(issue["completeDate"])
-#                    if "completeDate" in issue
-#                    else None),
-#                "state": issue["state"]
-#            }
-#            issues.append(issue_data)
-
 
     if options.json_output:
         print(simplejson.dumps(issues, indent=4, sort_keys=False))
