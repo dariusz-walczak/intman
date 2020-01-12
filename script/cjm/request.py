@@ -7,7 +7,7 @@ import requests
 
 # Project imports
 import cjm.cfg
-
+import cjm.codes
 
 _CJ_API_PATH = "rest/api/3"
 _CJ_AGILE_PATH = "rest/agile/1.0"
@@ -34,13 +34,13 @@ def make_cj_request(cfg, url, params=None):
         sys.stderr.write(
             "ERROR: Jira user name not specified. Use the '{0:s}' CLI option or the defaults"
             " file to specify it\n".format(cjm.cfg.USER_NAME_ARG_NAME))
-        return (1, None)
+        return (cjm.codes.CONFIGURATION_ERROR, None)
 
     if cfg["jira"]["user"]["token"] is None:
         sys.stderr.write(
             "ERROR: Jira user token not specified. Use the '{0:s}' CLI option or the defaults"
             " file to specify it\n".format(cjm.cfg.USER_TOKEN_ARG_NAME))
-        return (1, None)
+        return (cjm.codes.CONFIGURATION_ERROR, None)
 
     response = requests.get(
         url, params=params,
@@ -50,6 +50,6 @@ def make_cj_request(cfg, url, params=None):
         sys.stderr.write(
             "ERROR: The Jira API request ('{0:s}') failed with code {1:d}\n"
             "".format(url, response.status_code))
-        return (2, response)
+        return (cjm.codes.REQUEST_ERROR, response)
 
-    return (0, response)
+    return (cjm.codes.NO_ERROR, response)

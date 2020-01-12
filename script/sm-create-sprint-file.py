@@ -76,13 +76,13 @@ def main(options):
         sys.stderr.write(
             "ERROR: The project key is not specified. Use the '{0:s}' CLI option or the defaults"
             " file to specify it".format(_PROJECT_KEY_ARG_NAME))
-        return 1
+        return cjm.codes.CONFIGURATION_ERROR
 
     project_data_url = cjm.request.make_cj_url(cfg, "project", cfg["project"]["key"])
     result_code, response = cjm.request.make_cj_request(cfg, project_data_url)
 
     if result_code:
-        return 1+result_code
+        return result_code
 
     project_json = response.json()
 
@@ -108,6 +108,8 @@ def main(options):
             [(key, sprint[key]) for key in ["start date", "end date", "name"]] +
             [("project/{0:s}".format(key), sprint["project"][key]) for key in ["key", "name"]],
             tablefmt="orgtbl"))
+
+    return cjm.codes.NO_ERROR
 
 
 if __name__ == '__main__':
