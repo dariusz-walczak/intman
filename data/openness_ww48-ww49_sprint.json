@@ -3,6 +3,7 @@
     "end date": "2019-12-08",
     "name": "OpenNESS WW48-WW49",
     "id": 18,
+    "comment prefix": "Mobica/2019/H2/ONESS/WW48-WW49",
     "project": {
         "key": "OP",
         "name": "OpenNESS"
