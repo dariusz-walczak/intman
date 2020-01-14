@@ -53,3 +53,29 @@ def make_cj_request(cfg, url, params=None):
         return (cjm.codes.REQUEST_ERROR, response)
 
     return (cjm.codes.NO_ERROR, response)
+
+
+def make_cj_post_request(cfg, url, json):
+    if cfg["jira"]["user"]["name"] is None:
+        sys.stderr.write(
+            "ERROR: Jira user name not specified. Use the '{0:s}' CLI option or the defaults"
+            " file to specify it\n".format(cjm.cfg.USER_NAME_ARG_NAME))
+        return (cjm.codes.CONFIGURATION_ERROR, None)
+
+    if cfg["jira"]["user"]["token"] is None:
+        sys.stderr.write(
+            "ERROR: Jira user token not specified. Use the '{0:s}' CLI option or the defaults"
+            " file to specify it\n".format(cjm.cfg.USER_TOKEN_ARG_NAME))
+        return (cjm.codes.CONFIGURATION_ERROR, None)
+
+    response = requests.post(
+        url, json=json,
+        auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"]))
+
+    if response.status_code != 200:
+        sys.stderr.write(
+            "ERROR: The Jira API request ('{0:s}') failed with code {1:d}\n"
+            "".format(url, response.status_code))
+        return (cjm.codes.REQUEST_ERROR, response)
+
+    return (cjm.codes.NO_ERROR, response)

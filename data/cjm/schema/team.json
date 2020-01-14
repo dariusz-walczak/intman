@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+
+    "type": "object",
+    "properties": {
+        "people": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "code": { "type": "string" },
+                    "last name": { "type": "string" },
+                    "first name": { "type": "string" },
+                    "user name": { "type": "string" },
+                    "account id": { "type": "string" }
+                },
+                "required": ["code", "last name", "first name", "account id"]
+            }
+        }
+    },
+    "required": ["people"]
+}

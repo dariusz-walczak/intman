@@ -6,6 +6,7 @@ import jsonschema
 import simplejson
 
 # Project imports
+import cjm.schema
 import cjm.request
 
 
@@ -43,10 +44,12 @@ def request_issues_by_sprint(cfg):
         response_json = response.json()
 
         for issue in response_json["issues"]:
+            account_id_cb = lambda u: None if u is None else u["accountId"]
             issue_data = {
-                "id": issue["id"],
+                "id": int(issue["id"]),
                 "key": issue["key"],
-                "summary": issue["fields"]["summary"]
+                "summary": issue["fields"]["summary"],
+                "assignee id": account_id_cb(issue["fields"]["assignee"])
             }
             issues.append(issue_data)
 
@@ -55,5 +58,43 @@ def request_issues_by_sprint(cfg):
         if start_at >= response_json["total"]:
             break
 
+
+    return (cjm.codes.NO_ERROR, issues)
+
+
+def request_issues_by_comment(cfg, comment):
+    issues = []
+
+    sprint_issues_url = cjm.request.make_cj_url(
+        cfg, "search".format(cfg["sprint"]["id"]))
+
+    jql = 'project = "{0:s}" AND comment ~ "{1:s}"'.format(cfg["project"]["key"], comment)
+    start_at = 0
+    max_results = 50
+
+    while True:
+        result_code, response = cjm.request.make_cj_post_request(
+            cfg, sprint_issues_url,
+            json = {"jql": jql, "startAt": start_at, "maxResults": max_results})
+
+        if result_code:
+            return (result_code, issues)
+
+        response_json = response.json()
+
+        for issue in response_json["issues"]:
+            account_id_cb = lambda u: None if u is None else u["accountId"]
+            issue_data = {
+                "id": int(issue["id"]),
+                "key": issue["key"],
+                "summary": issue["fields"]["summary"],
+                "assignee id": account_id_cb(issue["fields"]["assignee"])
+            }
+            issues.append(issue_data)
+
+        start_at += max_results
+
+        if start_at >= response_json["total"]:
+            break
 
     return (cjm.codes.NO_ERROR, issues)
