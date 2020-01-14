@@ -17,6 +17,9 @@
         "id": {
             "type": "integer"
         },
+        "comment prefix": {
+            "type": "string"
+        },
         "project": {
             "type": "object",
             "properties": {
@@ -26,5 +29,5 @@
             "required": ["key", "name"]
         }
     },
-    "required": ["start date", "end date", "name", "project"]
+    "required": ["start date", "end date", "name", "project", "comment prefix"]
 }
