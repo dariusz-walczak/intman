@@ -22,6 +22,9 @@ def init_defaults():
             "user": {
                 "name": None,
                 "token": None
+            },
+            "fields": {
+                "story points": None
             }
         },
         "sprint": {

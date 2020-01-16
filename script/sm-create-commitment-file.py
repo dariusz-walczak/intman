@@ -10,6 +10,7 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.issue
 import cjm.request
 import cjm.schema
 import cjm.sprint
@@ -82,6 +83,12 @@ def main(options):
         sys.stderr.write("    {0}\n".format(e))
         return cjm.codes.FILESYSTEM_ERROR
 
+    if cfg["jira"]["fields"]["story points"] is None:
+        result_code, field_id = cjm.issue.detect_story_point_field_id(cfg)
+        if result_code:
+            return result_code
+        cfg["jira"]["fields"]["story points"] = field_id
+
     valid_account_id_list = [r["account id"] for r in team_data["people"]]
 
     # Retrieve issues assigned to the sprint:
@@ -123,7 +130,7 @@ def main(options):
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
 
     if options.json_output:
-        print(simplejson.dumps(issues, indent=4, sort_keys=False))
+        print(simplejson.dumps({"issues": issues}, indent=4, sort_keys=False))
     else:
         person_lut = dict((p["account id"], p) for p in team_data["people"])
         print(tabulate.tabulate(
@@ -131,10 +138,12 @@ def main(options):
               "{0:s}, {1:s}".format(
                   person_lut[i["assignee id"]]["last name"],
                   person_lut[i["assignee id"]]["first name"]),
+              i["story points"],
               "Sprint" if i["by sprint"] else "",
               "Comment" if i["by comment"] else "")
              for i in issues],
-            headers=["Id", "Key", "Summary", "Assignee", "Sprint", "Comment"], tablefmt="orgtbl"))
+            headers=["Id", "Key", "Summary", "Assignee", "Story Points", "Sprint", "Comment"],
+            tablefmt="orgtbl"))
 
     return cjm.codes.NO_ERROR;
 

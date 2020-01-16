@@ -1,5 +1,5 @@
-# Project imports
-import cjm.schema
+# Standard imports
+import sys
 
 # Third party imports
 import jsonschema
@@ -49,7 +49,8 @@ def request_issues_by_sprint(cfg):
                 "id": int(issue["id"]),
                 "key": issue["key"],
                 "summary": issue["fields"]["summary"],
-                "assignee id": account_id_cb(issue["fields"]["assignee"])
+                "assignee id": account_id_cb(issue["fields"]["assignee"]),
+                "story points": issue["fields"].get(cfg["jira"]["fields"]["story points"])
             }
             issues.append(issue_data)
 
