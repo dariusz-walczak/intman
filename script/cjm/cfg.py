@@ -42,22 +42,6 @@ def init_defaults():
     }
 
 
-def load_defaults(file_name=DEFAULTS_FILE_NAME):
-    if os.path.exists(file_name):
-        try:
-            with open(file_name) as defaults_file:
-                defaults = simplejson.load(defaults_file)
-        except IOError as e:
-            sys.stderr.write(
-                "WARNING: Defaults file ('{0:s}') I/O error\n".format(file_name))
-            sys.stderr.write("    {0:s}\n".format(e))
-            defaults = {}
-    else:
-        defaults = {}
-
-    return defaults
-
-
 def apply_options(cfg, options):
     cfg = copy.copy(cfg)
     cfg["jira"]["user"]["name"] = options.user_name
