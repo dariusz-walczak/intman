@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Standard library imports
 import argparse
+import os
 import re
 import sys
 
@@ -127,7 +128,7 @@ def main(options):
 
     sprint_json = stl.sprint.plan_generate(team_data, sprint_data, ticket_data)
 
-    print simplejson.dumps(sprint_json, indent="    ", sort_keys=False)
+    print(simplejson.dumps(sprint_json, indent="    ", sort_keys=False))
 
 
 if __name__ == '__main__':
