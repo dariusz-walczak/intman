@@ -60,9 +60,6 @@ def main(options):
             "user name": "",
             "account id": acc_id
         }
-
-        # username and userKey is deprecated and replaced by accountId
-        # https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/
         users.append(data)
 
     codes = [user["code"] for user in users]
@@ -78,22 +75,10 @@ def main(options):
 
     people = {"people": users}
 
-    people_json = json.loads(json.dumps(people))
-    print(json.dumps(people_json, indent=4, separators=(',', ': ')))
+    print(json.dumps(people, indent=4, separators=(',', ': ')))
 
-    # team = {
-    #     "people": [
-    #         {
-    #             "code": ,
-    #             "last name": ,
-    #             "first name": ,
-    #             "user name": ,
-    #             "account id":
-    #         }
-    # }
-    #
-    # team_schema = cjm.schema.load(cfg, "team.json")
-    # jsonschema.validate(sprint, team_schema)
+    team_schema = cjm.schema.load(cfg, "team.json")
+    jsonschema.validate(people, team_schema)
 
     return cjm.codes.NO_ERROR
 
@@ -115,6 +100,6 @@ def parse_options(args):
 
 
 if __name__ == "__main__":
-    sys.stderr.write("TODO: ADD ADDITIONAL ARGUMENTS TO PARSING\n")
-    sys.stderr.write("TODO: JSON SCHEMA VALIDATE\n")
+    sys.stderr.write("TODO: ADD POLISH ALPHABET SUPPORT\n")
+    sys.stderr.write("TODO: ADD ADDITIONAL ARGUMENTS TO PARSING OPTIONS\n")
     exit(main(parse_options(sys.argv[1:])))

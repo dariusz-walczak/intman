@@ -1,0 +1,1426 @@
+{
+    "issues": [
+        {
+            "id": 10908,
+            "key": "OP-920",
+            "summary": "5G test setup bringup for end to end testing ",
+            "assignee id": "5c58686ccfdff35e613af436",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11002,
+            "key": "OP-1014",
+            "summary": "Test the pktreplay with Flexcore 5G CP",
+            "assignee id": "5c58686ccfdff35e613af436",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11428,
+            "key": "OP-1366",
+            "summary": "Design AF and NEF modules",
+            "assignee id": "5c58686ccfdff35e613af436",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11452,
+            "key": "OP-1389",
+            "summary": "5G FlexCORE bringup for OpenNESS dev",
+            "assignee id": "5c58686ccfdff35e613af436",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11454,
+            "key": "OP-1391",
+            "summary": "FlexCORE CP modules development for 5G integration ",
+            "assignee id": "5c58686ccfdff35e613af436",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11455,
+            "key": "OP-1392",
+            "summary": "Bringup OpenNESS Controller and Edge node from Release 19.12 in SD and verify CNCA for 5G tasks",
+            "assignee id": "5c58686ccfdff35e613af437",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11456,
+            "key": "OP-1393",
+            "summary": "Unit tests implementation and execution for  AF to NEF communication ",
+            "assignee id": "5c58686ccfdff35e613af437",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11458,
+            "key": "OP-1395",
+            "summary": "Implementation and execution of CNCA sub for testing AF NB API interface. ",
+            "assignee id": "5c58686ccfdff35e613af437",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11459,
+            "key": "OP-1396",
+            "summary": "integration testing of CNCA with AF for AF NB APIs",
+            "assignee id": "5c58686ccfdff35e613af437",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11462,
+            "key": "OP-1399",
+            "summary": "Identify unit test cases for AF to NEF interface",
+            "assignee id": "5c6b22b4e73ff9464875c615",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11463,
+            "key": "OP-1400",
+            "summary": "Identify CNCA to AF test cases ",
+            "assignee id": "5c6b22b4e73ff9464875c615",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11464,
+            "key": "OP-1401",
+            "summary": "NEF stub implementation for testing AF APIs ",
+            "assignee id": "5c58686ccfdff35e613af437",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11468,
+            "key": "OP-1405",
+            "summary": "API extension for EAC",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": 6.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11470,
+            "key": "OP-1407",
+            "summary": "EVA code prep for EAC",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11471,
+            "key": "OP-1408",
+            "summary": "Move over the HDDL support to EAC",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11472,
+            "key": "OP-1409",
+            "summary": "Deploy* API extension design",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11473,
+            "key": "OP-1410",
+            "summary": "Deploy* API extension implementation",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11474,
+            "key": "OP-1411",
+            "summary": "Deploy* API extension CI hooks",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11476,
+            "key": "OP-1413",
+            "summary": "Deploy* API extension CR feedback integration",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11488,
+            "key": "OP-1425",
+            "summary": "EAC Initial code cleanup",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11489,
+            "key": "OP-1426",
+            "summary": "implement EAC hooks in EVA",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11506,
+            "key": "OP-1439",
+            "summary": "EAC code cleanup review",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11507,
+            "key": "OP-1440",
+            "summary": "Chris EVA ramp-up",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11508,
+            "key": "OP-1441",
+            "summary": "Design the EAC generic hook mechanism",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11510,
+            "key": "OP-1443",
+            "summary": "EAC hook review feedback",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11511,
+            "key": "OP-1444",
+            "summary": "EAC EVA add CI hooks if needed",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11527,
+            "key": "OP-1454",
+            "summary": "Delivery of VC FEC dev plugin feature for Network Edge",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11528,
+            "key": "OP-1455",
+            "summary": "Delivery of BBDEV Config app and sample app feature for Network Edge",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11529,
+            "key": "OP-1456",
+            "summary": "Prepare platform for FPGA VC work",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11530,
+            "key": "OP-1457",
+            "summary": "Re-develop VC FEC device plugin (to be compatible with latest K8s)",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11531,
+            "key": "OP-1458",
+            "summary": "Test- Create a docker images and sample test pod",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11532,
+            "key": "OP-1459",
+            "summary": "Document the FPGA - VC K8s dev plugin feature",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11534,
+            "key": "OP-1460",
+            "summary": "BBDEV config app - sample config from host",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11535,
+            "key": "OP-1461",
+            "summary": "Create Docker image for BBDEV config app",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11536,
+            "key": "OP-1462",
+            "summary": "Create a specs and instructions and run BBDEV config app as a K8s Job",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11537,
+            "key": "OP-1463",
+            "summary": "Create a Docker image for BBDEV sample app",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11538,
+            "key": "OP-1464",
+            "summary": "Test BBDEV sample app ran in K8s - with devices assigned by VC dev plugin",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11539,
+            "key": "OP-1465",
+            "summary": "Document the FPGA - BBDEV feature",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11552,
+            "key": "OP-1478",
+            "summary": "Define API usability validation & testing",
+            "assignee id": "5c6b22b5cfbc206be9094ea9",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11553,
+            "key": "OP-1479",
+            "summary": "Create tests for CNCA kubectl-plugin",
+            "assignee id": "5c6b22b5cfbc206be9094ea9",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11603,
+            "key": "OP-1529",
+            "summary": "Complete K8s Course (Stage 3) (KM)",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11606,
+            "key": "OP-1532",
+            "summary": "Complete K8s Course (Stage 3) (KP)",
+            "assignee id": "5cb5f2833704fd1181fed18f",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11609,
+            "key": "OP-1535",
+            "summary": "Complete K8s Course (Stage 3) (MM)",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11612,
+            "key": "OP-1538",
+            "summary": "Complete K8s Course (Stage 3) (GR)",
+            "assignee id": "5d40195299fa080dac2478f9",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11655,
+            "key": "OP-1556",
+            "summary": "Design playbooks and tasks structure",
+            "assignee id": "5c63d0fb8181d3640803cb01",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11749,
+            "key": "OP-1647",
+            "summary": "Execute Integration Test Suite",
+            "assignee id": "5cef2f596f51c10fbd18d331",
+            "story points": 8.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11764,
+            "key": "OP-1661",
+            "summary": "Review Feature Documentation",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11787,
+            "key": "OP-1680",
+            "summary": "Handle CMK Plugin Setup PR",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11790,
+            "key": "OP-1683",
+            "summary": "Execute CMK Integration Test Suite",
+            "assignee id": "5d40195299fa080dac2478f9",
+            "story points": 5.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11821,
+            "key": "OP-1714",
+            "summary": "Handle CR for AF API schema",
+            "assignee id": "5c6b22b4e73ff9464875c615",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11822,
+            "key": "OP-1715",
+            "summary": "Handle CR for NEF API schema",
+            "assignee id": "5c6b22b4e73ff9464875c615",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11839,
+            "key": "OP-1731",
+            "summary": "Implement Controller UI for 5G Configuration",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11841,
+            "key": "OP-1733",
+            "summary": "Ramp up on Javascript",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11842,
+            "key": "OP-1734",
+            "summary": "Review AF Agent API",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11843,
+            "key": "OP-1735",
+            "summary": "Design the CNCA UI",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11844,
+            "key": "OP-1736",
+            "summary": "Implement the CNCA UI Design",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11845,
+            "key": "OP-1737",
+            "summary": "CNCA UI Code Review",
+            "assignee id": "5c6b22b3cf74864794a31d06",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11846,
+            "key": "OP-1738",
+            "summary": "CNCA UI Code Review Feedback",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11847,
+            "key": "OP-1739",
+            "summary": "Review Scripts Frame PR (XT)",
+            "assignee id": "5c63d0fb8181d3640803cb01",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11856,
+            "key": "OP-1746",
+            "summary": "Design Integration Test Suite",
+            "assignee id": "5cb5f2833704fd1181fed18f",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11857,
+            "key": "OP-1747",
+            "summary": "Review Integration Test Suite",
+            "assignee id": "5cef2f596f51c10fbd18d331",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11858,
+            "key": "OP-1748",
+            "summary": "Execute Integration Test Suite",
+            "assignee id": "5cef2f596f51c10fbd18d331",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11859,
+            "key": "OP-1749",
+            "summary": "Develop Feature Documentation",
+            "assignee id": "5cb5f2833704fd1181fed18f",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11860,
+            "key": "OP-1750",
+            "summary": "Review Feature Documentation",
+            "assignee id": "5d40195299fa080dac2478f9",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11866,
+            "key": "OP-1755",
+            "summary": "Missing copyright headers in edgecontoller",
+            "assignee id": "5cef2f596f51c10fbd18d331",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11882,
+            "key": "OP-1770",
+            "summary": "Implement Services API to 5G OAM Agent",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11883,
+            "key": "OP-1771",
+            "summary": "Ramp up on Services Schema (CN)",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11884,
+            "key": "OP-1772",
+            "summary": "Ramp up on Services Schema (NM)",
+            "assignee id": "5c6b22b3cf74864794a31d06",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11885,
+            "key": "OP-1773",
+            "summary": "Design the landing page for 5G OAM Services",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11886,
+            "key": "OP-1774",
+            "summary": "Implement the landing page for 5G OAM Services",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11887,
+            "key": "OP-1775",
+            "summary": "Code Review creation for Services landing page",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11888,
+            "key": "OP-1776",
+            "summary": "Review the Services implementation PR",
+            "assignee id": "5c6b22b3cf74864794a31d06",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11889,
+            "key": "OP-1777",
+            "summary": "Integrate Code Review Feedback",
+            "assignee id": "5c6b22b3cf74864794a31d06",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11890,
+            "key": "OP-1778",
+            "summary": "Design the form for the 5G OAM Services",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11891,
+            "key": "OP-1779",
+            "summary": "Implement the design of the form for the 5G OAM Services",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11892,
+            "key": "OP-1780",
+            "summary": "Code Review creation for Services form",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11893,
+            "key": "OP-1781",
+            "summary": "Review the Services form implementation PR",
+            "assignee id": "5c6b22b3cf74864794a31d06",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11894,
+            "key": "OP-1782",
+            "summary": "Integrate Code Review Feedback",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11895,
+            "key": "OP-1783",
+            "summary": "Investigate location services API",
+            "assignee id": "5c6b22b3cf74864794a31d06",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11896,
+            "key": "OP-1784",
+            "summary": "Implement the location services API",
+            "assignee id": "5c6b22b3cf74864794a31d06",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11902,
+            "key": "OP-1790",
+            "summary": "Test CNCA UI Updates 5G OAM",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11903,
+            "key": "OP-1791",
+            "summary": "Update CI scripts to run 5G EPC",
+            "assignee id": "5c586848bbe3bb31dddfbc47",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11905,
+            "key": "OP-1793",
+            "summary": "Notifications handling in AF",
+            "assignee id": "5c6b22b4e73ff9464875c615",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11906,
+            "key": "OP-1794",
+            "summary": "Handle AF CR ",
+            "assignee id": "5c6b22b4e73ff9464875c615",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11914,
+            "key": "OP-1798",
+            "summary": "Ramp up on current status of OPAE/RTL/VC",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11915,
+            "key": "OP-1799",
+            "summary": "Delivery of OPAE (FPGA - VC) feature for Network Edge",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11917,
+            "key": "OP-1801",
+            "summary": "Create integration scenarios for OPAE (FPGA-VC) feature",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11919,
+            "key": "OP-1803",
+            "summary": "Create documentation for OPAE (FPGA-VC) feature",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11920,
+            "key": "OP-1804",
+            "summary": "Deploy and program FPGA from host",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11921,
+            "key": "OP-1805",
+            "summary": "Create a Docker image for OPAE",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11922,
+            "key": "OP-1806",
+            "summary": "Deploy and test OPAE inside Docker container",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11923,
+            "key": "OP-1807",
+            "summary": "Extend the controller persistence layer with EAC data for apps",
+            "assignee id": "5c58686b054d1f6e6d56ebc0",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11924,
+            "key": "OP-1808",
+            "summary": "Create a pod/job specification for OPAE ",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11925,
+            "key": "OP-1809",
+            "summary": "Test OPAE feature within K8s",
+            "assignee id": "5c6b22c6b980e54d9e7c032d",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11927,
+            "key": "OP-1811",
+            "summary": "Invalid TLS server name for EAA in sample-app (Network Edge mode)",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11954,
+            "key": "OP-1835",
+            "summary": "Review PRs for Ansible OnPrem mode",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 3.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11966,
+            "key": "OP-1838",
+            "summary": "Verify CMK Patch for K8s 1.16",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 6.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11968,
+            "key": "OP-1840",
+            "summary": "Review Integration Test Suite",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11970,
+            "key": "OP-1842",
+            "summary": "Review Feature Documentation",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11972,
+            "key": "OP-1844",
+            "summary": "Install RT kernel & set Hugepages in Network Edge",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11973,
+            "key": "OP-1845",
+            "summary": "Improve cleanup playbook",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11975,
+            "key": "OP-1847",
+            "summary": "Develop cleanup playbook for OnPrem",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 6.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11977,
+            "key": "OP-1849",
+            "summary": "Testing OnPrem Playbook (GR)",
+            "assignee id": "5d40195299fa080dac2478f9",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11980,
+            "key": "OP-1852",
+            "summary": "Design Integration Test Suite",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11981,
+            "key": "OP-1853",
+            "summary": "Review Integration Test Suite",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11982,
+            "key": "OP-1854",
+            "summary": "Execute Integration Test Suite",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 11985,
+            "key": "OP-1857",
+            "summary": "Ansible Cleanup in Edgenode repository ",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11986,
+            "key": "OP-1858",
+            "summary": "Ansible Cleanup in Edgecontroller repository",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11987,
+            "key": "OP-1859",
+            "summary": "Ansible Cleanup in Edgenode repository Review",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11988,
+            "key": "OP-1860",
+            "summary": "Ansible Cleanup in Edgecontroller repository Review",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11989,
+            "key": "OP-1861",
+            "summary": "Handle Ansible Cleanup in Edgenode repository CR",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11990,
+            "key": "OP-1862",
+            "summary": "Handle Ansible Cleanup in Edgecontroller repository CR",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11991,
+            "key": "OP-1863",
+            "summary": "Ansible Cleanup: testing Network Edge mode",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11992,
+            "key": "OP-1864",
+            "summary": "Ansible Cleanup: testing OnPrem mode",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11995,
+            "key": "OP-1867",
+            "summary": "SDL analysis",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11996,
+            "key": "OP-1868",
+            "summary": "License in otcshare repositories verification",
+            "assignee id": "5cef2f596f51c10fbd18d331",
+            "story points": 3.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 11997,
+            "key": "OP-1869",
+            "summary": "Checkmarx fixing",
+            "assignee id": "5d40195299fa080dac2478f9",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12000,
+            "key": "OP-1872",
+            "summary": "Edgecontroller linter issues fixing",
+            "assignee id": "5d40195299fa080dac2478f9",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12021,
+            "key": "OP-1893",
+            "summary": "Execute Integration Test Suite",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12038,
+            "key": "OP-1895",
+            "summary": "Update changelog in edgenode repository",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12042,
+            "key": "OP-1899",
+            "summary": "T1172: Secure daemon configuration files (Docker)",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12045,
+            "key": "OP-1902",
+            "summary": "T1204: Mount container's root file system as read-only (Docker)",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12051,
+            "key": "OP-1908",
+            "summary": "T1184: Use COPY instead of ADD in Dockerfile (Docker)",
+            "assignee id": "5d40195299fa080dac2478f9",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12052,
+            "key": "OP-1909",
+            "summary": "Modify ansible scripts for ngc integration",
+            "assignee id": "5c6b22b4e73ff9464875c615",
+            "story points": null,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12054,
+            "key": "OP-1911",
+            "summary": "nfd-worker pod is in CrashLoopBackOff state after set up Openness",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12059,
+            "key": "OP-1914",
+            "summary": "Review NTS whitepaper",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12060,
+            "key": "OP-1915",
+            "summary": "Update Topology manager document",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12061,
+            "key": "OP-1916",
+            "summary": "Update Openness Hugpages document",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12062,
+            "key": "OP-1917",
+            "summary": "Update NFD document",
+            "assignee id": "5c6b22b424a84d13077fc828",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12063,
+            "key": "OP-1918",
+            "summary": "Update SRIOV & Multus document",
+            "assignee id": "5c58686db2871116836059c5",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12064,
+            "key": "OP-1919",
+            "summary": "Update CPU Manager document",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12065,
+            "key": "OP-1920",
+            "summary": "Update BIOS and FW CFG document",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12067,
+            "key": "OP-1921",
+            "summary": "Update licenses in otcshare repositories to Intel only",
+            "assignee id": "5cef2f596f51c10fbd18d331",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12073,
+            "key": "OP-1924",
+            "summary": "Move  OEK readme to getting started",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12075,
+            "key": "OP-1926",
+            "summary": "Prepare for offline - Go, DPDK, Qemu archives and Pip packages",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12076,
+            "key": "OP-1927",
+            "summary": "Prepare for offline - Docker images",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 6.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12077,
+            "key": "OP-1928",
+            "summary": "Offline restore - Go, DPDK, Qemu archives and Pip packages",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12078,
+            "key": "OP-1929",
+            "summary": "Offline restore - Docker images for Controller",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12079,
+            "key": "OP-1930",
+            "summary": "Offline restore - Docker images for Node",
+            "assignee id": "5c5868d029be9642ba5248e4",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12083,
+            "key": "OP-1932",
+            "summary": "Create offline YUM repository",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12084,
+            "key": "OP-1933",
+            "summary": "Add node/controller GIT repositories to package",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12085,
+            "key": "OP-1934",
+            "summary": "Add Ansible RPMs to the package",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12086,
+            "key": "OP-1935",
+            "summary": "Create offline TAR package",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12087,
+            "key": "OP-1936",
+            "summary": "Transfer files to deployment machines",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12088,
+            "key": "OP-1937",
+            "summary": "Setup offline YUM repository on deployment machine",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12089,
+            "key": "OP-1938",
+            "summary": "Restore node/controller GIT repositories on deployment machine",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12090,
+            "key": "OP-1939",
+            "summary": "Download Go modules for CNCA and reuse them in offline installer",
+            "assignee id": "5d5162b09ca6120db899390a",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": true
+        },
+        {
+            "id": 12092,
+            "key": "OP-1941",
+            "summary": "Split OEK getting started into modes",
+            "assignee id": "5c8290ae24bae07c385cfe36",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12110,
+            "key": "OP-1949",
+            "summary": "offline rpm repo split for Controller and Node",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12111,
+            "key": "OP-1950",
+            "summary": "InterfaceService and EdgeDNS CLIs can't connect to services due to proxy",
+            "assignee id": "5cb5f2833704fd1181fed18f",
+            "story points": 1.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12112,
+            "key": "OP-1951",
+            "summary": "Extract Ansible with dependencies for offline package",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 3.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12113,
+            "key": "OP-1952",
+            "summary": "Requests to EAA are load balanced by K8s DNS",
+            "assignee id": "5cb5f2833704fd1181fed18f",
+            "story points": 3.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12114,
+            "key": "OP-1953",
+            "summary": "OpenNESS specific OVN configuration is not persistent",
+            "assignee id": "5cb5f2833704fd1181fed18f",
+            "story points": 3.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12116,
+            "key": "OP-1954",
+            "summary": "Prepare for offline - download golang modules for offline use",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 2.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12117,
+            "key": "OP-1955",
+            "summary": "Prepare for offline - setup cleanup tasks",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12118,
+            "key": "OP-1956",
+            "summary": " Prepare for offline - design and implementation for rpm packages download",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 3.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12119,
+            "key": "OP-1957",
+            "summary": "Prepare for offline - add missing roles for controller and node",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 4.0,
+            "by sprint": true,
+            "by comment": false
+        },
+        {
+            "id": 12120,
+            "key": "OP-1958",
+            "summary": "Offline restore - test initial design",
+            "assignee id": "5c927c2f1b780c2c5d7c17a3",
+            "story points": 5.0,
+            "by sprint": true,
+            "by comment": false
+        }
+    ]
+}
