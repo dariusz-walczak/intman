@@ -42,8 +42,6 @@ def init_defaults():
     }
 
 
-<<<<<<< HEAD
-=======
 def load_defaults(file_name=DEFAULTS_FILE_NAME):
     if os.path.exists(file_name):
         try:
@@ -60,7 +58,6 @@ def load_defaults(file_name=DEFAULTS_FILE_NAME):
     return defaults
 
 
->>>>>>> Updated sm-create-team-file according to comments.
 def apply_options(cfg, options):
     cfg = copy.copy(cfg)
     cfg["jira"]["user"]["name"] = options.user_name
