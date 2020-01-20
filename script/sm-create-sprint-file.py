@@ -2,6 +2,7 @@
 
 # Standard library imports
 import datetime
+import json
 import os.path
 import sys
 
@@ -17,6 +18,7 @@ import cjm.cfg
 import cjm.request
 import cjm.schema
 import cjm.sprint
+import cjm.codes
 
 
 _PROJECT_KEY_ARG_NAME = "--project-key"
@@ -92,6 +94,8 @@ def main(options):
         "start date": start_date.isoformat(),
         "end date": end_date.isoformat(),
         "name": cjm.sprint.generate_sprint_name(project_json["name"], start_date, end_date),
+        "id": int(project_json["id"]),
+        "comment prefix": "",
         "project": {
             "key": cfg["project"]["key"],
             "name": project_json["name"]

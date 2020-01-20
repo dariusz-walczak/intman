@@ -100,6 +100,5 @@ def parse_options(args):
 
 
 if __name__ == "__main__":
-    sys.stderr.write("TODO: ADD POLISH ALPHABET SUPPORT\n")
     sys.stderr.write("TODO: ADD ADDITIONAL ARGUMENTS TO PARSING OPTIONS\n")
     exit(main(parse_options(sys.argv[1:])))

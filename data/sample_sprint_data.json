@@ -1,0 +1,11 @@
+{
+    "start date": "2020-01-27",
+    "end date": "2020-02-09",
+    "name": "OpenNESS WW05-WW06",
+    "id": 10000,
+    "comment prefix": "",
+    "project": {
+        "key": "OP",
+        "name": "OpenNESS"
+    }
+}
