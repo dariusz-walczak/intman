@@ -18,6 +18,33 @@ import cjm.schema
 _PROJECT_KEY_ARG_NAME = "--project-key"
 
 
+def request_users(cfg):
+    users = []
+
+    user_data_url = cjm.request.make_cj_url(cfg, "user", "search", "query")
+    user_query = "is assignee of {0:s}".format(cfg["project"]["key"])
+
+    start_at = 0
+    max_results = 50
+
+    while True:
+        result_code, response = cjm.request.make_cj_request(
+            cfg, user_data_url,
+            {"query": user_query, "startAt": start_at, "maxResults": max_results})
+
+        if result_code:
+            return result_code
+
+        response_json = response.json()
+        users += response_json["values"]
+        start_at += max_results
+
+        if start_at >= response_json["total"]:
+            break
+
+    return (cjm.codes.NO_ERROR, users)
+
+
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["project"]["key"] = options.project_key
@@ -28,18 +55,15 @@ def main(options):
             " file to specify it".format(_PROJECT_KEY_ARG_NAME))
         return cjm.codes.CONFIGURATION_ERROR
 
-    project_data_url = cjm.request.make_cj_url(cfg, "users")
-    result_code, response = cjm.request.make_cj_request(cfg, project_data_url)
+    result_code, users_all = request_users(cfg)
 
     if result_code:
         return result_code
 
-    users_json = response.json()
-    human_users = [user for user in users_json if user["accountType"] == "atlassian"]
-
+    users_active = [u for u in users_all if u["active"]]
     users = []
 
-    for user in human_users:
+    for user in users_active:
         if str(user["displayName"]).find(' ') != -1:
             firstname, lastname = str(user["displayName"]).split(" ", 1)
         elif str(user["displayName"]).find('.') != -1:
