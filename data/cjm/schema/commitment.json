@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+
+    "type": "object",
+    "properties": {
+        "issues": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type":  "integer"},
+                  "key": { "type": "string" },
+                  "summary": { "type": "string" },
+                  "assignee id": { "type": "string" },
+                  "story points": {
+                      "anyOf": [
+                          { "type": "number" },
+                          { "type": "null" }
+                      ]
+                  },
+                  "by sprint": { "type": "boolean" },
+                  "by comment": { "type": "boolean" }
+                },
+                "required": ["id", "key", "summary", "assignee id"]
+              }
+        }
+    },
+    "required": ["issues"]
+}

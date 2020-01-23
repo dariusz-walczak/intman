@@ -65,10 +65,10 @@ def main(options):
     codes = [user["code"] for user in users]
     unique_codes = []
 
-    for idx, user in enumerate(codes):
-        total = codes.count(user)
-        count = codes[:idx].count(user)
-        unique_codes.append(user + str(count + 1) if total > 1 else user)
+    for idx, code in enumerate(codes):
+        total = codes.count(code)
+        count = codes[:idx].count(code)
+        unique_codes.append("{0:s}{1:d}".format(code, count + 1) if total > 1 else code)
 
     for idx, user in enumerate(users):
         user["code"] = unique_codes[idx]
@@ -93,7 +93,7 @@ def parse_options(args):
         _PROJECT_KEY_ARG_NAME, action="store", metavar="KEY", dest="project_key",
         default=default_project_key,
         help=(
-            "Project with which the sprint will be associated{0:s}"
+            "Project for which the team will be associated{0:s}"
             "".format(cjm.cfg.fmt_dft(default_project_key))))
 
     return parser.parse_args(args)
