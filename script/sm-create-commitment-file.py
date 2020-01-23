@@ -51,6 +51,13 @@ def parse_options(args):
         help=(
             "Select issues with the commitment comment added. Can be combined with '{0:s}' flag"
             "".format(SPRINT_ARG_NAME)))
+    parser.add_argument(
+        "--include-unassigned", action="store_true", dest="include_unassigned", default=False,
+        help="Include unassigned issues in the issue list")
+
+    parser.add_argument(
+        ODT_FILE_ARG_NAME, action="store_true", dest="odt_file_output",
+        help="Output data in .odt file format.")
 
     return parser.parse_args(args)
 
@@ -91,7 +98,9 @@ def main(options):
             return result_code
         cfg["jira"]["fields"]["story points"] = field_id
 
-    valid_account_id_list = [r["account id"] for r in team_data["people"]]
+    valid_account_id_list = (
+        [r["account id"] for r in team_data["people"]] +
+        [None] if options.include_unassigned else [])
 
     # Retrieve issues assigned to the sprint:
 
@@ -139,12 +148,16 @@ def main(options):
         print(json.dumps(commitment, indent=4, sort_keys=False))
     else:
         person_lut = dict((p["account id"], p) for p in team_data["people"])
+        def __fmt_assignee(issue):
+            if issue["assignee id"] is None:
+                return ""
+            else:
+                return "{0:s}, {1:s}".format(
+                    person_lut[issue["assignee id"]]["last name"],
+                    person_lut[issue["assignee id"]]["first name"])
+
         print(tabulate.tabulate(
-            [(i["id"], i["key"], i["summary"],
-              "{0:s}, {1:s}".format(
-                  person_lut[i["assignee id"]]["last name"],
-                  person_lut[i["assignee id"]]["first name"]),
-              i["story points"],
+            [(i["id"], i["key"], i["summary"], __fmt_assignee(i), i["story points"],
               "Sprint" if i["by sprint"] else "",
               "Comment" if i["by comment"] else "")
              for i in issues],
