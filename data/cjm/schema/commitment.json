@@ -11,7 +11,12 @@
                   "id": { "type":  "integer"},
                   "key": { "type": "string" },
                   "summary": { "type": "string" },
-                  "assignee id": { "type": "string" },
+                  "assignee id": {
+                      "anyOf": [
+                          { "type": "string" },
+                          { "type": "null" }
+                      ]
+                  },
                   "story points": {
                       "anyOf": [
                           { "type": "number" },
