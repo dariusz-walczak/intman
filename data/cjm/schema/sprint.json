@@ -15,7 +15,10 @@
             "type": "string"
         },
         "id": {
-            "type": "integer"
+            "anyOf": [
+                {"type": "integer"},
+                {"type": "null"}
+            ]
         },
         "comment prefix": {
             "type": "string"

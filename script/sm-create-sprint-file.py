@@ -93,7 +93,7 @@ def main(options):
         "start date": start_date.isoformat(),
         "end date": end_date.isoformat(),
         "name": cjm.sprint.generate_sprint_name(project_json["name"], start_date, end_date),
-        "id": int(project_json["id"]),
+        "id": None,
         "comment prefix": "",
         "project": {
             "key": cfg["project"]["key"],
