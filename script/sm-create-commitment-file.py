@@ -55,10 +55,6 @@ def parse_options(args):
         "--include-unassigned", action="store_true", dest="include_unassigned", default=False,
         help="Include unassigned issues in the issue list")
 
-    parser.add_argument(
-        ODT_FILE_ARG_NAME, action="store_true", dest="odt_file_output",
-        help="Output data in .odt file format.")
-
     return parser.parse_args(args)
 
 
@@ -100,7 +96,7 @@ def main(options):
 
     valid_account_id_list = (
         [r["account id"] for r in team_data["people"]] +
-        [None] if options.include_unassigned else [])
+        ([None] if options.include_unassigned else []))
 
     # Retrieve issues assigned to the sprint:
 
