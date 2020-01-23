@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Standard library imports
-import os.path
 import sys
+import json
 
 # Third party imports
 import dateutil.parser
 import requests
-import simplejson
 import tabulate
 
 # Project imports
 import cjm
 import cjm.cfg
 import cjm.request
-
 
 DEFAULTS_FILE_NAME = ".cjm.json"
 
@@ -35,12 +34,15 @@ def parse_options(args):
 
     options = parser.parse_args(args)
 
-    if (options.board_id is None):
+    if options.board_id is None:
         parser.error(
             "Missing board id. Use the '--{0:s}' option or the defaults file to specify it"
             "".format(board_arg_name))
 
     return options
+
+
+def __fmt_opt(v): return "" if v is None else str(v)
 
 
 def main(options):
@@ -55,9 +57,9 @@ def main(options):
     sprints = []
 
     for sprint in response.json()["values"]:
-        project_key = cfg["project"]["key"]
+        # project_key = cfg["project"]["key"]
 
-        if (sprint["originBoardId"] == cfg["board"]["id"]):
+        if sprint["originBoardId"] == cfg["board"]["id"]:
             sprint_data = {
                 "id": sprint["id"],
                 "name": sprint["name"],
@@ -73,16 +75,17 @@ def main(options):
                 "complete_date": (
                     dateutil.parser.parse(sprint["completeDate"]).date().isoformat()
                     if "completeDate" in sprint
-                    else None),
-                "state": sprint["state"]
+                    else None)
             }
             sprints.append(sprint_data)
 
-
     if options.json_output:
-        print(simplejson.dumps(sprints, indent=4, sort_keys=False))
+        print(json.dumps(sprints, indent=4, sort_keys=False))
     else:
-        __fmt_opt = lambda v: "" if v is None else str(v)
+
+        # Do not assign a lambda expression, use a def (E731)
+        # https://www.flake8rules.com/rules/E731.html
+        # __fmt_opt = lambda v: "" if v is None else str(v)
 
         print(tabulate.tabulate(
             [(s["id"], s["name"], s["state"], __fmt_opt(s["start_date"]), __fmt_opt(s["end_date"]))

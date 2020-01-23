@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Standard library imports
-import os.path
 import sys
+import json
 
 # Third party imports
 import requests
-import simplejson
 import tabulate
 
 # Project imports
@@ -43,9 +43,8 @@ def main(options):
         }
         projects.append(project_data)
 
-
     if options.json_output:
-        print(simplejson.dumps(projects, indent=4, sort_keys=False))
+        print(json.dumps(projects, indent=4, sort_keys=False))
     else:
         print(tabulate.tabulate(
             [(p["id"], p["key"], p["name"]) for p in projects],

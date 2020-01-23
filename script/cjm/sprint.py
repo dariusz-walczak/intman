@@ -1,13 +1,13 @@
 # Standard imports
-import sys
+import json
 
 # Third party imports
 import jsonschema
-import simplejson
 
 # Project imports
 import cjm.schema
 import cjm.request
+import cjm.codes
 
 
 def generate_sprint_name(project_name, start_dt, end_dt):
@@ -19,9 +19,13 @@ def generate_sprint_name(project_name, start_dt, end_dt):
 
 def load_data(cfg, sprint_file):
     schema = cjm.schema.load(cfg, "sprint.json")
-    data = simplejson.load(sprint_file)
+    data = json.load(sprint_file)
     jsonschema.validate(data, schema)
     return data
+
+
+def account_id_cb(u):
+    return None if u is None else u["accountId"]
 
 
 def request_issues_by_sprint(cfg):
@@ -39,12 +43,11 @@ def request_issues_by_sprint(cfg):
             {"startAt": start_at, "maxResults": max_results})
 
         if result_code:
-            return (result_code, issues)
+            return result_code, issues
 
         response_json = response.json()
 
         for issue in response_json["issues"]:
-            account_id_cb = lambda u: None if u is None else u["accountId"]
             issue_data = {
                 "id": int(issue["id"]),
                 "key": issue["key"],
@@ -59,8 +62,7 @@ def request_issues_by_sprint(cfg):
         if start_at >= response_json["total"]:
             break
 
-
-    return (cjm.codes.NO_ERROR, issues)
+    return cjm.codes.NO_ERROR, issues
 
 
 def request_issues_by_comment(cfg, comment):
@@ -76,15 +78,14 @@ def request_issues_by_comment(cfg, comment):
     while True:
         result_code, response = cjm.request.make_cj_post_request(
             cfg, sprint_issues_url,
-            json = {"jql": jql, "startAt": start_at, "maxResults": max_results})
+            json={"jql": jql, "startAt": start_at, "maxResults": max_results})
 
         if result_code:
-            return (result_code, issues)
+            return result_code, issues
 
         response_json = response.json()
 
         for issue in response_json["issues"]:
-            account_id_cb = lambda u: None if u is None else u["accountId"]
             issue_data = {
                 "id": int(issue["id"]),
                 "key": issue["key"],
@@ -98,4 +99,4 @@ def request_issues_by_comment(cfg, comment):
         if start_at >= response_json["total"]:
             break
 
-    return (cjm.codes.NO_ERROR, issues)
+    return cjm.codes.NO_ERROR, issues

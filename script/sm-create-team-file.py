@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Standard library imports
 import sys
-
-import jsonschema
-import requests
-from requests.auth import HTTPBasicAuth
 import json
+
+# Third party imports
+import jsonschema
 
 # Project imports
 import cjm
@@ -34,8 +34,8 @@ def main(options):
     if result_code:
         return result_code
 
-    raw_json = response.json()
-    human_users = [user for user in raw_json if user["accountType"] == "atlassian"]
+    users_json = response.json()
+    human_users = [user for user in users_json if user["accountType"] == "atlassian"]
 
     users = []
 

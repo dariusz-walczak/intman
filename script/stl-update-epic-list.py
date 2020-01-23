@@ -4,11 +4,10 @@
 # Standard library imports
 import argparse
 import os
-import re
 import sys
+import json
 
 # Third party imports
-import simplejson
 import xml.etree.ElementTree
 
 # Local imports:
@@ -19,7 +18,7 @@ import stl.sprint
 
 
 def parse_options(args):
-    defaults = simplejson.load(open(".stl.json"))
+    defaults = json.load(open(".stl.json"))
     epic_list_default = defaults.get("epic list file", "epic-list.json")
     sow_data_default = defaults.get("sow data path", ".")
     stl_data_default = defaults.get("stl_data path", "data/stl")
@@ -46,15 +45,15 @@ def parse_options(args):
 
 
 def main(options):
-    cfg = {
-        "stl_data_path": options.stl_data_path,
-        "sow_data_path": options.sow_data_path
-    }
+    # cfg = {
+    #     "stl_data_path": options.stl_data_path,
+    #     "sow_data_path": options.sow_data_path
+    # }
 
     epic_list_file_name = os.path.join(options.sow_data_path, options.epic_list_file)
 
     with open(epic_list_file_name) as epic_list_file:
-        prev_data = simplejson.load(epic_list_file)
+        prev_data = json.load(epic_list_file)
 
     epic_map = dict(
         (epic_data["id"], epic_data)
@@ -84,7 +83,7 @@ def main(options):
     }
 
     with open(epic_list_file_name, "w") as epic_list_file:
-        simplejson.dump(curr_data, epic_list_file, indent="    ", sort_keys=False)
+        json.dump(curr_data, epic_list_file, indent="    ", sort_keys=False)
 
 
 if __name__ == '__main__':

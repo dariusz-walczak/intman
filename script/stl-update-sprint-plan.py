@@ -6,9 +6,9 @@ import argparse
 import os
 import re
 import sys
+import json
 
 # Third party imports
-import simplejson
 import xml.etree.ElementTree
 
 # Local imports:
@@ -21,7 +21,7 @@ _SPRINT_DATA_OPT = "--sprint-data"
 
 
 def parse_options(args):
-    defaults = simplejson.load(open(".stl.json"))
+    defaults = json.load(open(".stl.json"))
     epic_list_default = defaults.get("epic list file", "epic-list.json")
     sprint_list_default = defaults.get("sprint list file", "sprint-list.json")
     sow_data_default = defaults.get("sow data path", ".")
@@ -81,7 +81,7 @@ def main(options):
 
     root = xml.etree.ElementTree.parse(options.jira_xml).getroot()
 
-    ## First channel iteration to determine the sprint and sprint data path:
+    # First channel iteration to determine the sprint and sprint data path:
     for channel_idx, channel in enumerate(root.iter("channel")):
         if not channel_idx:
             sprint_data = extract_sprint_data(channel, sprint_data)
@@ -112,6 +112,7 @@ def main(options):
 
         cfg["sprint_data_path"] = options.sprint_data_path
 
+    ticket_data = []
     for channel_idx, channel in enumerate(root.iter("channel")):
         ticket_data = [
             {
@@ -128,7 +129,7 @@ def main(options):
 
     sprint_json = stl.sprint.plan_generate(team_data, sprint_data, ticket_data)
 
-    print(simplejson.dumps(sprint_json, indent="    ", sort_keys=False))
+    print(json.dumps(sprint_json, indent="    ", sort_keys=False))
 
 
 if __name__ == '__main__':

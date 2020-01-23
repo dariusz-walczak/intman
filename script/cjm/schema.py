@@ -1,8 +1,6 @@
 # Standard library imports
 import os
-
-# Third party imports
-import simplejson
+import json
 
 
 def make_subpath(schema_file):
@@ -11,4 +9,4 @@ def make_subpath(schema_file):
 
 def load(cfg, name):
     schema_path = os.path.join(cfg["path"]["data"], make_subpath(name))
-    return simplejson.load(open(schema_path))
+    return json.load(open(schema_path))

@@ -10,7 +10,6 @@ def priority_code(priority_index):
         return "P{0:d}".format(priority_index)
 
 
-
 def ticket_generate(ticket_data):
     return {
         "task id": ticket_data["id"],
@@ -52,15 +51,16 @@ def team_generate(project_data, ticket_data):
         "code": project_data["project"]["code"],
         "name": project_data["project"]["name"],
         "people": [
-            participant_generate(project_member, ticket_data)
-            for project_member in project_data["members"]
-        ] + unassigned_generate(ticket_data)
-#        "unassigned": [
-#            ticket_generate(ticket)
-#            for ticket in ticket_data
-#            if ticket["assignee code"] is None
-#        ]
+                      participant_generate(project_member, ticket_data)
+                      for project_member in project_data["members"]
+                  ] + unassigned_generate(ticket_data)
+        # "unassigned": [
+        #     ticket_generate(ticket)
+        #     for ticket in ticket_data
+        #     if ticket["assignee code"] is None
+        # ]
     }
+
 
 def plan_generate(team_data, sprint_data, ticket_data):
     wwf = sprint_data.get("ww_first")

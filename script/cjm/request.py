@@ -34,13 +34,13 @@ def make_cj_request(cfg, url, params=None):
         sys.stderr.write(
             "ERROR: Jira user name not specified. Use the '{0:s}' CLI option or the defaults"
             " file to specify it\n".format(cjm.cfg.USER_NAME_ARG_NAME))
-        return (cjm.codes.CONFIGURATION_ERROR, None)
+        return cjm.codes.CONFIGURATION_ERROR, None
 
     if cfg["jira"]["user"]["token"] is None:
         sys.stderr.write(
             "ERROR: Jira user token not specified. Use the '{0:s}' CLI option or the defaults"
             " file to specify it\n".format(cjm.cfg.USER_TOKEN_ARG_NAME))
-        return (cjm.codes.CONFIGURATION_ERROR, None)
+        return cjm.codes.CONFIGURATION_ERROR, None
 
     response = requests.get(
         url, params=params,
@@ -50,9 +50,9 @@ def make_cj_request(cfg, url, params=None):
         sys.stderr.write(
             "ERROR: The Jira API request ('{0:s}') failed with code {1:d}\n"
             "".format(url, response.status_code))
-        return (cjm.codes.REQUEST_ERROR, response)
+        return cjm.codes.REQUEST_ERROR, response
 
-    return (cjm.codes.NO_ERROR, response)
+    return cjm.codes.NO_ERROR, response
 
 
 def make_cj_post_request(cfg, url, json):
@@ -60,13 +60,13 @@ def make_cj_post_request(cfg, url, json):
         sys.stderr.write(
             "ERROR: Jira user name not specified. Use the '{0:s}' CLI option or the defaults"
             " file to specify it\n".format(cjm.cfg.USER_NAME_ARG_NAME))
-        return (cjm.codes.CONFIGURATION_ERROR, None)
+        return cjm.codes.CONFIGURATION_ERROR, None
 
     if cfg["jira"]["user"]["token"] is None:
         sys.stderr.write(
             "ERROR: Jira user token not specified. Use the '{0:s}' CLI option or the defaults"
             " file to specify it\n".format(cjm.cfg.USER_TOKEN_ARG_NAME))
-        return (cjm.codes.CONFIGURATION_ERROR, None)
+        return cjm.codes.CONFIGURATION_ERROR, None
 
     response = requests.post(
         url, json=json,
@@ -76,6 +76,6 @@ def make_cj_post_request(cfg, url, json):
         sys.stderr.write(
             "ERROR: The Jira API request ('{0:s}') failed with code {1:d}\n"
             "".format(url, response.status_code))
-        return (cjm.codes.REQUEST_ERROR, response)
+        return cjm.codes.REQUEST_ERROR, response
 
-    return (cjm.codes.NO_ERROR, response)
+    return cjm.codes.NO_ERROR, response

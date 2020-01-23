@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Standard library imports
+import sys
 import datetime
 import json
-import os.path
-import sys
 
 # Third party imports
 import jsonschema
-import requests
-import simplejson
 import tabulate
 
 # Project imports
@@ -22,6 +20,7 @@ import cjm.codes
 
 
 _PROJECT_KEY_ARG_NAME = "--project-key"
+
 
 def parse_options(args):
     defaults = cjm.cfg.load_defaults()
@@ -106,7 +105,7 @@ def main(options):
     jsonschema.validate(sprint, sprint_schema)
 
     if options.json_output:
-        print(simplejson.dumps(sprint, indent=4, sort_keys=False))
+        print(json.dumps(sprint, indent=4, sort_keys=False))
     else:
         print(tabulate.tabulate(
             [(key, sprint[key]) for key in ["start date", "end date", "name"]] +
@@ -117,4 +116,5 @@ def main(options):
 
 
 if __name__ == '__main__':
+    sys.stderr.write("TODO: FILL COMMENT PREFIX WITH DATA OR REMOVE ALTOGETHER\n")
     sys.exit(main(parse_options(sys.argv[1:])))

@@ -5,7 +5,7 @@ import os.path
 import sys
 
 # Third party imports
-import simplejson
+import json
 
 
 DEFAULTS_FILE_NAME = ".cjm.json"
@@ -46,7 +46,7 @@ def load_defaults(file_name=DEFAULTS_FILE_NAME):
     if os.path.exists(file_name):
         try:
             with open(file_name) as defaults_file:
-                defaults = simplejson.load(defaults_file)
+                defaults = json.load(defaults_file)
         except IOError as e:
             sys.stderr.write(
                 "WARNING: Defaults file ('{0:s}') I/O error\n".format(file_name))
@@ -77,8 +77,8 @@ def make_common_parser(defaults):
             "..", "..", "..", "data"))
     default_user_name = defaults.get("jira", {}).get("user", {}).get("name", None)
     default_user_token = defaults.get("jira", {}).get("user", {}).get("token", None)
-    default_jira_host = defaults.get("jira", {}).get("host", "openness.atlassian.net")
-    default_jira_scheme = defaults.get("jira", {}).get("scheme", "https")
+    # default_jira_host = defaults.get("jira", {}).get("host", "openness.atlassian.net")
+    # default_jira_scheme = defaults.get("jira", {}).get("scheme", "https")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(

@@ -1,22 +1,22 @@
 # Standard library imports
 import os
+import json
 
 # Third party imports
 import jsonschema
-import simplejson
 
 
-#def epic_list_load(cfg):
-#    schema = schema_load(cfg, "epic_list.json
+# def epic_list_load(cfg):
+#     schema = schema_load(cfg, "epic_list.json
 
 
 def schema_load(cfg, name):
-    return simplejson.load(open(os.path.join(cfg["stl_data_path"], "schema", name)))
+    return json.load(open(os.path.join(cfg["stl_data_path"], "schema", name)))
 
 
 def team_data_load(cfg):
     schema = schema_load(cfg, "team_data.json")
-    data = simplejson.load(open(os.path.join(cfg["sow_data_path"], "team_data.json")))
+    data = json.load(open(os.path.join(cfg["sow_data_path"], "team_data.json")))
     jsonschema.validate(data, schema)
     return data
 

@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Standard library imports
-import os.path
 import sys
+import json
 
 # Third party imports
-import dateutil.parser
 import requests
-import simplejson
 import tabulate
 
 # Project imports
@@ -35,7 +34,7 @@ def parse_options(args):
 
     options = parser.parse_args(args)
 
-    if (options.sprint_id is None):
+    if options.sprint_id is None:
         parser.error(
             "Missing sprint id. Use the '--{0:s}' option or the defaults file to specify it"
             "".format(sprint_arg_name))
@@ -55,7 +54,8 @@ def main(options):
 
     issues = []
 
-    import pdb; pdb.set_trace()
+    import pdb
+    pdb.set_trace()
 
     for issue in response.json()["issues"]:
         issue_data = {
@@ -66,7 +66,7 @@ def main(options):
         issues.append(issue_data)
 
     if options.json_output:
-        print(simplejson.dumps(issues, indent=4, sort_keys=False))
+        print(json.dumps(issues, indent=4, sort_keys=False))
     else:
         print(tabulate.tabulate(
             [(i["id"], i["key"], i["summary"]) for i in issues],

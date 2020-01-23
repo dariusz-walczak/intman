@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Standard library imports
-import os.path
 import sys
+import json
 
 # Third party imports
 import requests
-import simplejson
 import tabulate
 
 # Project imports
 import cjm
 import cjm.cfg
 import cjm.request
-
 
 DEFAULTS_FILE_NAME = ".cjm.json"
 
@@ -52,17 +51,15 @@ def main(options):
         project_key = cfg["project"]["key"]
 
         if ((project_key is None) or options.all_boards or
-            (project_key == board["location"]["projectKey"])):
-
+                (project_key == board["location"]["projectKey"])):
             board_data = {
-                "id":   board["id"],
+                "id": board["id"],
                 "name": board["name"]
             }
             boards.append(board_data)
 
-
     if options.json_output:
-        print(simplejson.dumps(boards, indent=4, sort_keys=False))
+        print(json.dumps(boards, indent=4, sort_keys=False))
     else:
         print(tabulate.tabulate(
             [(b["id"], b["name"]) for b in boards],

@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # Standard library imports
 import sys
+import json
 
 # Third party imports
-import simplejson
+import jsonschema
 import tabulate
 
 # Project imports
-from odf.opendocument import OpenDocumentText
-from odf.style import Style, ParagraphProperties, TableColumnProperties
-from odf.table import Table, TableColumn, TableRow, TableCell
-from odf.text import P
-
 import cjm
 import cjm.cfg
 import cjm.issue
@@ -24,7 +21,6 @@ import cjm.codes
 
 SPRINT_ARG_NAME = "--by-sprint"
 COMMENT_ARG_NAME = "--by-comment"
-ODT_FILE_ARG_NAME = "--odt-file"
 
 
 def parse_options(args):
@@ -48,18 +44,13 @@ def parse_options(args):
     parser.add_argument(
         SPRINT_ARG_NAME, action="store_true", dest="by_sprint_flag",
         help=(
-            "Select issues associated with the given sprint. Can be conbined with '{0:s}' flag"
+            "Select issues associated with the given sprint. Can be combined with '{0:s}' flag"
             "".format(COMMENT_ARG_NAME)))
     parser.add_argument(
         COMMENT_ARG_NAME, action="store_true", dest="by_comment_flag",
         help=(
-            "Select issues with the commitment comment added. Can be conbined with '{0:s}' flag"
+            "Select issues with the commitment comment added. Can be combined with '{0:s}' flag"
             "".format(SPRINT_ARG_NAME)))
-    parser.add_argument(
-        ODT_FILE_ARG_NAME, action="store_true", dest="odt_file_output",
-        help=(
-            "Output data in .odt file format."
-        ))
 
     return parser.parse_args(args)
 
@@ -139,8 +130,13 @@ def main(options):
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
 
+    commitment = {"issues": issues}
+
+    commitment_schema = cjm.schema.load(cfg, "commitment.json")
+    jsonschema.validate(commitment, commitment_schema)
+
     if options.json_output:
-        print(simplejson.dumps({"issues": issues}, indent=4, sort_keys=False))
+        print(json.dumps(commitment, indent=4, sort_keys=False))
     else:
         person_lut = dict((p["account id"], p) for p in team_data["people"])
         print(tabulate.tabulate(
@@ -155,99 +151,8 @@ def main(options):
             headers=["Id", "Key", "Summary", "Assignee", "Story Points", "Sprint", "Comment"],
             tablefmt="orgtbl"))
 
-    if options.odt_file_output:
-        textdoc = OpenDocumentText()
-        # Create a style for the table content. One we can modify
-        # later in the word processor.
-        tablecontents = Style(name="Table Contents", family="paragraph")
-        tablecontents.addElement(ParagraphProperties(numberlines="false", linenumber="0"))
-        textdoc.styles.addElement(tablecontents)
-
-        # Create automatic styles for the column widths.
-        # We want two different widths, one in inches, the other one in metric.
-        # ODF Standard section 15.9.1
-        w1 = Style(name="w1", family="table-column")
-        w1.addElement(TableColumnProperties(columnwidth="2cm"))
-        textdoc.automaticstyles.addElement(w1)
-
-        w2 = Style(name="w2", family="table-column")
-        w2.addElement(TableColumnProperties(columnwidth="13cm"))
-        textdoc.automaticstyles.addElement(w2)
-
-        w3 = Style(name="w3", family="table-column")
-        w3.addElement(TableColumnProperties(columnwidth="2cm"))
-        textdoc.automaticstyles.addElement(w3)
-
-        # Start the table, and describe the columns
-        table = Table()
-        table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=w1))
-        table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=w2))
-        table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=w3))
-
-        table_header = TableRow()
-        table.addElement(table_header)
-
-        tc1_top = TableCell()
-        table_header.addElement(tc1_top)
-        p = P(stylename=tablecontents, text="Task ID")
-        tc1_top.addElement(p)
-
-        tc2_top = TableCell()
-        table_header.addElement(tc2_top)
-        p = P(stylename=tablecontents, text="Task Title")
-        tc2_top.addElement(p)
-
-        tc3_top = TableCell()
-        table_header.addElement(tc3_top)
-        p = P(stylename=tablecontents, text="Story Points")
-        tc3_top.addElement(p)
-
-        rows_containing_data = 1
-
-        for issue in issues:
-            tr = TableRow()
-            table.addElement(tr)
-
-            tc1 = TableCell()
-            tr.addElement(tc1)
-            p = P(stylename=tablecontents, text=issue["key"])
-            tc1.addElement(p)
-
-            tc2 = TableCell()
-            tr.addElement(tc2)
-            p = P(stylename=tablecontents, text=issue["summary"])
-            tc2.addElement(p)
-
-            tc3 = TableCell()
-            tr.addElement(tc3)
-            p = P(stylename=tablecontents, text=issue["story points"])
-            tc3.addElement(p)
-
-            rows_containing_data += 1
-
-        table_footer = TableRow()
-        table.addElement(table_footer)
-
-        tc1_bottom = TableCell()
-        table_footer.addElement(tc1_bottom)
-        p = P(stylename=tablecontents, text="")
-        tc1_bottom.addElement(p)
-
-        tc2_bottom = TableCell()
-        table_footer.addElement(tc2_bottom)
-        p = P(stylename=tablecontents, text="Total:")
-        tc2_bottom.addElement(p)
-
-        tc3_bottom = TableCell(stylename=tablecontents,
-                               formula="SUM(<C2:C" + str(rows_containing_data) + ">)", valuetype="float")
-        table_footer.addElement(tc3_bottom)
-
-        textdoc.text.addElement(table)
-        textdoc.save("./data/sample_commitment_data.odt")
-
     return cjm.codes.NO_ERROR
 
 
 if __name__ == '__main__':
-    sys.stderr.write("TODO: MOVE ODT FILE CREATION TO FUNCTION\n")
     sys.exit(main(parse_options(sys.argv[1:])))
