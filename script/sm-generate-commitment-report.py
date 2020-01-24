@@ -17,7 +17,7 @@ from odf.draw import Frame, Image
 from odf.opendocument import OpenDocumentText
 from odf.style import Style, ParagraphProperties, TableColumnProperties, TextProperties, GraphicProperties
 from odf.table import Table, TableColumn, TableRow, TableCell
-from odf.text import P, H
+from odf.text import P, H, A
 
 # Project imports
 import cjm
@@ -26,7 +26,6 @@ import cjm.request
 import cjm.codes
 import cjm.schema
 import cjm.sprint
-
 
 DEFAULTS_FILE_NAME = "./data/sample_commitment_data.json"
 
@@ -211,7 +210,7 @@ def summary(textdoc):
     textdoc.text.addElement(p)
 
 
-def committed_tasks_list(textdoc, commitment_json):
+def committed_tasks_list(cfg, textdoc, commitment_json):
     title2_style = add_style(textdoc, "title2_style")
     title_cell_style = add_style(textdoc, "title_cell_style")
     desc_cell_style = add_style(textdoc, "desc_cell_style")
@@ -252,9 +251,14 @@ def committed_tasks_list(textdoc, commitment_json):
         tr = TableRow()
         table.addElement(tr)
 
+        commitment_issue_url = cjm.request.make_issue_url(
+            cfg, "browse/{0:s}".format(issue["key"]))
+
         tc1 = TableCell()
         tr.addElement(tc1)
-        p = P(stylename=desc_cell_style, text=issue["key"])
+        p = P()
+        a = A(stylename=desc_cell_style, href=commitment_issue_url, text=issue["key"])
+        p.addElement(a)
         tc1.addElement(p)
 
         tc2 = TableCell()
@@ -381,7 +385,7 @@ def add_style(textdoc, name):
         return default_bold_style
 
 
-def generate(commitment_json, sprint_data):
+def generate(cfg, commitment_json, sprint_data):
     textdoc = OpenDocumentText()
 
     logo(textdoc)
@@ -399,7 +403,7 @@ def generate(commitment_json, sprint_data):
     for lines in range(2):
         textdoc.text.addElement(P())
 
-    committed_tasks_list(textdoc, commitment_json)
+    committed_tasks_list(cfg, textdoc, commitment_json)
 
     textdoc.save("./data/sample_commitment_data.odt")
 
@@ -437,15 +441,13 @@ def main(options):
         sys.stderr.write("    {0}\n".format(e))
         return cjm.codes.FILESYSTEM_ERROR
 
-    generate(commitment_json, sprint_data)
+    generate(cfg, commitment_json, sprint_data)
 
     return cjm.codes.NO_ERROR
 
 
 if __name__ == "__main__":
     sys.stderr.write("TODO: CHANGE DEFAULT_FILE_NAME VARIABLE\n")
-    sys.stderr.write("TODO: ADD URLS TO ISSUES IN ODT\n")
-    sys.stderr.write("TODO: REMOVE ODT FLAG\n")
     sys.stderr.write("TODO: STYLE MANIPULATION\n")
     sys.stderr.write("TODO: ADD REPORTER - textdoc.meta.addElement(dc.Creator(text=))\n")
     sys.stderr.write("TODO: THINK WHAT TO DO WITH CLIENT FIELD\n")

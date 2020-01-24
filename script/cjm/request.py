@@ -27,6 +27,13 @@ def make_cj_agile_url(cfg, *resource_path):
     return urllib.parse.urlunparse(url_parts)
 
 
+def make_issue_url(cfg, issue_key):
+    url_parts = (
+        cfg["jira"]["scheme"], cfg["jira"]["host"], "".join(issue_key),
+        "", "", "")
+    return urllib.parse.urlunparse(url_parts)
+
+
 def make_cj_request(cfg, url, params=None):
     params = {} if params is None else params
 
