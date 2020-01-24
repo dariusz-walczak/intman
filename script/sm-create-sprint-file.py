@@ -116,5 +116,5 @@ def main(options):
 
 
 if __name__ == '__main__':
-    sys.stderr.write("TODO: FILL COMMENT PREFIX WITH DATA OR REMOVE ALTOGETHER\n")
+    sys.stderr.write("TODO: FILL COMMENT PREFIX WITH DATA - DO NOT REMOVE - FIELD NEEDED\n")
     sys.exit(main(parse_options(sys.argv[1:])))

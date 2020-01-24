@@ -42,9 +42,6 @@ def parse_options(args):
     return options
 
 
-def __fmt_opt(v): return "" if v is None else str(v)
-
-
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["board"]["id"] = options.board_id
@@ -83,9 +80,8 @@ def main(options):
         print(json.dumps(sprints, indent=4, sort_keys=False))
     else:
 
-        # Do not assign a lambda expression, use a def (E731)
-        # https://www.flake8rules.com/rules/E731.html
-        # __fmt_opt = lambda v: "" if v is None else str(v)
+        def __fmt_opt(v):
+            return "" if v is None else str(v)
 
         print(tabulate.tabulate(
             [(s["id"], s["name"], s["state"], __fmt_opt(s["start_date"]), __fmt_opt(s["end_date"]))

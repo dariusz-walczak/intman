@@ -77,8 +77,6 @@ def make_common_parser(defaults):
             "..", "..", "..", "data"))
     default_user_name = defaults.get("jira", {}).get("user", {}).get("name", None)
     default_user_token = defaults.get("jira", {}).get("user", {}).get("token", None)
-    # default_jira_host = defaults.get("jira", {}).get("host", "openness.atlassian.net")
-    # default_jira_scheme = defaults.get("jira", {}).get("scheme", "https")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(

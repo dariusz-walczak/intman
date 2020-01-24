@@ -54,9 +54,6 @@ def main(options):
 
     issues = []
 
-    import pdb
-    pdb.set_trace()
-
     for issue in response.json()["issues"]:
         issue_data = {
             "id": issue["id"],
