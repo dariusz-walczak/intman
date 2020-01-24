@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-import sys
 import json
+import sys
 
 # Third party imports
 import jsonschema
@@ -12,12 +12,13 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.codes
 import cjm.issue
 import cjm.request
 import cjm.schema
 import cjm.sprint
 import cjm.team
-import cjm.codes
+
 
 SPRINT_ARG_NAME = "--by-sprint"
 COMMENT_ARG_NAME = "--by-comment"
@@ -60,6 +61,9 @@ def parse_options(args):
 
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
+    cfg["issue"]["include unassigned"] = options.include_unassigned
+
+    # Load sprint data:
 
     try:
         with open(options.sprint_file) as sprint_file:
@@ -79,6 +83,8 @@ def main(options):
             "".format(options.sprint_file))
         return cjm.codes.CONFIGURATION_ERROR
 
+    # Load team data:
+
     try:
         with open(options.team_file) as team_file:
             team_data = cjm.team.load_data(cfg, team_file)
@@ -88,15 +94,13 @@ def main(options):
         sys.stderr.write("    {0}\n".format(e))
         return cjm.codes.FILESYSTEM_ERROR
 
+    # Determine the story points field id:
+
     if cfg["jira"]["fields"]["story points"] is None:
         result_code, field_id = cjm.issue.detect_story_point_field_id(cfg)
         if result_code:
             return result_code
         cfg["jira"]["fields"]["story points"] = field_id
-
-    valid_account_id_list = (
-        [r["account id"] for r in team_data["people"]] +
-        ([None] if options.include_unassigned else []))
 
     # Retrieve issues assigned to the sprint:
 
@@ -105,7 +109,7 @@ def main(options):
     if result_code:
         return result_code
 
-    issues_team = [i for i in issues_all if i["assignee id"] in valid_account_id_list]
+    issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
     for issue in issues_team:
         issue["by sprint"] = True
         issue["by comment"] = False
@@ -120,7 +124,7 @@ def main(options):
     if result_code:
         return result_code
 
-    issues_team = [i for i in issues_all if i["assignee id"] in valid_account_id_list]
+    issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
 
     for issue in issues_team:
         issue_id = issue["id"]

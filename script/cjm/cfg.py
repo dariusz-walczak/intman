@@ -33,6 +33,9 @@ def init_defaults():
         "board": {
             "id": None
         },
+        "issue": {
+            "include unassigned": False
+        },
         "project": {
             "key": None
         },
