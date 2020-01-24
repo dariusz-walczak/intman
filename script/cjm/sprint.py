@@ -93,7 +93,8 @@ def request_issues_by_comment(cfg, comment):
                 "id": int(issue["id"]),
                 "key": issue["key"],
                 "summary": issue["fields"]["summary"],
-                "assignee id": _account_id_cb(issue["fields"]["assignee"])
+                "assignee id": _account_id_cb(issue["fields"]["assignee"]),
+                "story points": issue["fields"].get(cfg["jira"]["fields"]["story points"])
             }
             issues.append(issue_data)
 
