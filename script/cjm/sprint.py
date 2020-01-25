@@ -5,6 +5,7 @@ import json
 import jsonschema
 
 # Project imports
+import cjm.issue
 import cjm.schema
 import cjm.request
 import cjm.codes
@@ -26,11 +27,6 @@ def load_data(cfg, sprint_file):
     jsonschema.validate(data, schema)
     return data
 
-
-def _account_id_cb(u):
-    return None if u is None else u["accountId"]
-
-
 def request_issues_by_sprint(cfg):
     issues = []
 
@@ -51,14 +47,7 @@ def request_issues_by_sprint(cfg):
         response_json = response.json()
 
         for issue in response_json["issues"]:
-            issue_data = {
-                "id": int(issue["id"]),
-                "key": issue["key"],
-                "summary": issue["fields"]["summary"],
-                "assignee id": _account_id_cb(issue["fields"]["assignee"]),
-                "story points": issue["fields"].get(cfg["jira"]["fields"]["story points"])
-            }
-            issues.append(issue_data)
+            issues.append(cjm.issue.extract_issue_data(cfg, issue))
 
         start_at += max_results
 
@@ -89,14 +78,7 @@ def request_issues_by_comment(cfg, comment):
         response_json = response.json()
 
         for issue in response_json["issues"]:
-            issue_data = {
-                "id": int(issue["id"]),
-                "key": issue["key"],
-                "summary": issue["fields"]["summary"],
-                "assignee id": _account_id_cb(issue["fields"]["assignee"]),
-                "story points": issue["fields"].get(cfg["jira"]["fields"]["story points"])
-            }
-            issues.append(issue_data)
+            issues.append(cjm.issue.extract_issue_data(cfg, issue))
 
         start_at += max_results
 
