@@ -16,10 +16,10 @@ def load_data(cfg, team_file):
     return data
 
 
-## @param issues Any iterable with dict like items and at least an "assignee id" element in each
-#      of these items. For reference see output of the cjm.sprint.request_issues_by_sprint
-#      function.
-#  @param team_data Team data structure as returned by cjm.team.load_data
+# @param issues Any iterable with dict like items and at least an "assignee id" element in each
+#     of these items. For reference see output of the cjm.sprint.request_issues_by_sprint
+#     function.
+# @param team_data Team data structure as returned by cjm.team.load_data
 def filter_team_issues(cfg, issues, team_data):
     include_unassigned = cfg["issue"]["include unassigned"]
     valid_account_id_list = (

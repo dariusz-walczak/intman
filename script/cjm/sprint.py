@@ -27,6 +27,7 @@ def load_data(cfg, sprint_file):
     jsonschema.validate(data, schema)
     return data
 
+
 def request_issues_by_sprint(cfg):
     issues = []
 

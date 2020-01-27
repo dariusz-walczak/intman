@@ -113,7 +113,10 @@ def main(options):
         return result_code
 
     for issue in issues_com:
-        issue["story points"] = int(issue["story points"])
+        if issue["story points"] is not None:
+            issue["story points"] = int(issue["story points"])
+        else:
+            issue["story points"] = 0
         issue["committed story points"] = issue["story points"]
         issue["total story points"] = issue["story points"]
 
@@ -135,7 +138,10 @@ def main(options):
                 " will be ignored\n".format(issue["key"]))
             continue
 
-        issue["story points"] = int(issue["story points"])
+        if issue["story points"] is not None:
+            issue["story points"] = int(issue["story points"])
+        else:
+            issue["story points"] = 0
 
         re2 = re.compile(
             r"{0:s}/Extended \((?P<committed>[0-9]+)/(?P<total>[0-9]+)\)"
@@ -197,8 +203,8 @@ def main(options):
         "ratio": str(delivery_ratio)
     }
 
-#    commitment_schema = cjm.schema.load(cfg, "commitment.json")
-#    jsonschema.validate(commitment, commitment_schema)
+    report_schema = cjm.schema.load(cfg, "report.json")
+    jsonschema.validate(report, report_schema)
 
     if options.json_output:
         print(json.dumps(report, indent=4, sort_keys=False))

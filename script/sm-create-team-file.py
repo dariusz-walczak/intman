@@ -42,7 +42,7 @@ def request_users(cfg):
         if start_at >= response_json["total"]:
             break
 
-    return (cjm.codes.NO_ERROR, users)
+    return cjm.codes.NO_ERROR, users
 
 
 def main(options):
@@ -83,13 +83,13 @@ def main(options):
         if result_code:
             return result_code
 
-        user2_json = response.json()
+        user_json_2 = response.json()
 
         data = {
             "code": code,
             "last name": lastname,
             "first name": firstname,
-            "user name": user2_json["name"],
+            "user name": user_json_2["name"],
             "account id": acc_id
         }
         users.append(data)
@@ -132,5 +132,4 @@ def parse_options(args):
 
 
 if __name__ == "__main__":
-    sys.stderr.write("TODO: ADD ADDITIONAL ARGUMENTS TO PARSING OPTIONS\n")
     exit(main(parse_options(sys.argv[1:])))

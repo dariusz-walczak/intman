@@ -1,0 +1,102 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "issues": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "summary": {
+                        "type": "string"
+                    },
+                    "assignee id": {
+                        "type": "string"
+                    },
+                    "story points": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "status": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "committed story points": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "total story points": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "key",
+                    "summary",
+                    "assignee id"
+                ]
+            }
+        },
+        "total": {
+            "items": {
+                "type": "object",
+                "properties": {
+                    "committed": {
+                        "type": "integer"
+                    },
+                    "delivered": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "ratio": {
+            "items": {
+                "type": "object",
+                "properties": {
+                    "ratio": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
