@@ -8,7 +8,7 @@ import sys
 import json
 
 
-DEFAULTS_FILE_NAME = ".cjm.json"
+DEFAULT_FILE = ".cjm.json"
 
 USER_NAME_ARG_NAME = "--user"
 USER_TOKEN_ARG_NAME = "--token"
@@ -45,14 +45,14 @@ def init_defaults():
     }
 
 
-def load_defaults(file_name=DEFAULTS_FILE_NAME):
-    if os.path.exists(file_name):
+def load_defaults(file=DEFAULT_FILE):
+    if os.path.exists(file):
         try:
-            with open(file_name) as defaults_file:
+            with open(file) as defaults_file:
                 defaults = json.load(defaults_file)
         except IOError as e:
             sys.stderr.write(
-                "WARNING: Defaults file ('{0:s}') I/O error\n".format(file_name))
+                "WARNING: Defaults file ('{0:s}') I/O error\n".format(file))
             sys.stderr.write("    {0:s}\n".format(e))
             defaults = {}
     else:

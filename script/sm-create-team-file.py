@@ -77,11 +77,19 @@ def main(options):
         acc_id = user["accountId"]
         code = str(firstname[0] + lastname[0]).upper()
 
+        user_url = cjm.request.make_user_url(cfg, f"user?accountId={acc_id}")
+        result_code, response = cjm.request.make_user_request(cfg, user_url)
+
+        if result_code:
+            return result_code
+
+        user2_json = response.json()
+
         data = {
             "code": code,
             "last name": lastname,
             "first name": firstname,
-            "user name": "",
+            "user name": user2_json["name"],
             "account id": acc_id
         }
         users.append(data)

@@ -15,7 +15,7 @@ import cjm.cfg
 import cjm.request
 
 
-DEFAULTS_FILE_NAME = ".cjm.json"
+DEFAULT_FILE = ".cjm.json"
 
 
 def parse_options(args):

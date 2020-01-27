@@ -27,7 +27,7 @@ import cjm.codes
 import cjm.schema
 import cjm.sprint
 
-DEFAULTS_FILE_NAME = "./data/sample_commitment_data.json"
+DEFAULT_FILE = "./data/sample_commitment_data.json"
 
 
 def parse_options(args):
@@ -66,6 +66,18 @@ def calculate_workdays(start_date, end_date):
     return workdays
 
 
+def get_report_author(cfg):
+    current_user_url = cjm.request.make_current_user_url(cfg)
+    result_code, response = cjm.request.make_current_user_request(cfg, current_user_url)
+
+    if result_code:
+        return result_code
+
+    current_user_json = response.json()
+
+    return current_user_json["fullName"]
+
+
 def logo(textdoc):
     style = add_style(textdoc, "style")
 
@@ -75,7 +87,7 @@ def logo(textdoc):
     textdoc.text.addElement(logo_frame)
 
 
-def data_table(textdoc, sprint_data):
+def data_table(cfg, textdoc, sprint_data):
     title_style = add_style(textdoc, "title_style")
     title_cell_style = add_style(textdoc, "title_cell_style")
     tab1_w1 = add_style(textdoc, "tab1_w1")
@@ -172,7 +184,7 @@ def data_table(textdoc, sprint_data):
 
     tc2 = TableCell()
     tr.addElement(tc2)
-    p = P(stylename=desc_cell_style, text=" ")
+    p = P(stylename=desc_cell_style, text=get_report_author(cfg))
     tc2.addElement(p)
 
     tr = TableRow()
@@ -393,7 +405,7 @@ def generate(cfg, commitment_json, sprint_data):
     for lines in range(4):
         textdoc.text.addElement(P())
 
-    data_table(textdoc, sprint_data)
+    data_table(cfg, textdoc, sprint_data)
 
     for lines in range(1):
         textdoc.text.addElement(P())
@@ -408,14 +420,14 @@ def generate(cfg, commitment_json, sprint_data):
     textdoc.save("./data/sample_commitment_data.odt")
 
 
-def load_defaults(file_name=DEFAULTS_FILE_NAME):
-    if os.path.exists(file_name):
+def load_defaults(file=DEFAULT_FILE):
+    if os.path.exists(file):
         try:
-            with open(file_name) as defaults_file:
+            with open(file) as defaults_file:
                 defaults = json.load(defaults_file)
         except IOError as e:
             sys.stderr.write(
-                "WARNING: Defaults file ('{0:s}') I/O error\n".format(file_name))
+                "WARNING: Defaults file ('{0:s}') I/O error\n".format(file))
             sys.stderr.write("    {0:s}\n".format(e))
             defaults = {}
     else:
@@ -447,7 +459,6 @@ def main(options):
 
 
 if __name__ == "__main__":
-    sys.stderr.write("TODO: CHANGE DEFAULT_FILE_NAME VARIABLE\n")
     sys.stderr.write("TODO: STYLE MANIPULATION\n")
     sys.stderr.write("TODO: ADD REPORTER - textdoc.meta.addElement(dc.Creator(text=))\n")
     sys.stderr.write("TODO: THINK WHAT TO DO WITH CLIENT FIELD\n")
