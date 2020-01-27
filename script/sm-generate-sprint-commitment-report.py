@@ -221,7 +221,7 @@ def data_table(cfg, textdoc, sprint_data):
     textdoc.text.addElement(table)
 
 
-def summary(textdoc, commitment_json):
+def summary(textdoc):
     title2_style = add_style(textdoc, "title2_style")
     default_bold_style = add_style(textdoc, "default_bold_style")
     default_style = add_style(textdoc, "default_style")
@@ -230,98 +230,146 @@ def summary(textdoc, commitment_json):
     textdoc.text.addElement(h2)
     textdoc.text.addElement(P())
 
-    p = P(stylename=default_bold_style,
-          text=" - The total number of committed story points is " +
-               str(commitment_json["total"]["committed"]) + ".")
+    p = P(stylename=default_style,
+          text=" - The total number of story points originally committed was " + "NUMBER" + ".")
     textdoc.text.addElement(p)
 
-    sprint_capacity = str(999999999999999999999999999999999999)
-    p = P(stylename=default_style, text="     - The sprint capacity is " + sprint_capacity + " story points.")
+    textdoc.text.addElement(P())
+
+    p = P(stylename=default_bold_style,
+          text=" - The number of story points taken for delivery ratio calculation was " + "NUMBER")
+    textdoc.text.addElement(p)
+
+    p = P(stylename=default_style,
+          text="(result of all the drops and extensions)")
+    textdoc.text.addElement(p)
+
+    textdoc.text.addElement(P())
+
+    p = P(stylename=default_style,
+          text=" - The total number of delivered story points was " + "NUMBER")
+    textdoc.text.addElement(p)
+
+    textdoc.text.addElement(P())
+
+    p = P(stylename=default_bold_style,
+          text=" - The sprint delivery ratio is " + "PERCENTAGE")
     textdoc.text.addElement(p)
 
 
 def committed_tasks_list(cfg, textdoc, commitment_json):
-    pass
-    # title2_style = add_style(textdoc, "title2_style")
-    # title_cell_style = add_style(textdoc, "title_cell_style")
-    # desc_cell_style = add_style(textdoc, "desc_cell_style")
-    # tab2_w1 = add_style(textdoc, "tab2_w1")
-    # tab2_w2 = add_style(textdoc, "tab2_w2")
-    # tab2_w3 = add_style(textdoc, "tab2_w3")
-    #
-    # h3 = H(outlinelevel=1, stylename=title2_style, text="Committed Tasks List")
-    # textdoc.text.addElement(h3)
-    # textdoc.text.addElement(P())
-    #
-    # table = Table()
-    # table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w1))
-    # table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w2))
-    # table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w3))
-    #
-    # table_header = TableRow()
-    # table.addElement(table_header)
-    #
-    # tc1_top = TableCell()
-    # table_header.addElement(tc1_top)
-    # p = P(stylename=title_cell_style, text="Task ID")
-    # tc1_top.addElement(p)
-    #
-    # tc2_top = TableCell()
-    # table_header.addElement(tc2_top)
-    # p = P(stylename=title_cell_style, text="Task Title")
-    # tc2_top.addElement(p)
-    #
-    # tc3_top = TableCell()
-    # table_header.addElement(tc3_top)
-    # p = P(stylename=title_cell_style, text="Story Points")
-    # tc3_top.addElement(p)
-    #
-    # rows_containing_data = 1
-    #
-    # for issue in commitment_json["issues"]:
-    #     tr = TableRow()
-    #     table.addElement(tr)
-    #
-    #     commitment_issue_url = cjm.request.make_issue_url(
-    #         cfg, "browse/{0:s}".format(issue["key"]))
-    #
-    #     tc1 = TableCell()
-    #     tr.addElement(tc1)
-    #     p = P()
-    #     a = A(stylename=desc_cell_style, href=commitment_issue_url, text=issue["key"])
-    #     p.addElement(a)
-    #     tc1.addElement(p)
-    #
-    #     tc2 = TableCell()
-    #     tr.addElement(tc2)
-    #     p = P(stylename=desc_cell_style, text=issue["summary"])
-    #     tc2.addElement(p)
-    #
-    #     tc3 = TableCell()
-    #     tr.addElement(tc3)
-    #     p = P(stylename=desc_cell_style, text=issue["story points"])
-    #     tc3.addElement(p)
-    #
-    #     rows_containing_data += 1
-    #
-    # table_footer = TableRow()
-    # table.addElement(table_footer)
-    #
-    # tc1_bottom = TableCell()
-    # table_footer.addElement(tc1_bottom)
-    # p = P(stylename=title_cell_style, text="")
-    # tc1_bottom.addElement(p)
-    #
-    # tc2_bottom = TableCell()
-    # table_footer.addElement(tc2_bottom)
-    # p = P(stylename=title_cell_style, text="Total:")
-    # tc2_bottom.addElement(p)
-    #
-    # tc3_bottom = TableCell(stylename=title_cell_style,
-    #                        formula="SUM(<C2:C" + str(rows_containing_data) + ">)", valuetype="float")
-    # table_footer.addElement(tc3_bottom)
-    #
-    # textdoc.text.addElement(table)
+    title2_style = add_style(textdoc, "title2_style")
+    title_cell_style = add_style(textdoc, "title_cell_style")
+    desc_cell_style = add_style(textdoc, "desc_cell_style")
+    tab2_w1 = add_style(textdoc, "tab2_w1")
+    tab2_w2 = add_style(textdoc, "tab2_w2")
+    tab2_w3 = add_style(textdoc, "tab2_w3")
+    tab2_w4 = add_style(textdoc, "tab2_w4")
+    tab2_w5 = add_style(textdoc, "tab2_w5")
+
+    h3 = H(outlinelevel=1, stylename=title2_style, text="Tasks List")
+    textdoc.text.addElement(h3)
+    textdoc.text.addElement(P())
+
+    table = Table()
+    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w1))
+    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w2))
+    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w3))
+    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w4))
+    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w5))
+
+    table_header = TableRow()
+    table.addElement(table_header)
+
+    tc1_top = TableCell()
+    table_header.addElement(tc1_top)
+    p = P(stylename=title_cell_style, text="Task ID")
+    tc1_top.addElement(p)
+
+    tc2_top = TableCell()
+    table_header.addElement(tc2_top)
+    p = P(stylename=title_cell_style, text="Task Title")
+    tc2_top.addElement(p)
+
+    tc3_top = TableCell()
+    table_header.addElement(tc3_top)
+    p = P(stylename=title_cell_style, text="Committed")
+    tc3_top.addElement(p)
+
+    tc4_top = TableCell()
+    table_header.addElement(tc4_top)
+    p = P(stylename=title_cell_style, text="Delivered")
+    tc4_top.addElement(p)
+
+    tc5_top = TableCell()
+    table_header.addElement(tc5_top)
+    p = P(stylename=title_cell_style, text="Note")
+    tc5_top.addElement(p)
+
+    rows_containing_data = 1
+
+    for issue in commitment_json["issues"]:
+        tr = TableRow()
+        table.addElement(tr)
+
+        commitment_issue_url = cjm.request.make_issue_url(
+            cfg, "browse/{0:s}".format(issue["key"]))
+
+        tc1 = TableCell()
+        tr.addElement(tc1)
+        p = P()
+        a = A(stylename=desc_cell_style, href=commitment_issue_url, text=issue["key"])
+        p.addElement(a)
+        tc1.addElement(p)
+
+        tc2 = TableCell()
+        tr.addElement(tc2)
+        p = P(stylename=desc_cell_style, text=issue["summary"])
+        tc2.addElement(p)
+
+        tc3 = TableCell()
+        tr.addElement(tc3)
+        p = P(stylename=desc_cell_style, text=issue["committed story points"])
+        tc3.addElement(p)
+
+        tc4 = TableCell()
+        tr.addElement(tc4)
+        p = P(stylename=desc_cell_style, text=issue["story points"])
+        tc4.addElement(p)
+
+        tc5 = TableCell()
+        tr.addElement(tc5)
+        p = P(stylename=desc_cell_style, text="TEST")
+        tc5.addElement(p)
+
+        rows_containing_data += 1
+
+    table_footer = TableRow()
+    table.addElement(table_footer)
+
+    tc1_bottom = TableCell()
+    table_footer.addElement(tc1_bottom)
+    p = P(stylename=title_cell_style, text="")
+    tc1_bottom.addElement(p)
+
+    tc2_bottom = TableCell()
+    table_footer.addElement(tc2_bottom)
+    p = P(stylename=title_cell_style, text="Total:")
+    tc2_bottom.addElement(p)
+
+    tc3_bottom = TableCell(stylename=title_cell_style,
+                           formula="SUM(<C2:C" + str(rows_containing_data) + ">)", valuetype="float")
+    table_footer.addElement(tc3_bottom)
+
+    tc4_bottom = TableCell(stylename=title_cell_style,
+                           formula="SUM(<D2:D" + str(rows_containing_data) + ">)", valuetype="float")
+    table_footer.addElement(tc4_bottom)
+
+    tc5_bottom = TableCell(stylename=title_cell_style,
+                           formula="", valuetype="float")
+    table_footer.addElement(tc5_bottom)
+
+    textdoc.text.addElement(table)
 
 
 def add_style(textdoc, name):
@@ -354,15 +402,27 @@ def add_style(textdoc, name):
 
     if name == "tab2_w2":
         tab2_w2 = Style(name="w2", family="table-column")
-        tab2_w2.addElement(TableColumnProperties(columnwidth="12cm"))
+        tab2_w2.addElement(TableColumnProperties(columnwidth="8cm"))
         textdoc.automaticstyles.addElement(tab2_w2)
         return tab2_w2
 
     if name == "tab2_w3":
         tab2_w3 = Style(name="w3", family="table-column")
-        tab2_w3.addElement(TableColumnProperties(columnwidth="3cm"))
+        tab2_w3.addElement(TableColumnProperties(columnwidth="2.5cm"))
         textdoc.automaticstyles.addElement(tab2_w3)
         return tab2_w3
+
+    if name == "tab2_w4":
+        tab2_w4 = Style(name="w4", family="table-column")
+        tab2_w4.addElement(TableColumnProperties(columnwidth="2.5cm"))
+        textdoc.automaticstyles.addElement(tab2_w4)
+        return tab2_w4
+
+    if name == "tab2_w5":
+        tab2_w5 = Style(name="w5", family="table-column")
+        tab2_w5.addElement(TableColumnProperties(columnwidth="2cm"))
+        textdoc.automaticstyles.addElement(tab2_w5)
+        return tab2_w5
 
     # TITLE STYLE
     if name == "title_style":
