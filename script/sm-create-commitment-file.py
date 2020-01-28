@@ -19,7 +19,6 @@ import cjm.schema
 import cjm.sprint
 import cjm.team
 
-
 SPRINT_ARG_NAME = "--by-sprint"
 COMMENT_ARG_NAME = "--by-comment"
 
@@ -109,6 +108,8 @@ def main(options):
     if result_code:
         return result_code
 
+    total_sp = sum([int(issue["story points"]) for issue in issues_all if issue["story points"] is not None])
+
     issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
     for issue in issues_team:
         issue["by sprint"] = True
@@ -139,7 +140,7 @@ def main(options):
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
 
-    commitment = {"issues": issues}
+    commitment = {"total": {"committed": total_sp}, "issues": issues}
 
     commitment_schema = cjm.schema.load(cfg, "commitment.json")
     jsonschema.validate(commitment, commitment_schema)
@@ -148,6 +149,7 @@ def main(options):
         print(json.dumps(commitment, indent=4, sort_keys=False))
     else:
         person_lut = dict((p["account id"], p) for p in team_data["people"])
+
         def __fmt_assignee(issue):
             if issue["assignee id"] is None:
                 return ""

@@ -3,6 +3,16 @@
 
     "type": "object",
     "properties": {
+        "total": {
+            "type": "object",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "committed": { "type":  "integer"}
+                },
+                "required": ["committed"]
+              }
+        },
         "issues": {
             "type": "array",
             "items": {
@@ -30,5 +40,5 @@
               }
         }
     },
-    "required": ["issues"]
+    "required": ["total", "issues"]
 }

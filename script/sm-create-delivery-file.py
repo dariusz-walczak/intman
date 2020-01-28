@@ -120,7 +120,12 @@ def main(options):
         issue["committed story points"] = issue["story points"]
         issue["total story points"] = issue["story points"]
 
-        issue_lut = dict((i["id"], i) for i in issues_com)
+        if issue["status"] == "Done":
+            issue["delivered story points"] = issue["committed story points"]
+        else:
+            issue["delivered story points"] = 0
+
+    issue_lut = dict((i["id"], i) for i in issues_com)
 
     # Request all extension issues and determine their commitment vs total story points:
 
@@ -151,6 +156,7 @@ def main(options):
 
         if result_code:
             return result_code
+
         if not comments:
             issue["committed story points"] = 0
             issue["total story points"] = issue["story points"]
@@ -195,21 +201,22 @@ def main(options):
     delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
 
     report = {
-        "issues": issues,
         "total": {
             "committed": total_committed,
             "delivered": total_delivered
         },
-        "ratio": str(delivery_ratio)
+        "ratio": str(delivery_ratio),
+        "issues": issues,
     }
 
-    report_schema = cjm.schema.load(cfg, "report.json")
-    jsonschema.validate(report, report_schema)
+    delivery_schema = cjm.schema.load(cfg, "delivery.json")
+    jsonschema.validate(report, delivery_schema)
 
     if options.json_output:
         print(json.dumps(report, indent=4, sort_keys=False))
     else:
         person_lut = dict((p["account id"], p) for p in team_data["people"])
+
         def __fmt_assignee(issue):
             if issue["assignee id"] is None:
                 return ""

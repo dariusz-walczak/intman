@@ -1,9 +1,9 @@
 {
-    "start date": "2019-11-25",
-    "end date": "2019-12-08",
-    "name": "OpenNESS WW48-WW49",
-    "id": 18,
-    "comment prefix": "Mobica/2019/H2/ONESS/WW48-WW49",
+    "start date": "2020-02-03",
+    "end date": "2020-02-16",
+    "name": "OpenNESS WW06-WW07",
+    "id": null,
+    "comment prefix": "",
     "project": {
         "key": "OP",
         "name": "OpenNESS"

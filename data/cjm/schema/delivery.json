@@ -2,6 +2,29 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
+        "total": {
+            "items": {
+                "type": "object",
+                "properties": {
+                    "committed": {
+                        "type": "integer"
+                    },
+                    "delivered": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "ratio": {
+            "items": {
+                "type": "object",
+                "properties": {
+                    "ratio": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "issues": {
             "type": "array",
             "items": {
@@ -65,6 +88,16 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "delivered story points": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 },
                 "required": [
@@ -73,29 +106,6 @@
                     "summary",
                     "assignee id"
                 ]
-            }
-        },
-        "total": {
-            "items": {
-                "type": "object",
-                "properties": {
-                    "committed": {
-                        "type": "integer"
-                    },
-                    "delivered": {
-                        "type": "integer"
-                    }
-                }
-            }
-        },
-        "ratio": {
-            "items": {
-                "type": "object",
-                "properties": {
-                    "ratio": {
-                        "type": "string"
-                    }
-                }
             }
         }
     }
