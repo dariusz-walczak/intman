@@ -89,11 +89,17 @@ def main(options):
 
     start_date = determine_start_date(options)
     end_date = start_date + datetime.timedelta(days=options.length-1)
+
+    if cfg["sprint"]["id"] is not None:
+        sprint_id = int(cfg["sprint"]["id"])
+    else:
+        sprint_id = None
+
     sprint = {
         "start date": start_date.isoformat(),
         "end date": end_date.isoformat(),
         "name": cjm.sprint.generate_sprint_name(project_json["name"], start_date, end_date),
-        "id": None,
+        "id": sprint_id,
         "comment prefix": "",
         "project": {
             "key": cfg["project"]["key"],
@@ -116,5 +122,4 @@ def main(options):
 
 
 if __name__ == '__main__':
-    sys.stderr.write("TODO: FILL COMMENT PREFIX WITH DATA - DO NOT REMOVE - FIELD NEEDED\n")
     sys.exit(main(parse_options(sys.argv[1:])))

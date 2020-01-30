@@ -436,7 +436,6 @@ def load_defaults(file=DEFAULT_FILE):
 
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
-
     commitment_json = load_defaults()
 
     commitment_schema = cjm.schema.load(cfg, "commitment.json")

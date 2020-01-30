@@ -112,6 +112,9 @@ def main(options):
     team_schema = cjm.schema.load(cfg, "team.json")
     jsonschema.validate(people, team_schema)
 
+    if options.json_output:
+        print(json.dumps(people, indent=4, sort_keys=False))
+
     return cjm.codes.NO_ERROR
 
 
