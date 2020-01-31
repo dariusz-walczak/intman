@@ -114,13 +114,12 @@ def main(options):
     if result_code:
         return result_code
 
-    total_sp = sum([int(issue["story points"]) for issue in issues_all if issue["story points"] is not None])
-
     issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
     for issue in issues_team:
         issue["by sprint"] = True
         issue["by comment"] = False
 
+    total_sp = sum([int(i["story points"]) for i in issues_team if i["story points"] is not None])
     issue_lut = dict((i["id"], i) for i in issues_team)
 
     # Retrieve issues with the commitment comment added:
