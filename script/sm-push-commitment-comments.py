@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# Standard library imports
 import sys
+
+# Third party imports
+import jsonschema
+
+# Project imports
 import cjm.cfg
 import cjm.schema
 import cjm.codes
 import cjm.sprint
 import cjm.commitment
 import cjm.request
+
 
 _COMMITMENT_PREFIX_ARG_NAME = "--prefix"
 
@@ -25,6 +33,9 @@ def main(options):
             "ERROR: Sprint data file ('{0:s}') I/O error\n".format(options.sprint_file))
         sys.stderr.write("    {0}\n".format(e))
         return cjm.codes.FILESYSTEM_ERROR
+
+    sprint_schema = cjm.schema.load(cfg, "sprint.json")
+    jsonschema.validate(sprint_data, sprint_schema)
 
     cfg["sprint"]["id"] = sprint_data.get("id")
     cfg["project"]["key"] = sprint_data["project"]["key"]
@@ -46,6 +57,9 @@ def main(options):
         sys.stderr.write("    {0}\n".format(e))
         return cjm.codes.FILESYSTEM_ERROR
 
+    commitment_schema = cjm.schema.load(cfg, "commitment.json")
+    jsonschema.validate(commitment_data, commitment_schema)
+
     # Retrieve all issues with the commitment comment added:
 
     result_code, all_issues_with_comments = cjm.sprint.request_issues_by_comment(
@@ -63,9 +77,10 @@ def main(options):
 
     for issue in commitment_issues:
         if issue["id"] in ids_commitment_issues_without_comments:
-            comment_url = cjm.request.make_comment_url(cfg, str(issue["id"]))
-            cjm.request.make_comment_post_request(cfg, comment_url,
-                                                  {"body": "{0:s}/Committed".format(sprint_data["comment prefix"])})
+            comment_url = cjm.request.make_cj_url(cfg, "issue", str(issue["id"]), "comment")
+            body = {"body": "{0:s}/Committed".format(sprint_data["comment prefix"])}
+            request = cjm.request.make_cj_post_request(cfg, comment_url, body)
+            print(request)
 
     return cjm.codes.NO_ERROR
 

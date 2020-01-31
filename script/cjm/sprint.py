@@ -61,8 +61,7 @@ def request_issues_by_sprint(cfg):
 def request_issues_by_comment(cfg, comment):
     issues = []
 
-    sprint_issues_url = cjm.request.make_cj_url(
-        cfg, "search".format(cfg["sprint"]["id"]))
+    sprint_issues_url = cjm.request.make_cj_url(cfg, "search".format(cfg["sprint"]["id"]))
 
     jql = 'project = "{0:s}" AND comment ~ "{1:s}"'.format(cfg["project"]["key"], comment)
     start_at = 0

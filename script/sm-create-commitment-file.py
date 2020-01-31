@@ -73,6 +73,9 @@ def main(options):
         sys.stderr.write("    {0}\n".format(e))
         return cjm.codes.FILESYSTEM_ERROR
 
+    sprint_schema = cjm.schema.load(cfg, "sprint.json")
+    jsonschema.validate(sprint_data, sprint_schema)
+
     cfg["sprint"]["id"] = sprint_data.get("id")
     cfg["project"]["key"] = sprint_data["project"]["key"]
 
@@ -92,6 +95,9 @@ def main(options):
             "ERROR: Team data file ('{0:s}') I/O error\n".format(options.team_file))
         sys.stderr.write("    {0}\n".format(e))
         return cjm.codes.FILESYSTEM_ERROR
+
+    team_schema = cjm.schema.load(cfg, "team.json")
+    jsonschema.validate(team_data, team_schema)
 
     # Determine the story points field id:
 

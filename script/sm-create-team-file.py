@@ -77,8 +77,8 @@ def main(options):
         acc_id = user["accountId"]
         code = str(firstname[0] + lastname[0]).upper()
 
-        user_url = cjm.request.make_user_url(cfg, f"user?accountId={acc_id}")
-        result_code, response = cjm.request.make_user_request(cfg, user_url)
+        user_url = cjm.request.make_cj_url(cfg, f"user?accountId={acc_id}")
+        result_code, response = cjm.request.make_cj_request(cfg, user_url)
 
         if result_code:
             return result_code

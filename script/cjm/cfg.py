@@ -3,8 +3,6 @@ import argparse
 import copy
 import os.path
 import sys
-
-# Third party imports
 import json
 
 
@@ -36,23 +34,27 @@ def init_defaults():
         "issue": {
             "include unassigned": False
         },
+        "client": {
+            "name": None
+        },
         "project": {
             "key": None
         },
         "path": {
-            "data": None
+            "data": None,
+            "output": None
         }
     }
 
 
-def load_defaults(file=DEFAULT_FILE):
-    if os.path.exists(file):
+def load_defaults(file_name=DEFAULT_FILE):
+    if os.path.exists(file_name):
         try:
-            with open(file) as defaults_file:
+            with open(file_name) as defaults_file:
                 defaults = json.load(defaults_file)
         except IOError as e:
             sys.stderr.write(
-                "WARNING: Defaults file ('{0:s}') I/O error\n".format(file))
+                "WARNING: Defaults file ('{0:s}') I/O error\n".format(file_name))
             sys.stderr.write("    {0:s}\n".format(e))
             defaults = {}
     else:
