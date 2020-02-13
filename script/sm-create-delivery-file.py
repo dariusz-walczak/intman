@@ -58,12 +58,14 @@ def create_date_from_string(str_date):
 def create_filter(date):
 
     def filter(issue):
-        if issue["resolution date"] is None:
+        if issue["resolution date"] == '':
+            print(issue)
             return False
         issue_resolve_date = create_date_from_string(issue["resolution date"][:10])
         if issue_resolve_date < date:
             return True
         else:
+            print(issue)
             return False
 
     return filter
@@ -140,11 +142,6 @@ def main(options):
     if result_code:
         return result_code
 
-    sprint_end_date = create_date_from_string(sprint_data["end date"])
-    sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
-
-    check_if_in_sprint = create_filter(sprint_end_date)
-    issues_com = list(filter(check_if_in_sprint, issues_com))
 
     for issue in issues_com:
 
@@ -229,10 +226,21 @@ def main(options):
     issues_team = cjm.team.filter_team_issues(cfg, issues_ext, team_data)
     issues_new = [i for i in issues_team if i["id"] not in issue_lut]
 
+    for iss in issues_new:
+        iss["Extended"] = True
+    for iss in issues_com:
+        iss["Extended"] = False
+
     issues = sorted(issues_com + issues_new, key=lambda i: i["id"])
 
+
+    sprint_end_date = create_date_from_string(sprint_data["end date"])
+    sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
+
+    check_if_in_sprint = create_filter(sprint_end_date)
+
     total_committed = sum([i["committed story points"] for i in issues])
-    total_delivered = sum([i["total story points"] for i in issues if i["status"] == "Done"])
+    total_delivered = sum([i["total story points"] for i in issues if i["status"] == "Done" and check_if_in_sprint(i)])
     delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
     delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
 
