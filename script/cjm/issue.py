@@ -65,7 +65,8 @@ def extract_issue_data(cfg, issue):
         "summary": issue["fields"]["summary"],
         "assignee id": __account_id_cb(issue["fields"]["assignee"]),
         "story points": issue["fields"].get(cfg["jira"]["fields"]["story points"]),
-        "status": issue["fields"]["status"]["name"]
+        "status": issue["fields"]["status"]["name"],
+        "resolution date": issue["fields"]["resolutiondate"]
     }
 
 

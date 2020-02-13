@@ -6,6 +6,7 @@ import decimal
 import json
 import re
 import sys
+import datetime
 
 # Third party imports
 import jsonschema
@@ -49,6 +50,23 @@ def parse_options(args):
 
     return parser.parse_args(args)
 
+def create_date_from_string(str_date):
+    year, month, day = [int(x) for x in str_date.split("-")]
+    date_value = datetime.date(year, month, day)
+    return date_value
+
+def create_filter(date):
+
+    def filter(issue):
+        if issue["resolution date"] is None:
+            return False
+        issue_resolve_date = create_date_from_string(issue["resolution date"][:10])
+        if issue_resolve_date < date:
+            return True
+        else:
+            return False
+
+    return filter
 
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
@@ -70,6 +88,7 @@ def main(options):
 
     cfg["sprint"]["id"] = sprint_data.get("id")
     cfg["project"]["key"] = sprint_data["project"]["key"]
+
 
     if cfg["sprint"]["id"] is None:
         sys.stderr.write(
@@ -121,7 +140,14 @@ def main(options):
     if result_code:
         return result_code
 
+    sprint_end_date = create_date_from_string(sprint_data["end date"])
+    sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
+
+    check_if_in_sprint = create_filter(sprint_end_date)
+    issues_com = list(filter(check_if_in_sprint, issues_com))
+
     for issue in issues_com:
+
         if issue["story points"] is not None:
             issue["story points"] = int(issue["story points"])
         else:
@@ -140,6 +166,7 @@ def main(options):
 
     result_code, issues_ext = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
+
 
     if result_code:
         return result_code
