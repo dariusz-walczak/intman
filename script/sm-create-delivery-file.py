@@ -7,6 +7,7 @@ import json
 import re
 import sys
 import datetime
+import bisect
 
 # Third party imports
 import jsonschema
@@ -59,13 +60,11 @@ def create_filter(date):
 
     def filter(issue):
         if issue["resolution date"] == '':
-            print(issue)
             return False
         issue_resolve_date = create_date_from_string(issue["resolution date"][:10])
         if issue_resolve_date < date:
             return True
         else:
-            print(issue)
             return False
 
     return filter
@@ -233,6 +232,27 @@ def main(options):
 
     issues = sorted(issues_com + issues_new, key=lambda i: i["id"])
 
+    # request droped issues and change story point value to 0
+    result_code, issues_drp = cjm.sprint.request_issues_by_comment(
+        cfg, "{0:s}/Dropped".format(sprint_data["comment prefix"]))
+
+    if result_code:
+        return result_code
+
+    for iss in issues_drp:
+        dropped_issue = bisect.bisect([i["id"] for i in issues], iss["id"])
+
+        if dropped_issue > len(issues):
+            sys.stderr.write(
+                "WARNING: Issue {0:s} has dropped comment for this sprint,"
+                " but it doesn't appear to be in commited or extended issues\n"
+                "".format(iss["id"]))
+        else:
+            issues[dropped_issue-1]["story points"] = 0
+            issues[dropped_issue-1]["total story points"] = 0
+            issues[dropped_issue-1]["delivered story points"] = 0
+            issues[dropped_issue-1]["status"] += "/Dropped"
+    
 
     sprint_end_date = create_date_from_string(sprint_data["end date"])
     sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
