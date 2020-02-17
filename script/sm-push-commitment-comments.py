@@ -18,6 +18,24 @@ import cjm.request
 
 _COMMITMENT_PREFIX_ARG_NAME = "--prefix"
 
+def make_comment_body(comment_text):
+    return {
+          "body": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+                {
+                "type": "paragraph",
+                "content": [
+                    {
+                    "text": comment_text,
+                    "type": "text"
+                    }
+                    ] 
+                }
+              ]
+            }
+          }
 
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
@@ -63,7 +81,7 @@ def main(options):
     # Retrieve all issues with the commitment comment added:
 
     result_code, all_issues_with_comments = cjm.sprint.request_issues_by_comment(
-        cfg, "{0:s}/Committed".format(sprint_data["comment prefix"]))
+        cfg, "{0:s}/Commited".format(sprint_data["comment prefix"]))
 
     if result_code:
         return result_code
@@ -78,9 +96,8 @@ def main(options):
     for issue in commitment_issues:
         if issue["id"] in ids_commitment_issues_without_comments:
             comment_url = cjm.request.make_cj_url(cfg, "issue", str(issue["id"]), "comment")
-            body = {"body": "{0:s}/Committed".format(sprint_data["comment prefix"])}
+            body = make_comment_body(sprint_data["comment prefix"] + "/Committed")
             request = cjm.request.make_cj_post_request(cfg, comment_url, body)
-            print(request)
 
     return cjm.codes.NO_ERROR
 
