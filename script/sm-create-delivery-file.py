@@ -49,25 +49,32 @@ def parse_options(args):
             " by the {1:s} schema"
             "".format(cjm.SM_CREATE_COMMITMENT_FILE, cjm.schema.make_subpath("commitment.json"))))
 
+    parser.add_argument(
+        "--consider-delivery-comment", action="store_true", dest="delivery_comment",
+        help="Add to raport ticket closed after sprint but with comment /Delivered")
     return parser.parse_args(args)
 
 def create_date_from_string(str_date):
     year, month, day = [int(x) for x in str_date.split("-")]
-    date_value = datetime.date(year, month, day)
-    return date_value
+    return datetime.date(year, month, day)
 
-def create_filter(date):
 
-    def filter(issue):
-        if issue["resolution date"] == '':
-            return False
-        issue_resolve_date = create_date_from_string(issue["resolution date"][:10])
-        if issue_resolve_date < date:
-            return True
-        else:
-            return False
+def check_if_in_sprint(date, issue, consider_comment, delivered_issues):
 
-    return filter
+    if issue["resolution date"] == None:
+        return False
+
+    issue_resolve_date = create_date_from_string(issue["resolution date"][:10])
+    if issue_resolve_date < date:
+        return True
+    else:
+        if consider_comment and (len(delivered_issues) > 0):
+            for iss in delivered_issues: 
+                if iss["id"] == issue["id"]:
+                    return True
+        
+    return False
+
 
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
@@ -257,10 +264,18 @@ def main(options):
     sprint_end_date = create_date_from_string(sprint_data["end date"])
     sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
 
-    check_if_in_sprint = create_filter(sprint_end_date)
-
     total_committed = sum([i["committed story points"] for i in issues])
-    total_delivered = sum([i["total story points"] for i in issues if i["status"] == "Done" and check_if_in_sprint(i)])
+
+    issues_delivered = []
+    if options.delivery_comment:
+        result_code, issues_delivered = cjm.sprint.request_issues_by_comment(
+            cfg, "{0:s}/Delivered".format(sprint_data["comment prefix"]))
+        if result_code:
+            return result_code
+
+    total_delivered = sum([i["total story points"] for i in issues if i["status"] == "Done" and 
+        check_if_in_sprint(sprint_end_date, i,options.delivery_comment, issues_delivered)])
+        
     delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
     delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
 
