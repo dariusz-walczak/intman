@@ -137,7 +137,6 @@ def main(options):
         else:
             issue["story points"] = 0
         issue["committed story points"] = issue["story points"]
-        issue["total story points"] = issue["story points"]
 
         if issue["status"] == "Done":
             issue["delivered story points"] = issue["committed story points"]
@@ -146,7 +145,7 @@ def main(options):
 
     issue_lut = dict((i["id"], i) for i in issues_com)
 
-    # Request all extension issues and determine their commitment vs total story points:
+    # Request all extension issues and determine their commitment story points:
 
     result_code, issues_ext = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
@@ -179,7 +178,6 @@ def main(options):
 
         if not comments:
             issue["committed story points"] = 0
-            issue["total story points"] = issue["story points"]
         else:
             if len(set(comments)) > 1:
                 sys.stderr.write(
@@ -196,7 +194,6 @@ def main(options):
                     " and the committed value will be assumed to be 0\n"
                     "".format(issue["key"], issue["story points"], sp_total))
                 issue["committed story points"] = 0
-                issue["total story points"] = issue["story points"]
             elif sp_committed > sp_total:
                 sys.stderr.write(
                     "WARNING: Regarding issue {0:s}: According to the sprint extension comment,"
@@ -205,10 +202,8 @@ def main(options):
                     " will be used in both cases\n"
                     "".format(issue["key"], sp_committed, sp_total))
                 issue["committed story points"] = sp_total
-                issue["total story points"] = sp_total
             else:
                 issue["committed story points"] = sp_committed
-                issue["total story points"] = sp_total
 
     issues_team = cjm.team.filter_team_issues(cfg, issues_ext, team_data)
     issues_new = [i for i in issues_team if i["id"] not in issue_lut]
@@ -236,9 +231,7 @@ def main(options):
                 " but it doesn't appear to be in commited or extended issues\n"
                 "".format(iss["id"]))
         else:
-            issues[dropped_issue-1]["story points"] = 0
             issues[dropped_issue-1]["committed story points"] = 0
-            issues[dropped_issue-1]["total story points"] = 0
             issues[dropped_issue-1]["delivered story points"] = 0
             issues[dropped_issue-1]["status"] += "/Dropped"
     
@@ -270,7 +263,7 @@ def main(options):
                 return True
         return False
 
-    total_delivered = sum([i["total story points"] for i in issues if __issue_done(i)])
+    total_delivered = sum([i["story points"] for i in issues if __issue_done(i)])
         
     delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
     delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
@@ -306,9 +299,9 @@ def main(options):
 
         print(tabulate.tabulate(
             [(i["id"], i["key"], i["summary"], __fmt_assignee(i),
-              i["committed story points"], i["total story points"], i["status"], i["delivered"])
+              i["committed story points"], i["story points"], i["status"], i["delivered"])
              for i in issues],
-            headers=["Id", "Key", "Summary", "Assignee", "Committed", "Total", "Status", "Delivered"],
+            headers=["Id", "Key", "Summary", "Assignee", "Committed", "Story Points", "Status", "Delivered"],
             tablefmt="orgtbl"))
 
     return cjm.codes.NO_ERROR

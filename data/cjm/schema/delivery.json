@@ -49,16 +49,6 @@
                     "assignee id": {
                         "type": "string"
                     },
-                    "story points": {
-                        "anyOf": [
-                            {
-                                "type": "integer"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ]
-                    },
                     "status": {
                         "anyOf": [
                             {
@@ -69,7 +59,7 @@
                             }
                         ]
                     },
-                    "committed story points": {
+                    "story points": {
                         "anyOf": [
                             {
                                 "type": "integer"
@@ -79,7 +69,7 @@
                             }
                         ]
                     },
-                    "total story points": {
+                    "committed story points": {
                         "anyOf": [
                             {
                                 "type": "integer"
@@ -104,7 +94,9 @@
                     "id",
                     "key",
                     "summary",
-                    "assignee id"
+                    "assignee id",
+                    "story points",
+                    "committed story points"
                 ]
             }
         }
