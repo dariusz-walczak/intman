@@ -12,6 +12,7 @@ import bisect
 # Third party imports
 import jsonschema
 import tabulate
+import dateutil.parser
 
 # Project imports
 import cjm
@@ -54,26 +55,6 @@ def parse_options(args):
         help="Add to raport ticket closed after sprint but with comment /Delivered")
     return parser.parse_args(args)
 
-def create_date_from_string(str_date):
-    year, month, day = [int(x) for x in str_date.split("-")]
-    return datetime.date(year, month, day)
-
-
-def check_if_in_sprint(date, issue, consider_comment, delivered_issues):
-
-    if issue["resolution date"] == None:
-        return False
-
-    issue_resolve_date = create_date_from_string(issue["resolution date"][:10])
-    if issue_resolve_date < date:
-        return True
-    else:
-        if consider_comment and (len(delivered_issues) > 0):
-            for iss in delivered_issues: 
-                if iss["id"] == issue["id"]:
-                    return True
-        
-    return False
 
 
 def main(options):
@@ -233,9 +214,9 @@ def main(options):
     issues_new = [i for i in issues_team if i["id"] not in issue_lut]
 
     for iss in issues_new:
-        iss["Extended"] = True
+        iss["extended"] = True
     for iss in issues_com:
-        iss["Extended"] = False
+        iss["extended"] = False
 
     issues = sorted(issues_com + issues_new, key=lambda i: i["id"])
 
@@ -256,12 +237,13 @@ def main(options):
                 "".format(iss["id"]))
         else:
             issues[dropped_issue-1]["story points"] = 0
+            issues[dropped_issue-1]["committed story points"] = 0
             issues[dropped_issue-1]["total story points"] = 0
             issues[dropped_issue-1]["delivered story points"] = 0
             issues[dropped_issue-1]["status"] += "/Dropped"
     
 
-    sprint_end_date = create_date_from_string(sprint_data["end date"])
+    sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
     sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
 
     total_committed = sum([i["committed story points"] for i in issues])
@@ -273,11 +255,29 @@ def main(options):
         if result_code:
             return result_code
 
-    total_delivered = sum([i["total story points"] for i in issues if i["status"] == "Done" and 
-        check_if_in_sprint(sprint_end_date, i,options.delivery_comment, issues_delivered)])
+    delivered_issues_ids = [i["id"] for i in issues_delivered]
+    def __issue_done(issue):
+        if issue["status"] != "Done":
+            return False
+        if issue["resolution date"] == None:
+            return False
+
+        issue_resolve_date = dateutil.parser.parse(issue["resolution date"]).date()
+        if issue_resolve_date < sprint_end_date:
+            return True
+        else:
+            if options.delivery_comment and issue["id"] in delivered_issues_ids:
+                return True
+        return False
+
+    total_delivered = sum([i["total story points"] for i in issues if __issue_done(i)])
         
     delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
     delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
+
+    for i in issues:
+        i["delivered"]= (
+                i["status"] == "Done" and __issue_done(i))
 
     report = {
         "total": {
@@ -306,9 +306,9 @@ def main(options):
 
         print(tabulate.tabulate(
             [(i["id"], i["key"], i["summary"], __fmt_assignee(i),
-              i["committed story points"], i["total story points"], i["status"])
+              i["committed story points"], i["total story points"], i["status"], i["delivered"])
              for i in issues],
-            headers=["Id", "Key", "Summary", "Assignee", "Committed", "Total", "Status"],
+            headers=["Id", "Key", "Summary", "Assignee", "Committed", "Total", "Status", "Delivered"],
             tablefmt="orgtbl"))
 
     return cjm.codes.NO_ERROR
