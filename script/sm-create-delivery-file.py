@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
+import copy
 import decimal
 import json
 import re
@@ -55,6 +56,30 @@ def parse_options(args):
         help="Add to raport ticket closed after sprint but with comment /Delivered")
     return parser.parse_args(args)
 
+
+def _augment_issue_data(issue):
+    issue = copy.copy(issue)
+    points = issue.get("story points")
+    points = 0 if points is None else int(points)
+    issue["story points"] = issue["committed story points"] = points
+    return issue
+
+
+def _retrieve_issues(cfg, issue_keys):
+    result_code, issues = cjm.issue.request_issues_by_keys(cfg, issue_keys)
+
+    if result_code:
+        return result_code
+
+    response_keys = set([i["key"] for i in issues])
+    request_keys = set(issue_keys)
+
+    if response_keys != request_keys:
+        sys.stderr.write(
+            "WARNING: Following issues were requested but not included in the response ({0:s})\n"
+            "".format(", ".join(sorted(request_keys-response_keys))))
+
+    return cjm.codes.NO_ERROR, [_augment_issue_data(i) for i in issues]
 
 
 def main(options):
@@ -123,21 +148,12 @@ def main(options):
 
     # Request all committed issues:
 
-    result_code, issues_com = cjm.issue.request_issues_by_keys(
-        cfg, [i["key"] for i in commitment_data["issues"]])
+    result_code, issues_com = _retrieve_issues(cfg, [i["key"] for i in commitment_data["issues"]])
 
     if result_code:
         return result_code
 
-
     for issue in issues_com:
-
-        if issue["story points"] is not None:
-            issue["story points"] = int(issue["story points"])
-        else:
-            issue["story points"] = 0
-        issue["committed story points"] = issue["story points"]
-
         if issue["status"] == "Done":
             issue["delivered story points"] = issue["committed story points"]
         else:
@@ -149,7 +165,6 @@ def main(options):
 
     result_code, issues_ext = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
-
 
     if result_code:
         return result_code
