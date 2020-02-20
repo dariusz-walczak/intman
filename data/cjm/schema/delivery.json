@@ -88,6 +88,14 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "income": {
+                        "type": "string",
+                        "enum": ["commit", "extend"]
+                    },
+                    "outcome": {
+                        "type": "string",
+                        "enum": ["open", "done", "drop"]
                     }
                 },
                 "required": [
@@ -96,7 +104,10 @@
                     "summary",
                     "assignee id",
                     "story points",
-                    "committed story points"
+                    "committed story points",
+                    "delivered story points",
+                    "income",
+                    "outcome"
                 ]
             }
         }

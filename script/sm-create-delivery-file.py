@@ -57,13 +57,63 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def _augment_issue_data(issue):
-    issue = copy.copy(issue)
-    points = issue.get("story points")
-    points = 0 if points is None else int(points)
-    issue["story points"] = issue["committed story points"] = points
-    return issue
+def _make_augment_issue_cb(cfg, extended, sprint_data=None):
+    if extended:
+        ext_comment_re = re.compile(
+            r"{0:s}/Extended \((?P<committed>[0-9]+)/(?P<deliverable>[0-9]+)\)"
+            "".format(re.escape(sprint_data["comment prefix"]))) if extended else None
+        assert sprint_data is not None
 
+    def __retrieve_ext_committed_sps(issue):
+        result_code, comments = \
+            cjm.issue.request_issue_comments_by_regexp(cfg, issue["key"], ext_comment_re)
+
+        if result_code:
+            raise cjm.codes.CjmError(result_code)
+
+        if not comments:
+            return 0
+        else:
+            if len(set(comments)) > 1:
+                sys.stderr.write(
+                    "WARNING: Issue '{0:s}' has more than one sprint extension comment. Only"
+                    " the first meaningful one will be used. Delete all erroneous comments"
+                    " for the sprint '{1:s}'\n"
+                    "".format(issue["key"], sprint_data["comment prefix"]))
+            sp_committed = int(comments[0].group("committed"))
+            sp_deliverable = int(comments[0].group("deliverable"))
+            if sp_deliverable != issue["story points"]:
+                sys.stderr.write(
+                    "WARNING: Regarding issue {0:s}: Story point value inconsistency between"
+                    " the story points field ({1:d}) and the sprint extension comment"
+                    " ({2:d}/{3:d}). The value taken from the story points field will be used"
+                    " for reporting purposes and the committed value will be assumed to be 0\n"
+                    "".format(issue["key"], issue["story points"], sp_committed, sp_deliverable))
+                return 0
+            elif sp_committed > sp_deliverable:
+                sys.stderr.write(
+                    "WARNING: Regarding issue {0:s}: According to the sprint extension"
+                    " comment, the number of committed story points ({1:d}) is greater than"
+                    " the number of deliverable story points ({2:d}). The deliverable number"
+                    " of story points will be used in both cases\n"
+                    "".format(issue["key"], sp_committed, sp_deliverable))
+                return sp_deliverable
+            else:
+                return sp_committed
+
+    def __augment_issue_cb(issue):
+        issue = copy.copy(issue)
+        points = issue.get("story points")
+        points = 0 if points is None else int(points)
+        issue["story points"] = points
+        issue["dropped"] = False
+        issue["extended"] = extended
+        issue["committed story points"] = (
+            __retrieve_ext_committed_sps(issue) if extended else points)
+        issue["delivered story points"] = -1
+        return issue
+
+    return __augment_issue_cb
 
 def _retrieve_issues(cfg, issue_keys):
     result_code, issues = cjm.issue.request_issues_by_keys(cfg, issue_keys)
@@ -79,7 +129,36 @@ def _retrieve_issues(cfg, issue_keys):
             "WARNING: Following issues were requested but not included in the response ({0:s})\n"
             "".format(", ".join(sorted(request_keys-response_keys))))
 
-    return cjm.codes.NO_ERROR, [_augment_issue_data(i) for i in issues]
+    augment_cb = _make_augment_issue_cb(cfg, False)
+    return cjm.codes.NO_ERROR, [augment_cb(i) for i in issues]
+
+
+def _retrieve_extension_issues(cfg, sprint_data, team_data):
+    result_code, issues = cjm.sprint.request_issues_by_comment(
+        cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
+
+    if result_code:
+        raise cjm.codes.CjmError(result_code)
+
+    augment_cb = _make_augment_issue_cb(cfg, True, sprint_data)
+    return [augment_cb(i) for i in cjm.team.filter_team_issues(cfg, issues, team_data)]
+
+
+def _join_issue_lists(issues_com, issues_ext):
+    com_keys = [i["key"] for i in issues_com]
+
+    def __ext_issue_uniq(issue):
+        if issue["key"] in com_keys:
+            sys.stderr.write(
+                "WARNING: Issue '{0:s}' was found in the commitment data file and at the same"
+                " time it was found out to be marked with sprint extension comment. The comment"
+                " will be ignored\n".format(issue["key"]))
+            return False
+        else:
+            return True
+
+    return issues_com + [i for i in issues_ext if __ext_issue_uniq(i)]
+
 
 
 def main(options):
@@ -153,84 +232,13 @@ def main(options):
     if result_code:
         return result_code
 
-    for issue in issues_com:
-        if issue["status"] == "Done":
-            issue["delivered story points"] = issue["committed story points"]
-        else:
-            issue["delivered story points"] = 0
-
-    issue_lut = dict((i["id"], i) for i in issues_com)
-
     # Request all extension issues and determine their commitment story points:
 
-    result_code, issues_ext = cjm.sprint.request_issues_by_comment(
-        cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
+    issues_ext = _retrieve_extension_issues(cfg, sprint_data, team_data)
 
-    if result_code:
-        return result_code
+    issues = sorted(_join_issue_lists(issues_com, issues_ext), key=lambda i: i["id"])
 
-    for issue in issues_ext:
-        if issue["id"] in issue_lut:
-            sys.stderr.write(
-                "WARNING: Issue '{0:s}' was found in the commitment data file and at the same"
-                " time it was found out to be marked with sprint extension comment. The comment"
-                " will be ignored\n".format(issue["key"]))
-            continue
-
-        if issue["story points"] is not None:
-            issue["story points"] = int(issue["story points"])
-        else:
-            issue["story points"] = 0
-
-        re2 = re.compile(
-            r"{0:s}/Extended \((?P<committed>[0-9]+)/(?P<total>[0-9]+)\)"
-            "".format(re.escape(sprint_data["comment prefix"])))
-        result_code, comments = cjm.issue.request_issue_comments_by_regexp(
-            cfg, issue["key"], re2)
-
-        if result_code:
-            return result_code
-
-        if not comments:
-            issue["committed story points"] = 0
-        else:
-            if len(set(comments)) > 1:
-                sys.stderr.write(
-                    "WARNING: Issue '{0:s}' has more than one sprint extension comment. Only the"
-                    " first meaningful one will be used. Delete all erroneous comments for the"
-                    " sprint '{1:s}'\n".format(issue["key"], sprint_data["comment prefix"]))
-            sp_committed = int(comments[0].group("committed"))
-            sp_total = int(comments[0].group("total"))
-            if sp_total != issue["story points"]:
-                sys.stderr.write(
-                    "WARNING: Regarding issue {0:s}: Story point value inconsistency between the"
-                    " story points field ({1:d}) and the sprint extension comment ({2:d}). The"
-                    " value taken from the story points field will be used for reporting purposes"
-                    " and the committed value will be assumed to be 0\n"
-                    "".format(issue["key"], issue["story points"], sp_total))
-                issue["committed story points"] = 0
-            elif sp_committed > sp_total:
-                sys.stderr.write(
-                    "WARNING: Regarding issue {0:s}: According to the sprint extension comment,"
-                    " the number of committed story points ({1:d}) is greater than the total"
-                    " number of deliverable story points ({2:d}). The total number of story points"
-                    " will be used in both cases\n"
-                    "".format(issue["key"], sp_committed, sp_total))
-                issue["committed story points"] = sp_total
-            else:
-                issue["committed story points"] = sp_committed
-
-    issues_team = cjm.team.filter_team_issues(cfg, issues_ext, team_data)
-    issues_new = [i for i in issues_team if i["id"] not in issue_lut]
-
-    for iss in issues_new:
-        iss["extended"] = True
-    for iss in issues_com:
-        iss["extended"] = False
-
-    issues = sorted(issues_com + issues_new, key=lambda i: i["id"])
-
-    # request droped issues and change story point value to 0
+    # Request dropped issues and change story point value to 0
     result_code, issues_drp = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Dropped".format(sprint_data["comment prefix"]))
 
@@ -246,10 +254,8 @@ def main(options):
                 " but it doesn't appear to be in commited or extended issues\n"
                 "".format(iss["id"]))
         else:
-            issues[dropped_issue-1]["committed story points"] = 0
-            issues[dropped_issue-1]["delivered story points"] = 0
-            issues[dropped_issue-1]["status"] += "/Dropped"
-    
+            issues[dropped_issue-1]["dropped"] = True
+
 
     sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
     sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
@@ -265,27 +271,41 @@ def main(options):
 
     delivered_issues_ids = [i["id"] for i in issues_delivered]
     def __issue_done(issue):
-        if issue["status"] != "Done":
-            return False
-        if issue["resolution date"] == None:
+        if options.delivery_comment and issue["id"] in delivered_issues_ids:
+            return True
+
+        if issue["status"] != "Done" or issue["resolution date"] is None:
             return False
 
         issue_resolve_date = dateutil.parser.parse(issue["resolution date"]).date()
         if issue_resolve_date < sprint_end_date:
             return True
         else:
-            if options.delivery_comment and issue["id"] in delivered_issues_ids:
-                return True
-        return False
+            return False
 
     total_delivered = sum([i["story points"] for i in issues if __issue_done(i)])
-        
+
     delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
     delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
 
-    for i in issues:
-        i["delivered"]= (
-                i["status"] == "Done" and __issue_done(i))
+    # Determine delivered story points
+
+    for issue in issues:
+        issue["delivered"] = __issue_done(issue)
+
+        if issue["dropped"]:
+            issue["committed story points"] = 0
+            issue["delivered story points"] = 0
+            issue["outcome"] = "drop"
+        elif issue["delivered"]:
+            issue["delivered story points"] = issue["story points"]
+            issue["outcome"] = "done"
+        else:
+            issue["delivered story points"] = 0
+            issue["outcome"] = "open"
+
+        issue["income"] = "extend" if issue["extended"] else "commit"
+
 
     report = {
         "total": {
@@ -314,9 +334,11 @@ def main(options):
 
         print(tabulate.tabulate(
             [(i["id"], i["key"], i["summary"], __fmt_assignee(i),
-              i["committed story points"], i["story points"], i["status"], i["delivered"])
+              i["committed story points"], i["delivered story points"], i["status"],
+              i["income"], i["outcome"], i["extended"], i["delivered"], i["dropped"])
              for i in issues],
-            headers=["Id", "Key", "Summary", "Assignee", "Committed", "Story Points", "Status", "Delivered"],
+            headers=["Id", "Key", "Summary", "Assignee", "Committed", "Delivered",
+                     "Current Status", "Income", "Outcome", "Extended", "Delivered", "Dropped"],
             tablefmt="orgtbl"))
 
     return cjm.codes.NO_ERROR
