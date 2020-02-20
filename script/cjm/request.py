@@ -87,7 +87,7 @@ def make_cj_post_request(cfg, url, json):
         url, json=json,
         auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"]))
 
-    if response.status_code != 200:
+    if not response.ok:
         sys.stderr.write(
             "ERROR: The Jira API request ('{0:s}') failed with code {1:d}\n"
             "".format(url, response.status_code))

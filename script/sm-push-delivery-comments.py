@@ -33,6 +33,12 @@ def parse_options(args):
             "Prefix to which the empty comment prefix will be changed{0:s}"
             "".format(cjm.cfg.fmt_dft(default_commitment_prefix))))
 
+    parser.add_argument('--verbose', '-v', action='count', default=0, help="Verbose")
+
+    parser.add_argument(
+            "--preview", action="store_true", dest="preview",
+            help="Dont push comments but print whats about to happen to std output")
+
     parser.add_argument(
         "sprint_file", action="store",
         help=(
@@ -49,6 +55,25 @@ def parse_options(args):
 
     return parser.parse_args(args)
 
+def make_comment_body(comment_text):
+    return  {
+            "body": 
+        {
+            "type": "doc",
+            "version": 1,
+            "content": [{
+                "type":
+                "paragraph",
+                "content": [
+                    { 
+                        "text": comment_text,
+                        "type": "text"
+                        }
+                    ]
+                }
+                ]
+            }
+        }
 
 def get_issues_for_multiple_comments(cfg, sprint_data, comments_list):
     issues_with_closing_tag = {}
@@ -130,12 +155,32 @@ def main(options):
 
     no_closing_comment = list(filter(lambda i: i["key"] not in issues_with_close_comment, delivery_data["issues"]))
 
-    print("No closing tag issues:")
-    print(tabulate.tabulate(
-        [(p["id"], p["key"], p["summary"]) for p in no_closing_comment],
-        headers=["Id", "Key", "Summary"], tablefmt="orgtbl"))
-    print("\n")
-    
+    def __post_comment(issue, comment):
+        comment_url = cjm.request.make_cj_url(cfg, "issue", str(issue["id"]), "comment")
+
+        if options.verbose:
+            print(f"Posting {comment} to from issue {issue['key']}  to url address {comment_url}")
+
+        body = make_comment_body(comment)
+        error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
+        if cjm.codes.NO_ERROR != error:
+            sys.stderr.write(
+                    f"Error: Posting commetnt to issue {issue['key']} failed"
+                    f"with error code {error}\n")
+            return error
+        return cjm.codes.NO_ERROR
+
+    if options.preview:
+        print("Following issues will recieve {0:s} comment".format(sprint_data["comment prefix"] + "/Delivered"))
+        print(tabulate.tabulate(
+            [(p["id"], p["key"], p["summary"]) for p in no_closing_comment],
+            headers=["Id", "Key", "Summary"], tablefmt="orgtbl"))
+    else: 
+        for i in no_closing_comment:
+            err = __post_comment(i, sprint_data["comment prefix"]+"/Delivered")
+            if cjm.codes.NO_ERROR == err:
+                return err
+
 
     return cjm.codes.NO_ERROR
 
