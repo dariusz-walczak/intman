@@ -57,7 +57,7 @@ def parse_options(args):
 
 def make_comment_body(comment_text):
     return  {
-            "body": 
+        "body": 
         {
             "type": "doc",
             "version": 1,
@@ -143,8 +143,8 @@ def main(options):
 
     no_closing_comment = list(filter(lambda i: i["key"] not in issues_with_close_comment, delivery_data["issues"]))
     
-    no_closing_comment_done = [i for i in no_closing_comment if i["status"] == "Done"]
-    no_closing_comment_not_done = [i for i in no_closing_comment if i["status"] != "Done"]
+    no_closing_comment_done = [i for i in no_closing_comment if i["outcome"] == "done"]
+    no_closing_comment_not_done = [i for i in no_closing_comment if i["outcome"] != "done"]
 
     def __post_comment(issue, comment):
         comment_url = cjm.request.make_cj_url(cfg, "issue", str(issue["id"]), "comment")
