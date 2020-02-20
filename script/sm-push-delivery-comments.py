@@ -80,7 +80,7 @@ def get_issues_for_multiple_comments(cfg, sprint_data, comments_list):
     for comment in comments_list:
 
         result_code, more_issues = cjm.sprint.request_issues_by_comment(
-                cfg, "{0:s}/{1:s}".format(sprint_data["comment prefix"], comment ))
+                cfg, f"{sprint_data['comment prefix']}/{comment}")
         
         if result_code:
             return result_code, []
@@ -133,18 +133,6 @@ def main(options):
         print(tabulate.tabulate(
             [(p["id"], p["key"], p["summary"]) for p in no_opening_issues],
             headers=["Id", "Key", "Summary"], tablefmt="orgtbl"))
-        print()
-
-
-    result_code, delivered_issues = cjm.sprint.request_issues_by_comment(
-        cfg, "{0:s}/Delivered".format(sprint_data["comment prefix"]))
-    
-    if result_code:
-        sys.stderr.write(
-                "ERROR: Collecting issues wiht comment {0:s}/Delivered failed".format(sprint_data["comment prefix"]))
-        return result_code
-
-    delivered_issues = {i["key"]: i for i in delivered_issues}
 
     err, issues_with_close_comment = get_issues_for_multiple_comments(cfg, sprint_data, ["Delivered", "NotDelivered", "Dropped"])
 
@@ -154,6 +142,9 @@ def main(options):
         return err
 
     no_closing_comment = list(filter(lambda i: i["key"] not in issues_with_close_comment, delivery_data["issues"]))
+    
+    no_closing_comment_done = [i for i in no_closing_comment if i["status"] == "Done"]
+    no_closing_comment_not_done = [i for i in no_closing_comment if i["status"] != "Done"]
 
     def __post_comment(issue, comment):
         comment_url = cjm.request.make_cj_url(cfg, "issue", str(issue["id"]), "comment")
@@ -162,7 +153,8 @@ def main(options):
             print(f"Posting {comment} to from issue {issue['key']}  to url address {comment_url}")
 
         body = make_comment_body(comment)
-        error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
+        #error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
+        error = cjm.codes.NO_ERROR
         if cjm.codes.NO_ERROR != error:
             sys.stderr.write(
                     f"Error: Posting commetnt to issue {issue['key']} failed"
@@ -170,14 +162,25 @@ def main(options):
             return error
         return cjm.codes.NO_ERROR
 
+    delivery_comment = sprint_data["comment prefix"] + "/Delivered"
+    not_delivery_comment = sprint_data["comment prefix"] + "/NotDelivered"
+
     if options.preview:
-        print("Following issues will recieve {0:s} comment".format(sprint_data["comment prefix"] + "/Delivered"))
+        print("\nFollowing issues will recieve {0:s} comment".format(delivery_comment ))
         print(tabulate.tabulate(
-            [(p["id"], p["key"], p["summary"]) for p in no_closing_comment],
+            [(p["id"], p["key"], p["summary"]) for p in no_closing_comment_done],
+            headers=["Id", "Key", "Summary"], tablefmt="orgtbl"))
+        print("\nFollowing issues will recieve {0:s} comment".format(not_delivery_comment ))
+        print(tabulate.tabulate(
+            [(p["id"], p["key"], p["summary"]) for p in no_closing_comment_not_done],
             headers=["Id", "Key", "Summary"], tablefmt="orgtbl"))
     else: 
-        for i in no_closing_comment:
-            err = __post_comment(i, sprint_data["comment prefix"]+"/Delivered")
+        for i in no_closing_comment_done:
+            err = __post_comment(i, delivery_comment)
+            if cjm.codes.NO_ERROR == err:
+                return err
+        for i in no_closing_comment_not_done:
+            err = __post_comment(i, not_delivery_comment)
             if cjm.codes.NO_ERROR == err:
                 return err
 
