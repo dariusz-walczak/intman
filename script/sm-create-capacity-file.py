@@ -17,9 +17,6 @@ import cjm.cfg
 import cjm.schema
 import cjm.codes
 import cjm.sprint
-#import cjm.commitment
-#import cjm.request
-#import cjm.delivery
 import cjm.team
 
 _COMMITMENT_PREFIX_ARG_NAME = "--prefix"
@@ -108,11 +105,15 @@ def main(options):
         sprint_start_date = dateutil.parser.parse(sprint_data["start date"]).date()
         sprint_start_date = sprint_start_date - datetime.timedelta(days=1)
         sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
+        
+        y1 = sprint_start_date.year
+        y2 = sprint_end_date.year
+        sprint_year = [y1] if y1 == y2 else [y1, y2]
 
-        for date, _ in sorted(holidays.Poland(years=[2020,2021]).items()):
-
+        for date, _ in sorted(holidays.Poland(years=sprint_year).items()):
             if date > sprint_start_date and date < sprint_end_date and not is_weekend(date) : 
                 sprint_holidays.append(date) 
+
         return sprint_holidays 
 
     holidays_str = [ d.strftime("%Y-%m-%d") for d in __holidays_in_sprint()]
