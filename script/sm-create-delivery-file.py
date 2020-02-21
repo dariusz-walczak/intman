@@ -260,8 +260,6 @@ def main(options):
     sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
     sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
 
-    total_committed = sum([i["committed story points"] for i in issues])
-
     issues_delivered = []
     if options.delivery_comment:
         result_code, issues_delivered = cjm.sprint.request_issues_by_comment(
@@ -283,11 +281,6 @@ def main(options):
         else:
             return False
 
-    total_delivered = sum([i["story points"] for i in issues if __issue_done(i)])
-
-    delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
-    delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
-
     # Determine delivered story points
 
     for issue in issues:
@@ -306,6 +299,11 @@ def main(options):
 
         issue["income"] = "extend" if issue["extended"] else "commit"
 
+    total_committed = sum([i["committed story points"] for i in issues])
+    total_delivered = sum([i["story points"] for i in issues if __issue_done(i)])
+
+    delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
+    delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
 
     report = {
         "total": {
