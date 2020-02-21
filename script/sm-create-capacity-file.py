@@ -104,10 +104,8 @@ def main(options):
     
     def __holidays_in_sprint():
         sprint_holidays = []
-        # sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
-        # sprint_start_date = dateutil.parser.parse(sprint_data["start date"]).date()
-        sprint_start_date = dateutil.parser.parse("2020-01-01").date()
-        sprint_end_date = dateutil.parser.parse("2020-12-31").date()
+        sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
+        sprint_start_date = dateutil.parser.parse(sprint_data["start date"]).date()
         sprint_start_date = sprint_start_date - datetime.timedelta(days=1)
         sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
 
@@ -128,6 +126,8 @@ def main(options):
             "additional holidays": []
             }
     
+    capacity_schema = cjm.schema.load(cfg, "capacity.json")
+    jsonschema.validate(capacity_json, capacity_schema)
     
     if options.json_output:
         print(json.dumps(capacity_json, indent=4, sort_keys=False))
