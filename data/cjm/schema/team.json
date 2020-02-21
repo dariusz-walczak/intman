@@ -11,10 +11,10 @@
                     "code": { "type": "string" },
                     "last name": { "type": "string" },
                     "first name": { "type": "string" },
-                    "user name": { "type": "string" },
-                    "account id": { "type": "string" }
+                    "account id": { "type": "string" },
+                    "daily capacity": {"type": "number"}
                 },
-                "required": ["code", "last name", "first name", "account id"]
+                "required": ["code", "last name", "first name", "account id", "daily capacity"]
             }
         }
     },

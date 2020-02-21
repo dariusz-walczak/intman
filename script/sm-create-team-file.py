@@ -16,7 +16,7 @@ import cjm.codes
 import cjm.schema
 
 _PROJECT_KEY_ARG_NAME = "--project-key"
-
+_DEFAULT_DAILY_CAPACITY = 2
 
 def request_users(cfg):
     users = []
@@ -89,8 +89,8 @@ def main(options):
             "code": code,
             "last name": lastname,
             "first name": firstname,
-            "user name": user_json_2["name"],
-            "account id": acc_id
+            "account id": acc_id,
+            "daily capacity": options.daily_capacity
         }
         users.append(data)
 
@@ -110,6 +110,7 @@ def main(options):
     print(json.dumps(people, indent=4, separators=(',', ': ')))
 
     team_schema = cjm.schema.load(cfg, "team.json")
+
     jsonschema.validate(people, team_schema)
 
     if options.json_output:
@@ -130,6 +131,12 @@ def parse_options(args):
         help=(
             "Project for which the team will be associated{0:s}"
             "".format(cjm.cfg.fmt_dft(default_project_key))))
+
+    parser.add_argument("--daily_capacity", action="store", default=_DEFAULT_DAILY_CAPACITY , dest="daily_capacity",
+            help=("Change default daily capacity for every team memeber"
+                f"current default: {_DEFAULT_DAILY_CAPACITY }"
+                ))
+
 
     return parser.parse_args(args)
 
