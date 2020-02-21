@@ -359,17 +359,36 @@ def committed_tasks_list(cfg, textdoc, delivery_data):
 
         tc3 = TableCell()
         tr.addElement(tc3)
-        p = odf.text.P(stylename=desc_cell_style, text=issue["committed story points"])
+        p = odf.text.P(
+            stylename=desc_cell_style,
+            text="{0:d}".format(issue["committed story points"]))
         tc3.addElement(p)
 
         tc4 = TableCell()
         tr.addElement(tc4)
-        p = odf.text.P(stylename=desc_cell_style, text=issue["story points"])
+        p = odf.text.P(
+            stylename=desc_cell_style,
+            text="{0:d}".format(issue["delivered story points"]))
         tc4.addElement(p)
 
         tc5 = TableCell()
         tr.addElement(tc5)
-        p = odf.text.P(stylename=desc_cell_style, text=issue["status"])
+
+        def __adapt_outcome(issue):
+            return {
+                "done": "done",
+                "open": "not done",
+                "drop": "dropped"}.get(issue["outcome"])
+
+        def __adapt_income(issue):
+            if issue["income"] == "extend":
+                return " (extended)"
+            else:
+                return ""
+
+        p = odf.text.P(
+            stylename=desc_cell_style,
+            text="{0:s}{1:s}".format(__adapt_outcome(issue), __adapt_income(issue)))
         tc5.addElement(p)
 
         rows_containing_data += 1
