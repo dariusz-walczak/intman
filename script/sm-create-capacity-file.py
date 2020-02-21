@@ -50,11 +50,6 @@ def parse_options(args):
 
     return parser.parse_args(args)
 
-def is_weekend(date):
-    day_number = date.weekday()
-    if day_number < 5:
-        return False
-    return True 
    
 def main(options):
 
@@ -101,22 +96,24 @@ def main(options):
     
     def __holidays_in_sprint():
         sprint_holidays = []
-        sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
         sprint_start_date = dateutil.parser.parse(sprint_data["start date"]).date()
+        sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
         sprint_start_date = sprint_start_date - datetime.timedelta(days=1)
         sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
         
-        y1 = sprint_start_date.year
-        y2 = sprint_end_date.year
-        sprint_year = [y1] if y1 == y2 else [y1, y2]
+        sprint_year = range(sprint_start_date.year, sprint_end_date.year+1)
+
+        def __is_weekend(date):
+            return date.weekday() >= 5
 
         for date, _ in sorted(holidays.Poland(years=sprint_year).items()):
-            if date > sprint_start_date and date < sprint_end_date and not is_weekend(date) : 
+            if date > sprint_start_date and date < sprint_end_date and not __is_weekend(date) : 
                 sprint_holidays.append(date) 
 
         return sprint_holidays 
 
     holidays_str = [ d.strftime("%Y-%m-%d") for d in __holidays_in_sprint()]
+
     people = team_data["people"]
     for p in team_data["people"]:
         p["personal holidays"] = []
@@ -129,10 +126,12 @@ def main(options):
     
     capacity_schema = cjm.schema.load(cfg, "capacity.json")
     jsonschema.validate(capacity_json, capacity_schema)
-    
+
     if options.json_output:
         print(json.dumps(capacity_json, indent=4, sort_keys=False))
     else:
+        if holidays_str:
+            print(tabulate.tabulate( [ (i+1,d) for i,d in enumerate(holidays_str)], headers=["Holiday date"], tablefmt="orgtbl"))
         print(tabulate.tabulate(
             [(p["account id"], p["first name"]+" "+p["last name"], p["daily capacity"]) for p in team_data["people"]],
             headers=["Account ID", "Name", "Daily capacity"], tablefmt="orgtbl"))
