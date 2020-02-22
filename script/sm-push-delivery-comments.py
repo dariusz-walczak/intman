@@ -122,14 +122,13 @@ def main(options):
     err, issues_with_openning_comment = get_issues_for_multiple_comments(cfg, sprint_data, ["Committed", "Extended"])
 
     if err:
-        sys.stderr.write(
-                "ERROR: Collecting issues wiht closing tags")
+        sys.stderr.write("ERROR: Collecting issues with closing tags\n")
         return err
 
     no_opening_issues = list(filter(lambda i: i["key"] not in issues_with_openning_comment, delivery_data["issues"]))
 
     if no_opening_issues:
-        print("Warining: Issues with no openning comment:") 
+        print("WARNING: Issues with no opening comment:")
         print(tabulate.tabulate(
             [(p["id"], p["key"], p["summary"]) for p in no_opening_issues],
             headers=["Id", "Key", "Summary"], tablefmt="orgtbl"))
@@ -137,8 +136,7 @@ def main(options):
     err, issues_with_close_comment = get_issues_for_multiple_comments(cfg, sprint_data, ["Delivered", "NotDelivered", "Dropped"])
 
     if err:
-        sys.stderr.write(
-                "ERROR: Collecting issues wiht closing tags")
+        sys.stderr.write("ERROR: Collecting issues with closing tags\n")
         return err
 
     no_closing_comment = list(filter(lambda i: i["key"] not in issues_with_close_comment, delivery_data["issues"]))
@@ -153,11 +151,10 @@ def main(options):
             print(f"Posting {comment} to from issue {issue['key']}  to url address {comment_url}")
 
         body = make_comment_body(comment)
-        #error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
-        error = cjm.codes.NO_ERROR
+        error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
         if cjm.codes.NO_ERROR != error:
             sys.stderr.write(
-                    f"Error: Posting commetnt to issue {issue['key']} failed"
+                    f"Error: Posting comment to issue {issue['key']} failed"
                     f"with error code {error}\n")
             return error
         return cjm.codes.NO_ERROR
@@ -177,11 +174,11 @@ def main(options):
     else: 
         for i in no_closing_comment_done:
             err = __post_comment(i, delivery_comment)
-            if cjm.codes.NO_ERROR == err:
+            if err:
                 return err
         for i in no_closing_comment_not_done:
             err = __post_comment(i, not_delivery_comment)
-            if cjm.codes.NO_ERROR == err:
+            if err:
                 return err
 
 
