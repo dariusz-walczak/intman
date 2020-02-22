@@ -152,10 +152,10 @@ def main(options):
 
         body = make_comment_body(comment)
         error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
-        if cjm.codes.NO_ERROR != error:
+        if error:
             sys.stderr.write(
-                    f"Error: Posting comment to issue {issue['key']} failed"
-                    f"with error code {error}\n")
+                    f"ERROR: Posting comment to issue {issue['key']} failed"
+                    f" with error code {error}\n")
             return error
         return cjm.codes.NO_ERROR
 
