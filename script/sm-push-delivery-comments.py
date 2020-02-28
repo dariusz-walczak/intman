@@ -75,16 +75,13 @@ def make_comment_body(comment_text):
             }
         }
 
+
 def get_issues_for_multiple_comments(cfg, sprint_data, comments_list):
     issues_with_closing_tag = {}
+
     for comment in comments_list:
-
-        result_code, more_issues = cjm.sprint.request_issues_by_comment(
-                cfg, f"{sprint_data['comment prefix']}/{comment}")
-        
-        if result_code:
-            return result_code, []
-
+        more_issues = cjm.sprint.request_issues_by_comment(
+            cfg, f"{sprint_data['comment prefix']}/{comment}")
         more_issues = {i["key"]: i for i in more_issues}
     
         issues_with_closing_tag.update(more_issues)
@@ -150,14 +147,7 @@ def main(options):
         if options.verbose:
             print(f"Posting {comment} to from issue {issue['key']}  to url address {comment_url}")
 
-        body = make_comment_body(comment)
-        error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
-        if error:
-            sys.stderr.write(
-                    f"ERROR: Posting comment to issue {issue['key']} failed"
-                    f" with error code {error}\n")
-            return error
-        return cjm.codes.NO_ERROR
+        cjm.request.make_cj_post_request(cfg, comment_url, make_comment_body(comment))
 
     delivery_comment = sprint_data["comment prefix"] + "/Delivered"
     not_delivery_comment = sprint_data["comment prefix"] + "/NotDelivered"
@@ -173,16 +163,14 @@ def main(options):
             headers=["Id", "Key", "Summary"], tablefmt="orgtbl"))
     else: 
         for i in no_closing_comment_done:
-            err = __post_comment(i, delivery_comment)
-            if err:
-                return err
+            __post_comment(i, delivery_comment)
         for i in no_closing_comment_not_done:
-            err = __post_comment(i, not_delivery_comment)
-            if err:
-                return err
-
+            __post_comment(i, not_delivery_comment)
 
     return cjm.codes.NO_ERROR
 
 if __name__ == "__main__":
-    exit(main(parse_options(sys.argv[1:])))
+    try:
+        sys.exit(main(parse_options(sys.argv[1:])))
+    except cjm.codes.CjmError as e:
+        exit(e.code)

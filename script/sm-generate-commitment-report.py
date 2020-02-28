@@ -87,11 +87,7 @@ def calculate_workdays(start_date, end_date):
 
 def get_report_author(cfg):
     current_user_url = cjm.request.make_cj_gadget_url(cfg, "currentUser")
-    result_code, response = cjm.request.make_cj_request(cfg, current_user_url)
-
-    if result_code:
-        return result_code
-
+    response = cjm.request.make_cj_request(cfg, current_user_url)
     current_user_json = response.json()
 
     return current_user_json["fullName"]
@@ -471,4 +467,7 @@ def main(options):
 
 
 if __name__ == "__main__":
-    sys.exit(main(parse_options(sys.argv[1:])))
+    try:
+        exit(main(parse_options(sys.argv[1:])))
+    except cjm.codes.CjmError as e:
+        exit(e.code)

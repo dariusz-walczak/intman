@@ -92,19 +92,13 @@ def main(options):
     # Determine the story points field id:
 
     if cfg["jira"]["fields"]["story points"] is None:
-        result_code, field_id = cjm.issue.detect_story_point_field_id(cfg)
-        if result_code:
-            return result_code
-        cfg["jira"]["fields"]["story points"] = field_id
+        cfg["jira"]["fields"]["story points"] = cjm.issue.detect_story_point_field_id(cfg)
 
     # Retrieve issues assigned to the sprint:
 
-    result_code, issues_all = cjm.sprint.request_issues_by_sprint(cfg)
-
-    if result_code:
-        return result_code
-
+    issues_all = cjm.sprint.request_issues_by_sprint(cfg)
     issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
+
     for issue in issues_team:
         issue["by sprint"] = True
         issue["by comment"] = False
@@ -114,12 +108,8 @@ def main(options):
 
     # Retrieve issues with the commitment comment added:
 
-    result_code, issues_all = cjm.sprint.request_issues_by_comment(
+    issues_all = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Committed".format(sprint_data["comment prefix"]))
-
-    if result_code:
-        return result_code
-
     issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
 
     for issue in issues_team:

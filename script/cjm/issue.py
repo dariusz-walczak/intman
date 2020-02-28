@@ -9,16 +9,13 @@ JIRA_COMMENT_CONTENT_TYPE_TEXT = "text"
 
 def detect_story_point_field_id(cfg):
     url = cjm.request.make_cj_url(cfg, "field")
-    result_code, response = cjm.request.make_cj_request(cfg, url)
-
-    if result_code:
-        return result_code, None
+    response = cjm.request.make_cj_request(cfg, url)
 
     for field in response.json():
         if field["name"] == "Story Points":
-            return cjm.codes.NO_ERROR, field["id"]
+            field["id"]
 
-    return cjm.codes.INTEGRATION_ERROR, None
+    raise cjm.codes.CjmError(cjm.codes.INTEGRATION_ERROR)
 
 
 def request_issue_comments_by_regexp(cfg, issue_key, comment_re):
@@ -29,13 +26,9 @@ def request_issue_comments_by_regexp(cfg, issue_key, comment_re):
     max_results = 50
 
     while True:
-        result_code, response = cjm.request.make_cj_request(
+        response = cjm.request.make_cj_request(
             cfg, comments_url,
             params={"startAt": start_at, "maxResults": max_results})
-
-        if result_code:
-            return result_code, comments
-
         response_json = response.json()
 
         for comment in response_json["comments"]:
@@ -82,13 +75,9 @@ def request_issues_by_keys(cfg, issue_keys):
     max_results = 50
 
     while True:
-        result_code, response = cjm.request.make_cj_post_request(
+        response = cjm.request.make_cj_post_request(
             cfg, issues_url,
             json={"jql": jql, "startAt": start_at, "maxResults": max_results})
-
-        if result_code:
-            return result_code, issues
-
         response_json = response.json()
 
         for issue in response_json["issues"]:

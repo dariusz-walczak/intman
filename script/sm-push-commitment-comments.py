@@ -82,11 +82,7 @@ def main(options):
     comment_to_be_added = sprint_data["comment prefix"] + "/Committed"
 
     # Retrieve all issues with the commitment comment added:
-    result_code, all_issues_with_comments = cjm.sprint.request_issues_by_comment(
-        cfg, comment_to_be_added)
-
-    if result_code:
-        return result_code
+    all_issues_with_comments = cjm.sprint.request_issues_by_comment(cfg, comment_to_be_added)
 
     commitment_issues = commitment_data["issues"]
 
@@ -108,11 +104,8 @@ def main(options):
             if options.verbose > 0:
                 print(f"Posting '{comment_to_be_added}' to issue {issue['key']}")
 
-            error, response = cjm.request.make_cj_post_request(cfg, comment_url, body)
+            cjm.request.make_cj_post_request(cfg, comment_url, body)
             
-            if cjm.codes.NO_ERROR != error:
-                return error
-
     return cjm.codes.NO_ERROR
 
 
@@ -153,4 +146,7 @@ def parse_options(args):
 
 
 if __name__ == "__main__":
-    exit(main(parse_options(sys.argv[1:])))
+    try:
+        exit(main(parse_options(sys.argv[1:])))
+    except cjm.codes.CjmError as e:
+        exit(e.code)

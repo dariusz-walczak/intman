@@ -28,13 +28,9 @@ def request_users(cfg):
     max_results = 50
 
     while True:
-        result_code, response = cjm.request.make_cj_request(
+        response = cjm.request.make_cj_request(
             cfg, user_data_url,
             {"query": user_query, "startAt": start_at, "maxResults": max_results})
-
-        if result_code:
-            return result_code
-
         response_json = response.json()
         users += response_json["values"]
         start_at += max_results
@@ -42,7 +38,7 @@ def request_users(cfg):
         if start_at >= response_json["total"]:
             break
 
-    return cjm.codes.NO_ERROR, users
+    return users
 
 
 def main(options):
@@ -55,11 +51,7 @@ def main(options):
             " file to specify it".format(_PROJECT_KEY_ARG_NAME))
         return cjm.codes.CONFIGURATION_ERROR
 
-    result_code, users_all = request_users(cfg)
-
-    if result_code:
-        return result_code
-
+    users_all = request_users(cfg)
     users_active = [u for u in users_all if u["active"]]
     users = []
 
@@ -78,11 +70,7 @@ def main(options):
         code = str(firstname[0] + lastname[0]).upper()
 
         user_url = cjm.request.make_cj_url(cfg, f"user?accountId={acc_id}")
-        result_code, response = cjm.request.make_cj_request(cfg, user_url)
-
-        if result_code:
-            return result_code
-
+        response = cjm.request.make_cj_request(cfg, user_url)
         user_json_2 = response.json()
 
         data = {
@@ -142,4 +130,7 @@ def parse_options(args):
 
 
 if __name__ == "__main__":
-    exit(main(parse_options(sys.argv[1:])))
+    try:
+        exit(main(parse_options(sys.argv[1:])))
+    except cjm.codes.CjmError as e:
+        exit(e.code)

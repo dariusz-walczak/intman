@@ -21,6 +21,7 @@ from odf.table import Table, TableColumn, TableRow, TableCell
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.data
 import cjm.request
 import cjm.codes
 import cjm.schema
@@ -96,10 +97,7 @@ def calculate_workdays(start_date, end_date):
 
 def get_report_author(cfg):
     current_user_url = cjm.request.make_cj_gadget_url(cfg, "currentUser")
-    result_code, response = cjm.request.make_cj_request(cfg, current_user_url)
-
-    if result_code:
-        return result_code
+    response = cjm.request.make_cj_request(cfg, current_user_url)
 
     current_user_json = response.json()
 
@@ -553,41 +551,9 @@ def main(options):
     cfg["path"]["output"] = options.output_file_path
     cfg["client"]["name"] = options.client_name
 
-    try:
-        with open(options.sprint_file) as sprint_file:
-            sprint_data = cjm.sprint.load_data(cfg, sprint_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Sprint data file ('{0:s}') I/O error\n".format(options.sprint_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    sprint_schema = cjm.schema.load(cfg, "sprint.json")
-    jsonschema.validate(sprint_data, sprint_schema)
-
-    try:
-        with open(options.commitment_file) as commitment_file:
-            commitment_data = cjm.commitment.load_data(cfg, commitment_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Sprint data file ('{0:s}') I/O error\n".format(options.commitment_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    commitment_schema = cjm.schema.load(cfg, "commitment.json")
-    jsonschema.validate(commitment_data, commitment_schema)
-
-    try:
-        with open(options.delivery_file) as delivery_file:
-            delivery_data = cjm.delivery.load_data(cfg, delivery_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Sprint data file ('{0:s}') I/O error\n".format(options.delivery_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    delivery_schema = cjm.schema.load(cfg, "delivery.json")
-    jsonschema.validate(delivery_data, delivery_schema)
+    sprint_data = cjm.data.load(cfg, options.sprint_file, "sprint.json")
+    commitment_data = cjm.data.load(cfg, options.commitment_file, "commitment.json")
+    delivery_data = cjm.data.load(cfg, options.delivery_file, "delivery.json")
 
     generate(cfg, sprint_data, commitment_data, delivery_data)
 
@@ -595,4 +561,7 @@ def main(options):
 
 
 if __name__ == "__main__":
-    sys.exit(main(parse_options(sys.argv[1:])))
+    try:
+        exit(main(parse_options(sys.argv[1:])))
+    except cjm.codes.CjmError as e:
+        exit(e.code)

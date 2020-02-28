@@ -80,11 +80,7 @@ def main(options):
         return cjm.codes.CONFIGURATION_ERROR
 
     project_data_url = cjm.request.make_cj_url(cfg, "project", cfg["project"]["key"])
-    result_code, response = cjm.request.make_cj_request(cfg, project_data_url)
-
-    if result_code:
-        return result_code
-
+    response = cjm.request.make_cj_request(cfg, project_data_url)
     project_json = response.json()
 
     start_date = determine_start_date(options)
@@ -122,4 +118,7 @@ def main(options):
 
 
 if __name__ == '__main__':
-    sys.exit(main(parse_options(sys.argv[1:])))
+    try:
+        exit(main(parse_options(sys.argv[1:])))
+    except cjm.codes.CjmError as e:
+        exit(e.code)

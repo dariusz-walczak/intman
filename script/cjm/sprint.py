@@ -38,13 +38,9 @@ def request_issues_by_sprint(cfg):
     max_results = 50
 
     while True:
-        result_code, response = cjm.request.make_cj_request(
+        response = cjm.request.make_cj_request(
             cfg, sprint_issues_url,
             {"startAt": start_at, "maxResults": max_results})
-
-        if result_code:
-            return result_code, issues
-
         response_json = response.json()
 
         for issue in response_json["issues"]:
@@ -68,13 +64,9 @@ def request_issues_by_comment(cfg, comment):
     max_results = 50
 
     while True:
-        result_code, response = cjm.request.make_cj_post_request(
+        response = cjm.request.make_cj_post_request(
             cfg, sprint_issues_url,
             json={"jql": jql, "startAt": start_at, "maxResults": max_results})
-
-        if result_code:
-            return result_code, issues
-
         response_json = response.json()
 
         for issue in response_json["issues"]:
@@ -85,4 +77,4 @@ def request_issues_by_comment(cfg, comment):
         if start_at >= response_json["total"]:
             break
 
-    return cjm.codes.NO_ERROR, issues
+    return issues
