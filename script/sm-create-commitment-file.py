@@ -74,17 +74,7 @@ def main(options):
 
     # Load sprint data:
 
-    try:
-        with open(options.sprint_file) as sprint_file:
-            sprint_data = cjm.sprint.load_data(cfg, sprint_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Sprint data file ('{0:s}') I/O error\n".format(options.sprint_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    sprint_schema = cjm.schema.load(cfg, "sprint.json")
-    jsonschema.validate(sprint_data, sprint_schema)
+    sprint_data = cjm.data.load(cfg, options.sprint_file, "sprint.json")
 
     cfg["sprint"]["id"] = sprint_data.get("id")
     cfg["project"]["key"] = sprint_data["project"]["key"]
@@ -97,17 +87,7 @@ def main(options):
 
     # Load team data:
 
-    try:
-        with open(options.team_file) as team_file:
-            team_data = cjm.team.load_data(cfg, team_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Team data file ('{0:s}') I/O error\n".format(options.team_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    team_schema = cjm.schema.load(cfg, "team.json")
-    jsonschema.validate(team_data, team_schema)
+    team_data = cjm.data.load(cfg, options.team_file, "team.json")
 
     # Determine the story points field id:
 
@@ -189,4 +169,7 @@ def main(options):
 
 
 if __name__ == '__main__':
-    sys.exit(main(parse_options(sys.argv[1:])))
+    try:
+        sys.exit(main(parse_options(sys.argv[1:])))
+    except cjm.codes.CjmError as e:
+        exit(e.code)
