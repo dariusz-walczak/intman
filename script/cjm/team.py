@@ -27,3 +27,7 @@ def filter_team_issues(cfg, issues, team_data):
         ([None] if include_unassigned else []))
 
     return [i for i in issues if i["assignee id"] in valid_account_id_list]
+
+
+def format_full_name(person):
+    return "{0:s}, {1:s}".format(person["last name"], person["first name"])

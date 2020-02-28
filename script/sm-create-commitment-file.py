@@ -58,6 +58,16 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
+def determine_person_summary(person_data, commitment_data):
+    issues = [
+        i for i in commitment_data["issues"]
+        if i["assignee id"] == person_data["account id"]]
+
+    return {
+        "story points": sum([int(i["story points"]) for i in issues])
+    }
+
+
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["issue"]["include unassigned"] = options.include_unassigned
@@ -159,9 +169,7 @@ def main(options):
             if issue["assignee id"] is None:
                 return ""
             else:
-                return "{0:s}, {1:s}".format(
-                    person_lut[issue["assignee id"]]["last name"],
-                    person_lut[issue["assignee id"]]["first name"])
+                return cjm.team.format_full_name(person_lut[issue["assignee id"]])
 
         print(tabulate.tabulate(
             [(i["id"], i["key"], i["summary"], __fmt_assignee(i), i["story points"],
@@ -169,6 +177,12 @@ def main(options):
               "Comment" if i["by comment"] else "")
              for i in issues],
             headers=["Id", "Key", "Summary", "Assignee", "Story Points", "Sprint", "Comment"],
+            tablefmt="orgtbl"))
+
+        print(tabulate.tabulate(
+            [(cjm.team.format_full_name(p), determine_person_summary(p, commitment)["story points"])
+             for p in team_data["people"]],
+            ["Full Name", "Story Points"],
             tablefmt="orgtbl"))
 
     return cjm.codes.NO_ERROR
