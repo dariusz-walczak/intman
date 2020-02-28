@@ -106,7 +106,7 @@ def main(options):
         def __is_weekend(date):
             return date.weekday() >= 5
 
-        for date, _ in sorted(holidays.Poland(years=sprint_year).items()):
+        for date, _ in sorted(holidays.PL(years=sprint_year).items()):
             if date > sprint_start_date and date < sprint_end_date and not __is_weekend(date) : 
                 sprint_holidays.append(date) 
 
