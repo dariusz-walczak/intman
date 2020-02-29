@@ -103,5 +103,8 @@ def make_common_parser(defaults):
         "--data-dir", action="store", metavar="PATH", dest="data_dir_path",
         default=default_data_path,
         help="Toolchain data directory PATH (default: '{0:s}')".format(default_data_path))
+    parser.add_argument(
+        "--verbose", action="store_true", dest="verbose",
+        help="Provide verbose diagnostic information")
 
     return parser
