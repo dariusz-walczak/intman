@@ -59,16 +59,6 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def determine_person_summary(person_data, commitment_data):
-    issues = [
-        i for i in commitment_data["issues"]
-        if i["assignee id"] == person_data["account id"]]
-
-    return {
-        "story points": sum([int(i["story points"]) for i in issues])
-    }
-
-
 def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["issue"]["include unassigned"] = options.include_unassigned
@@ -134,29 +124,47 @@ def main(options):
     if options.json_output:
         print(json.dumps(commitment, indent=4, sort_keys=False))
     else:
-        person_lut = dict((p["account id"], p) for p in team_data["people"])
-
-        def __fmt_assignee(issue):
-            if issue["assignee id"] is None:
-                return ""
-            else:
-                return cjm.team.format_full_name(person_lut[issue["assignee id"]])
-
-        print(tabulate.tabulate(
-            [(i["id"], i["key"], i["summary"], __fmt_assignee(i), i["story points"],
-              "Sprint" if i["by sprint"] else "",
-              "Comment" if i["by comment"] else "")
-             for i in issues],
-            headers=["Id", "Key", "Summary", "Assignee", "Story Points", "Sprint", "Comment"],
-            tablefmt="orgtbl"))
-
-        print(tabulate.tabulate(
-            [(cjm.team.format_full_name(p), determine_person_summary(p, commitment)["story points"])
-             for p in team_data["people"]],
-            ["Full Name", "Story Points"],
-            tablefmt="orgtbl"))
+        print_issue_list(commitment, team_data)
+        print_summary(commitment, team_data)
 
     return cjm.codes.NO_ERROR
+
+
+def print_issue_list(commitment_data, team_data):
+    person_lut = dict((p["account id"], p) for p in team_data["people"])
+
+    def __fmt_assignee(issue):
+        if issue["assignee id"] is None:
+            return ""
+        else:
+            return cjm.team.format_full_name(person_lut[issue["assignee id"]])
+
+    print(tabulate.tabulate(
+        [(i["id"], i["key"], i["summary"], __fmt_assignee(i), i["story points"],
+          "Sprint" if i["by sprint"] else "",
+          "Comment" if i["by comment"] else "")
+         for i in commitment_data["issues"]],
+        headers=["Id", "Key", "Summary", "Assignee", "Story Points", "Sprint", "Comment"],
+        tablefmt="orgtbl"))
+
+
+def determine_person_summary(person_data, commitment_data):
+    issues = [
+        i for i in commitment_data["issues"]
+        if i["assignee id"] == person_data["account id"]]
+
+    return {
+        "story points": sum([int(i["story points"]) for i in issues])
+    }
+
+
+def print_summary(commitment_data, team_data):
+    print(tabulate.tabulate(
+        [(cjm.team.format_full_name(p),
+          determine_person_summary(p, commitment_data)["story points"])
+         for p in team_data["people"]],
+        ["Full Name", "Story Points"],
+        tablefmt="orgtbl"))
 
 
 if __name__ == '__main__':
