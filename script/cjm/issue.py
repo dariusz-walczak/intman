@@ -13,7 +13,7 @@ def detect_story_point_field_id(cfg):
 
     for field in response.json():
         if field["name"] == "Story Points":
-            field["id"]
+            return field["id"]
 
     raise cjm.codes.CjmError(cjm.codes.INTEGRATION_ERROR)
 

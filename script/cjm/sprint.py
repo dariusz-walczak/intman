@@ -51,7 +51,7 @@ def request_issues_by_sprint(cfg):
         if start_at >= response_json["total"]:
             break
 
-    return cjm.codes.NO_ERROR, issues
+    return issues
 
 
 def request_issues_by_comment(cfg, comment):

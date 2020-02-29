@@ -13,6 +13,7 @@ import tabulate
 import cjm
 import cjm.cfg
 import cjm.codes
+import cjm.data
 import cjm.issue
 import cjm.request
 import cjm.schema
