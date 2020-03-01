@@ -2,15 +2,18 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
+import decimal
 import json
 import sys
 
 # Third party imports
+import colorama
 import jsonschema
 import tabulate
 
 # Project imports
 import cjm
+import cjm.capacity
 import cjm.cfg
 import cjm.codes
 import cjm.data
@@ -136,7 +139,7 @@ def main(options):
         print(json.dumps(commitment, indent=4, sort_keys=False))
     else:
         if options.show_summary:
-            print_summary(commitment, team_data, capacity_data)
+            print_summary(team_data, sprint_data, capacity_data, commitment)
         else:
             print_issue_list(commitment, team_data)
 
@@ -162,22 +165,70 @@ def print_issue_list(commitment_data, team_data):
         tablefmt="orgtbl"))
 
 
+def format_ratio_status(ratio):
+    if ratio < 40:
+        return colorama.Fore.BLUE + colorama.Style.BRIGHT + "🡇🡇🡇" + colorama.Style.RESET_ALL
+    elif ratio < 60:
+        return colorama.Fore.BLUE + "🡇🡇" + colorama.Style.RESET_ALL
+    elif ratio < 80:
+        return colorama.Fore.BLUE + colorama.Style.DIM + "🡇" + colorama.Style.RESET_ALL
+    elif ratio > 140:
+        return colorama.Fore.RED + colorama.Style.BRIGHT + "🡅🡅🡅" + colorama.Style.RESET_ALL
+    elif ratio > 120:
+        return colorama.Fore.RED + "🡅🡅" + colorama.Style.RESET_ALL
+    elif ratio > 100:
+        return colorama.Fore.RED + colorama.Style.DIM + "🡅" + colorama.Style.RESET_ALL
+    else:
+        return None
+
+
 def determine_person_summary(person_data, commitment_data, capacity_data):
     issues = [
         i for i in commitment_data["issues"]
         if i["assignee id"] == person_data["account id"]]
+    commitment = sum([int(i["story points"]) for i in issues])
+
+    if capacity_data is not None:
+        capacity = capacity_data["sprint capacity"]
+        if capacity:
+            ratio = decimal.Decimal(commitment) / decimal.Decimal(capacity) * 100
+            ratio = ratio.quantize(decimal.Decimal("0"), decimal.ROUND_HALF_UP)
+            status = format_ratio_status(ratio)
+        else:
+            ratio = None
+            if commitment > 0:
+                status = "🡅🡅🡅"
+            else:
+                status = None
+    else:
+        capacity = None
+        ratio = None
+        status = "alien"
 
     return {
-        "story points": sum([int(i["story points"]) for i in issues])
+        "capacity": capacity,
+        "commitment": commitment,
+        "ratio": ratio,
+        "status": status
     }
 
 
-def print_summary(commitment_data, team_data, capacity_data):
+def print_summary(team_data, sprint_data, capacity_data, commitment_data):
+    team_capacity = cjm.capacity.process_team_capacity(sprint_data, capacity_data)
+    person_capacity_lut = {
+        p["account id"]: cjm.capacity.process_person_capacity(team_capacity, p)
+        for p in capacity_data["people"]}
+
+    def __make_person_row(person_data):
+        person_capacity = person_capacity_lut.get(person_data["account id"])
+        summary = determine_person_summary(person_data, commitment_data, person_capacity)
+        return (
+            cjm.team.format_full_name(person_data),
+            summary["commitment"], summary["capacity"], summary["ratio"], summary["status"])
+
     print(tabulate.tabulate(
-        [(cjm.team.format_full_name(p),
-          determine_person_summary(p, commitment_data, capacity_data)["story points"])
-         for p in team_data["people"]],
-        ["Full Name", "Story Points"],
+        [__make_person_row(p) for p in team_data["people"]],
+        headers=["Full Name", "Commitment", "Capacity", "Com/Cap Ratio", "Status"],
         tablefmt="orgtbl"))
 
 

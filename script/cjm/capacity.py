@@ -33,7 +33,7 @@ def deserialize_dates(iso_dates, start_date, end_date):
 def process_team_capacity(sprint_data, capacity_data):
     sprint_start_date = dateutil.parser.parse(sprint_data["start date"]).date()
     sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
-    workday_count = numpy.busday_count(sprint_start_date, sprint_end_date)
+    workday_count = numpy.busday_count(sprint_start_date, sprint_end_date).item()
 
     national_holidays = deserialize_dates(
         capacity_data["national holidays"], sprint_start_date, sprint_end_date)
