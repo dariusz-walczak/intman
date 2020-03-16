@@ -11,14 +11,18 @@ import cjm.request
 import cjm.codes
 
 
-def generate_sprint_name(project_name, start_dt, end_dt):
+def generate_sprint_period_name(start_dt, end_dt):
     _, start_ww, _ = start_dt.isocalendar()
     _, end_ww, _ = end_dt.isocalendar()
 
     if start_ww != end_ww:
-        return "{0:s} WW{1:02d}-WW{2:02d}".format(project_name, start_ww, end_ww)
+        return "WW{0:02d}-WW{1:02d}".format(start_ww, end_ww)
     else:
-        return "{0:s} WW{1:02d}".format(project_name, start_ww)
+        return "WW{0:02d}".format(start_ww)
+
+
+def generate_sprint_name(project_name, start_dt, end_dt):
+    return "{0:s} {1:s}".format(project_name, generate_sprint_period_name(start_dt, end_dt))
 
 
 def load_data(cfg, sprint_file):
