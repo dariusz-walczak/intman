@@ -297,8 +297,11 @@ def print_summary(team_data, sprint_data, capacity_data, commitment_data):
             __col(__r2s(summary["ratio"])), __col(summary["status"]))
 
 
+    def __sort_cb(person):
+        return (person["last name"], person["first name"])
+
     print(tabulate.tabulate(
-        [__make_person_row(p) for p in team_data["people"]] +
+        [__make_person_row(p) for p in sorted(team_data["people"], key=__sort_cb)] +
         ([__make_unassigned_row()] if options.include_unassigned else []) +
         [__make_total_row()],
         headers=["Full Name", "Commitment", "Capacity", "Com/Cap Ratio", "Status"],
