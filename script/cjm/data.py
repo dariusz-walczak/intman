@@ -1,5 +1,6 @@
 # Standard library imports
 import json
+import sys
 
 # Third party imports
 import jsonschema
