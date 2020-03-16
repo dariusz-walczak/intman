@@ -28,6 +28,8 @@ def parse_options(args):
 
     default_length = 14
     default_project_key = defaults.get("project", {}).get("key")
+    default_project_code = defaults.get("project", {}).get("code")
+    default_project_sow = defaults.get("project", {}).get("sow")
 
     start_flags = parser.add_mutually_exclusive_group()
     start_flags.add_argument(
@@ -49,6 +51,18 @@ def parse_options(args):
         "--length", action="store", metavar="DAYS", dest="length", type=int,
         default=default_length,
         help="The sprint length in DAYS (default: {0:d})".format(default_length))
+    parser.add_argument(
+        "--project-code", action="store", metavar="CODE", dest="project_code",
+        default=default_project_code,
+        help=("The project CODE name to be used to form the sprint comment prefix{0:s}"
+              "".format(cjm.cfg.fmt_dft(default_project_code))))
+    parser.add_argument(
+        "--project-sow", action="store", metavar="CODE", dest="project_sow",
+        default=default_project_sow,
+        help=(
+            "The project sow (scope of work) CODE to be used to form the sprint comment"
+            " prefix{0:s}"
+            "".format(cjm.cfg.fmt_dft(default_project_sow))))
 
     parser.add_argument(
         _PROJECT_KEY_ARG_NAME, action="store", metavar="KEY", dest="project_key",
@@ -96,7 +110,9 @@ def main(options):
         "end date": end_date.isoformat(),
         "name": cjm.sprint.generate_sprint_name(project_json["name"], start_date, end_date),
         "id": sprint_id,
-        "comment prefix": "",
+        "comment prefix": "Mobica/{0:s}/{1:s}/{2:s}".format(
+            options.project_sow, options.project_code,
+            cjm.sprint.generate_sprint_period_name(start_date, end_date)),
         "project": {
             "key": cfg["project"]["key"],
             "name": project_json["name"]
