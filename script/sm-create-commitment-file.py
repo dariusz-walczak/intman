@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
+import copy
 import decimal
 import json
 import sys
@@ -182,28 +183,45 @@ def format_ratio_status(ratio):
         return None
 
 
-def determine_person_summary(person_data, commitment_data, capacity_data):
-    issues = [
-        i for i in commitment_data["issues"]
-        if i["assignee id"] == person_data["account id"]]
-    commitment = sum([int(i["story points"]) for i in issues])
-
-    if capacity_data is not None:
-        capacity = capacity_data["sprint capacity"]
-        if capacity:
-            ratio = decimal.Decimal(commitment) / decimal.Decimal(capacity) * 100
-            ratio = ratio.quantize(decimal.Decimal("0"), decimal.ROUND_HALF_UP)
-            status = format_ratio_status(ratio)
-        else:
-            ratio = None
-            if commitment > 0:
-                status = "🡅🡅🡅"
-            else:
-                status = None
+def format_alien_status(commitment):
+    if commitment > 20:
+        return colorama.Fore.RED + colorama.Style.BRIGHT + "🡅🡅🡅" + colorama.Style.RESET_ALL
+    elif commitment > 10:
+        return colorama.Fore.RED + "🡅🡅🡅" + colorama.Style.RESET_ALL
+    elif commitment > 0:
+        return colorama.Fore.RED + colorama.Style.DIM + "🡅" + colorama.Style.RESET_ALL
     else:
-        capacity = None
+        return ""
+
+
+def assigned_issues(commitment_data):
+    return [
+        copy.copy(i) for i in commitment_data["issues"]
+        if i["assignee id"] is not None]
+
+
+def unassigned_issues(commitment_data):
+    return [
+        copy.copy(i) for i in commitment_data["issues"]
+        if i["assignee id"] is None]
+
+def person_issues(commitment_data, person_data):
+    return [
+        copy.copy(i) for i in commitment_data["issues"]
+        if i["assignee id"] == person_data["account id"]]
+
+def all_issues(commitment_data):
+    return copy.copy(commitment_data["issues"])
+
+
+def determine_row_summary(commitment, capacity):
+    if capacity > 0:
+        ratio = decimal.Decimal(commitment) / decimal.Decimal(capacity) * 100
+        ratio = int(ratio.quantize(decimal.Decimal("0"), decimal.ROUND_HALF_UP))
+        status = format_ratio_status(ratio)
+    else:
         ratio = None
-        status = "alien"
+        status = format_alien_status(commitment - capacity)
 
     return {
         "capacity": capacity,
@@ -213,21 +231,76 @@ def determine_person_summary(person_data, commitment_data, capacity_data):
     }
 
 
+def sum_commitment(issues):
+    return sum([int(i["story points"]) for i in issues])
+
 def print_summary(team_data, sprint_data, capacity_data, commitment_data):
     team_capacity = cjm.capacity.process_team_capacity(sprint_data, capacity_data)
     person_capacity_lut = {
         p["account id"]: cjm.capacity.process_person_capacity(team_capacity, p)
         for p in capacity_data["people"]}
+    total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())
+
+    assigned_commitment = sum_commitment(assigned_issues(commitment_data))
+    unassigned_commitment = sum_commitment(unassigned_issues(commitment_data))
+
+    def __v2s(val):
+        return "" if val is None else str(val)
+
+    def __r2s(ratio):
+        return "" if ratio is None else "{0:14d}%".format(ratio)
+
 
     def __make_person_row(person_data):
-        person_capacity = person_capacity_lut.get(person_data["account id"])
-        summary = determine_person_summary(person_data, commitment_data, person_capacity)
+        capacity = (
+            person_capacity_lut.get(person_data["account id"], {}).get("sprint capacity", 0))
+        commitment = sum_commitment(person_issues(commitment_data, person_data))
+        summary = determine_row_summary(commitment, capacity)
+
+        def __col(val):
+            if summary["capacity"] or summary["commitment"]:
+                return (colorama.Fore.WHITE + __v2s(val) + colorama.Style.RESET_ALL)
+            else:
+                return (colorama.Fore.WHITE + colorama.Style.DIM + __v2s(val) +
+                        colorama.Style.RESET_ALL)
+
         return (
-            cjm.team.format_full_name(person_data),
-            summary["commitment"], summary["capacity"], summary["ratio"], summary["status"])
+            __col(cjm.team.format_full_name(person_data)), __col(summary["commitment"]),
+            __col(summary["capacity"]), __col(__r2s(summary["ratio"])), summary["status"])
+
+
+    def __make_unassigned_row():
+        capacity = total_capacity - assigned_commitment
+        summary = determine_row_summary(unassigned_commitment, capacity)
+
+        def __col(val):
+            if summary["commitment"]:
+                return __v2s(val)
+            else:
+                return (colorama.Fore.WHITE + colorama.Style.DIM + __v2s(val) +
+                        colorama.Style.RESET_ALL)
+
+        return (
+            __col("Unassigned"), __col(summary["commitment"]), __col(summary["capacity"]),
+            __col(__r2s(summary["ratio"])), __col(summary["status"]))
+
+    def __make_total_row():
+        commitment = assigned_commitment + unassigned_commitment
+        summary = determine_row_summary(commitment, total_capacity)
+
+        def __col(val):
+            return (colorama.Fore.WHITE + colorama.Style.BRIGHT + __v2s(val) +
+                    colorama.Style.RESET_ALL)
+
+        return (
+            __col("Team Summary"), __col(summary["commitment"]), __col(summary["capacity"]),
+            __col(__r2s(summary["ratio"])), __col(summary["status"]))
+
 
     print(tabulate.tabulate(
-        [__make_person_row(p) for p in team_data["people"]],
+        [__make_person_row(p) for p in team_data["people"]] +
+        ([__make_unassigned_row()] if options.include_unassigned else []) +
+        [__make_total_row()],
         headers=["Full Name", "Commitment", "Capacity", "Com/Cap Ratio", "Status"],
         tablefmt="orgtbl"))
 
