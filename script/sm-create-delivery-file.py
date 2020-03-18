@@ -134,12 +134,8 @@ def _retrieve_issues(cfg, issue_keys):
 
 
 def _retrieve_extension_issues(cfg, sprint_data, team_data):
-    result_code, issues = cjm.sprint.request_issues_by_comment(
+    issues = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
-
-    if result_code:
-        raise cjm.codes.CjmError(result_code)
-
     augment_cb = _make_augment_issue_cb(cfg, True, sprint_data)
     return [augment_cb(i) for i in cjm.team.filter_team_issues(cfg, issues, team_data)]
 
@@ -220,10 +216,7 @@ def main(options):
     # Determine the story points field id:
 
     if cfg["jira"]["fields"]["story points"] is None:
-        result_code, field_id = cjm.issue.detect_story_point_field_id(cfg)
-        if result_code:
-            return result_code
-        cfg["jira"]["fields"]["story points"] = field_id
+        cfg["jira"]["fields"]["story points"] = cjm.issue.detect_story_point_field_id(cfg)
 
     # Request all committed issues:
 
@@ -239,11 +232,8 @@ def main(options):
     issues = sorted(_join_issue_lists(issues_com, issues_ext), key=lambda i: i["id"])
 
     # Request dropped issues and change story point value to 0
-    result_code, issues_drp = cjm.sprint.request_issues_by_comment(
+    issues_drp = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Dropped".format(sprint_data["comment prefix"]))
-
-    if result_code:
-        return result_code
 
     for iss in issues_drp:
         dropped_issue = bisect.bisect([i["id"] for i in issues], iss["id"])
@@ -262,10 +252,8 @@ def main(options):
 
     issues_delivered = []
     if options.delivery_comment:
-        result_code, issues_delivered = cjm.sprint.request_issues_by_comment(
+        issues_delivered = cjm.sprint.request_issues_by_comment(
             cfg, "{0:s}/Delivered".format(sprint_data["comment prefix"]))
-        if result_code:
-            return result_code
 
     delivered_issues_ids = [i["id"] for i in issues_delivered]
     def __issue_done(issue):
