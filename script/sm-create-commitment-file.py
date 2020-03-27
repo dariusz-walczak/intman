@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-import copy
 import decimal
 import json
 import sys
+import traceback
 
 # Third party imports
 import colorama
@@ -154,8 +154,7 @@ def print_issue_list(commitment_data, team_data):
     def __fmt_assignee(issue):
         if issue["assignee id"] is None:
             return ""
-        else:
-            return cjm.team.format_full_name(person_lut[issue["assignee id"]])
+        return cjm.team.format_full_name(person_lut[issue["assignee id"]])
 
     print(tabulate.tabulate(
         [(i["id"], i["key"], i["summary"], __fmt_assignee(i), i["story points"],
@@ -179,8 +178,7 @@ def format_ratio_status(ratio):
         return colorama.Fore.RED + "🡅🡅" + colorama.Style.RESET_ALL
     elif ratio > 100:
         return colorama.Fore.RED + colorama.Style.DIM + "🡅" + colorama.Style.RESET_ALL
-    else:
-        return None
+    return None
 
 
 def format_alien_status(commitment):
@@ -192,26 +190,6 @@ def format_alien_status(commitment):
         return colorama.Fore.RED + colorama.Style.DIM + "🡅" + colorama.Style.RESET_ALL
     else:
         return ""
-
-
-def assigned_issues(commitment_data):
-    return [
-        copy.copy(i) for i in commitment_data["issues"]
-        if i["assignee id"] is not None]
-
-
-def unassigned_issues(commitment_data):
-    return [
-        copy.copy(i) for i in commitment_data["issues"]
-        if i["assignee id"] is None]
-
-def person_issues(commitment_data, person_data):
-    return [
-        copy.copy(i) for i in commitment_data["issues"]
-        if i["assignee id"] == person_data["account id"]]
-
-def all_issues(commitment_data):
-    return copy.copy(commitment_data["issues"])
 
 
 def determine_row_summary(commitment, capacity):
@@ -241,8 +219,8 @@ def print_summary(team_data, sprint_data, capacity_data, commitment_data):
         for p in capacity_data["people"]}
     total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())
 
-    assigned_commitment = sum_commitment(assigned_issues(commitment_data))
-    unassigned_commitment = sum_commitment(unassigned_issues(commitment_data))
+    assigned_commitment = sum_commitment(cjm.issue.assigned_issues(commitment_data))
+    unassigned_commitment = sum_commitment(cjm.issue.unassigned_issues(commitment_data))
 
     def __v2s(val):
         return "" if val is None else str(val)
@@ -254,7 +232,8 @@ def print_summary(team_data, sprint_data, capacity_data, commitment_data):
     def __make_person_row(person_data):
         capacity = (
             person_capacity_lut.get(person_data["account id"], {}).get("sprint capacity", 0))
-        commitment = sum_commitment(person_issues(commitment_data, person_data))
+        commitment = sum_commitment(
+            cjm.issue.person_issues(commitment_data["issues"], person_data))
         summary = determine_row_summary(commitment, capacity)
 
         def __col(val):

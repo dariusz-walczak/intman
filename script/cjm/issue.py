@@ -1,3 +1,8 @@
+"""Issue related helper functions"""
+
+# Standard library imports
+import copy
+
 # Project imports
 import cjm.codes
 import cjm.request
@@ -5,6 +10,28 @@ import cjm.request
 
 JIRA_COMMENT_CONTENT_TYPE_PARAGRAPH = "paragraph"
 JIRA_COMMENT_CONTENT_TYPE_TEXT = "text"
+
+
+
+def assigned_issues(issues):
+    """Extract list of issues assigned to anyone"""
+    return [
+        copy.copy(i) for i in issues
+        if i["assignee id"] is not None]
+
+
+def unassigned_issues(issues):
+    """Extract list of unassigned issues"""
+    return [
+        copy.copy(i) for i in issues
+        if i["assignee id"] is None]
+
+
+def person_issues(issues, person_data):
+    """Extract list of issues assigned to the given person"""
+    return [
+        copy.copy(i) for i in issues
+        if i["assignee id"] == person_data["account id"]]
 
 
 def detect_story_point_field_id(cfg):
@@ -68,7 +95,7 @@ def request_issues_by_keys(cfg, issue_keys):
         return cjm.codes.NO_ERROR, []
 
     issues = []
-    issues_url = cjm.request.make_cj_url(cfg, "search".format(cfg["sprint"]["id"]))
+    issues_url = cjm.request.make_cj_url(cfg, "search")
 
     jql = 'key in ({0:s})'.format(", ".join(issue_keys))
     start_at = 0
