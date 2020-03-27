@@ -1,3 +1,5 @@
+"""Support configurability of cjm applications"""
+
 # Standard library imports
 import argparse
 import copy
@@ -13,6 +15,13 @@ USER_TOKEN_ARG_NAME = "--token"
 
 
 def init_defaults():
+    """Init invocation context data tree
+
+    The purpose of the invocation context data tree is to simplify propagation of multiple
+    common function invocation parameters
+
+    This function should actually be named init_context
+    """
     return {
         "jira": {
             "scheme": "https",
@@ -48,6 +57,8 @@ def init_defaults():
 
 
 def load_defaults(file_name=DEFAULT_FILE):
+    """Load command line arguments defaults from given file name"""
+
     if os.path.exists(file_name):
         try:
             with open(file_name) as defaults_file:
@@ -64,6 +75,8 @@ def load_defaults(file_name=DEFAULT_FILE):
 
 
 def apply_options(cfg, options):
+    """Apply command line options parsed by the make_common_parser function to the context data
+    tree created by the init_defaults function"""
     cfg = copy.copy(cfg)
     cfg["jira"]["user"]["name"] = options.user_name
     cfg["jira"]["user"]["token"] = options.user_token
@@ -71,11 +84,20 @@ def apply_options(cfg, options):
     return cfg
 
 
-def fmt_dft(v):
-    return "" if v is None else " (default: {0})".format(v)
+def fmt_dft(val):
+    """Generate default argument description
+
+    This secondary utility function is supporting formatting of command line argument help string
+    """
+    return "" if val is None else " (default: {0})".format(val)
 
 
 def make_common_parser(defaults):
+    """Create a new command line argument parser (using argparse module) and populate it with
+    common options
+
+    In case of most applications the returned parser object will be extended by application
+    specific arguments"""
     default_data_path = os.path.relpath(
         os.path.join(
             os.path.realpath(__file__),

@@ -35,6 +35,7 @@ def person_issues(issues, person_data):
 
 
 def detect_story_point_field_id(cfg):
+    """Determine identifier of the story point issue field"""
     url = cjm.request.make_cj_url(cfg, "field")
     response = cjm.request.make_cj_request(cfg, url)
 
@@ -45,7 +46,8 @@ def detect_story_point_field_id(cfg):
     raise cjm.codes.CjmError(cjm.codes.INTEGRATION_ERROR)
 
 
-def request_issue_comments_by_regexp(cfg, issue_key, comment_re):
+def request_issue_comments_regexp(cfg, issue_key, comment_re):
+    """Return these of specific issue's comments that match given regular expression"""
     comments = []
     comments_url = cjm.request.make_cj_url(cfg, "issue", issue_key, "comment")
 
@@ -76,8 +78,9 @@ def request_issue_comments_by_regexp(cfg, issue_key, comment_re):
 
 
 def extract_issue_data(cfg, issue):
-    def __account_id_cb(u):
-        return None if u is None else u["accountId"]
+    """Common function converting jira issue description to a tailored set of properties"""
+    def __account_id_cb(usr):
+        return None if usr is None else usr["accountId"]
 
     return {
         "id": int(issue["id"]),
@@ -91,6 +94,7 @@ def extract_issue_data(cfg, issue):
 
 
 def request_issues_by_keys(cfg, issue_keys):
+    """Return issues identified by one of given keys"""
     if not issue_keys:
         return cjm.codes.NO_ERROR, []
 

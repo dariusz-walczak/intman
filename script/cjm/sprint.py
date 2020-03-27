@@ -1,3 +1,5 @@
+"""Sprint data processing helpers"""
+
 # Standard imports
 import json
 
@@ -12,6 +14,8 @@ import cjm.codes
 
 
 def generate_sprint_period_name(start_dt, end_dt):
+    """Generate a standard sprint period name in form of WWxx-WWyy or WWzz and depending on given
+    time range"""
     _, start_ww, _ = start_dt.isocalendar()
     _, end_ww, _ = end_dt.isocalendar()
 
@@ -22,10 +26,12 @@ def generate_sprint_period_name(start_dt, end_dt):
 
 
 def generate_sprint_name(project_name, start_dt, end_dt):
+    """Generate a standard sprint name"""
     return "{0:s} {1:s}".format(project_name, generate_sprint_period_name(start_dt, end_dt))
 
 
 def load_data(cfg, sprint_file):
+    """Load and validate given sprint data file"""
     schema = cjm.schema.load(cfg, "sprint.json")
     data = json.load(sprint_file)
     jsonschema.validate(data, schema)
@@ -33,6 +39,7 @@ def load_data(cfg, sprint_file):
 
 
 def request_issues_by_sprint(cfg):
+    """Request all issues associated with given sprint"""
     issues = []
 
     sprint_issues_url = cjm.request.make_cj_agile_url(
@@ -59,9 +66,10 @@ def request_issues_by_sprint(cfg):
 
 
 def request_issues_by_comment(cfg, comment):
+    """Request all issues with given comment"""
     issues = []
 
-    sprint_issues_url = cjm.request.make_cj_url(cfg, "search".format(cfg["sprint"]["id"]))
+    sprint_issues_url = cjm.request.make_cj_url(cfg, "search")
 
     jql = 'project = "{0:s}" AND comment ~ "{1:s}"'.format(cfg["project"]["key"], comment)
     start_at = 0

@@ -1,3 +1,5 @@
+"""Commitment data processing helpers"""
+
 # Standard library imports
 import json
 
@@ -10,6 +12,7 @@ import cjm.request
 
 
 def load_data(cfg, commitment_file):
+    """Load and validate given commitment data file"""
     schema = cjm.schema.load(cfg, "commitment.json")
     data = json.load(commitment_file)
     jsonschema.validate(data, schema)

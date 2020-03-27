@@ -1,3 +1,5 @@
+"""General data and data file operations"""
+
 # Standard library imports
 import json
 import sys
@@ -11,6 +13,8 @@ import cjm.schema
 
 
 def load(cfg, file_name, schema_name):
+    """Load and validate specified json data file. Take care for handling of common file system
+       errors"""
     try:
         with open(file_name) as data_file:
             schema = cjm.schema.load(cfg, schema_name)

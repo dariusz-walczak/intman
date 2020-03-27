@@ -1,3 +1,5 @@
+"""Team data processing helpers"""
+
 # Standard library imports
 import json
 
@@ -10,6 +12,7 @@ import cjm.request
 
 
 def load_data(cfg, team_file):
+    """Load and validate given team data file"""
     schema = cjm.schema.load(cfg, "team.json")
     data = json.load(team_file)
     jsonschema.validate(data, schema)
@@ -21,6 +24,10 @@ def load_data(cfg, team_file):
 #     function.
 # @param team_data Team data structure as returned by cjm.team.load_data
 def filter_team_issues(cfg, issues, team_data):
+    """Filter given issue list to exclude issues not assigned to team members
+
+    There is an option to include unassigned issues
+    """
     include_unassigned = cfg["issue"]["include unassigned"]
     valid_account_id_list = (
         [r["account id"] for r in team_data["people"]] +
@@ -30,4 +37,5 @@ def filter_team_issues(cfg, issues, team_data):
 
 
 def format_full_name(person):
+    """Format person full name"""
     return "{0:s}, {1:s}".format(person["last name"], person["first name"])

@@ -66,7 +66,7 @@ def _make_augment_issue_cb(cfg, extended, sprint_data=None):
 
     def __retrieve_ext_committed_sps(issue):
         result_code, comments = \
-            cjm.issue.request_issue_comments_by_regexp(cfg, issue["key"], ext_comment_re)
+            cjm.issue.request_issue_comments_regexp(cfg, issue["key"], ext_comment_re)
 
         if result_code:
             raise cjm.codes.CjmError(result_code)

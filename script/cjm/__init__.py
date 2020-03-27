@@ -1,3 +1,5 @@
+"""Common functionality used by cjm-* and sm-* scripts"""
+
 SM_CREATE_CAPACITY_FILE = "sm-create-capacity-file.py"
 SM_CREATE_COMMITMENT_FILE = "sm-create-commitment-file.py"
 SM_CREATE_SPRINT_FILE = "sm-create-sprint-file.py"

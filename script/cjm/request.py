@@ -1,3 +1,5 @@
+"""Jira API request wrappers and helpers"""
+
 # Standard library imports
 import sys
 import urllib.parse
@@ -15,6 +17,7 @@ _CJ_GADGET_PATH = "/rest/gadget/1.0"
 _CJ_ISSUE_PATH = "/browse"
 
 def make_cj_url(cfg, *resource_path):
+    """Construct a Cloud Jira API url"""
     url_parts = (
         cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_API_PATH, *resource_path)),
         "", "", "")
@@ -22,6 +25,7 @@ def make_cj_url(cfg, *resource_path):
 
 
 def make_cj_agile_url(cfg, *resource_path):
+    """Construct a Jira Agile API url"""
     url_parts = (
         cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_AGILE_PATH, *resource_path)),
         "", "", "")
@@ -29,6 +33,7 @@ def make_cj_agile_url(cfg, *resource_path):
 
 
 def make_cj_gadget_url(cfg, *resource_path):
+    """Construct a Jira Gadget API url"""
     url_parts = (
         cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_GADGET_PATH, *resource_path)),
         "", "", "")
@@ -36,6 +41,7 @@ def make_cj_gadget_url(cfg, *resource_path):
 
 
 def make_cj_issue_url(cfg, *resource_path):
+    """Construct a Jira issue page url"""
     url_parts = (
         cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_ISSUE_PATH, *resource_path)),
         "", "", "")
@@ -43,6 +49,7 @@ def make_cj_issue_url(cfg, *resource_path):
 
 
 def make_cj_request(cfg, url, params=None):
+    """Make Cloud Jira API GET request"""
     params = {} if params is None else params
 
     if cfg["jira"]["user"]["name"] is None:
@@ -71,6 +78,7 @@ def make_cj_request(cfg, url, params=None):
 
 
 def make_cj_post_request(cfg, url, json):
+    """Make Cloud Jira API POST request"""
     if cfg["jira"]["user"]["name"] is None:
         sys.stderr.write(
             "ERROR: Jira user name not specified. Use the '{0:s}' CLI option or the defaults"
