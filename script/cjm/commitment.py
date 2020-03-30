@@ -17,3 +17,8 @@ def load_data(cfg, commitment_file):
     data = json.load(commitment_file)
     jsonschema.validate(data, schema)
     return data
+
+
+def calc_total(issues):
+    """Return sum of story points for given issues"""
+    return sum([int(i["story points"]) for i in issues])

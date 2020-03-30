@@ -2,10 +2,14 @@
 
 # Standard library imports
 import datetime
+import decimal
 
 # Third party imports
 import dateutil.parser
 import numpy
+
+# Project imports
+import cjm.presentation
 
 
 def deserialize_dates(iso_dates, start_date, end_date):
@@ -67,4 +71,60 @@ def process_person_capacity(team_capacity, person_data):
         "holidays": sorted(team_capacity["shared holidays"] + personal_holidays),
         "sprint workday count": sprint_workdays,
         "sprint capacity": sprint_capacity
+    }
+
+
+def make_person_capacity_lut(sprint_data, capacity_data):
+    """Convenience method returning a personal capacity lookup table for given capacity data"""
+    team_capacity = process_team_capacity(sprint_data, capacity_data)
+    return {
+        p["account id"]: process_person_capacity(team_capacity, p)
+        for p in capacity_data["people"]}
+
+
+def determine_alien_status(commitment_value):
+    """Determine commitment ratio status code for given commitment value with the assumption that
+    related capacity is zero"""
+    if commitment_value > 20:
+        return cjm.presentation.STATUS_CODES.HIGHEST
+    elif commitment_value > 10:
+        return cjm.presentation.STATUS_CODES.HIGHER
+    elif commitment_value > 0:
+        return cjm.presentation.STATUS_CODES.HIGH
+    return cjm.presentation.STATUS_CODES.NEUTRAL
+
+
+def determine_ratio_status(ratio):
+    """Determine commitment ratio status code for given commitment ratio"""
+    # pylint: disable=too-many-return-statements
+    if ratio < 40:
+        return cjm.presentation.STATUS_CODES.LOWEST
+    elif ratio < 60:
+        return cjm.presentation.STATUS_CODES.LOWER
+    elif ratio < 80:
+        return cjm.presentation.STATUS_CODES.LOW
+    elif ratio > 140:
+        return cjm.presentation.STATUS_CODES.HIGHEST
+    elif ratio > 120:
+        return cjm.presentation.STATUS_CODES.HIGHER
+    elif ratio > 100:
+        return cjm.presentation.STATUS_CODES.HIGH
+    return cjm.presentation.STATUS_CODES.NEUTRAL
+
+
+def determine_summary(commitment_value, capacity_value):
+    """Determine capacity summary for given commitment and capacity values"""
+    if capacity_value > 0:
+        ratio = decimal.Decimal(commitment_value) / decimal.Decimal(capacity_value) * 100
+        ratio = int(ratio.quantize(decimal.Decimal("0"), decimal.ROUND_HALF_UP))
+        status = determine_ratio_status(ratio)
+    else:
+        ratio = None
+        status = determine_alien_status(commitment_value - capacity_value)
+
+    return {
+        "capacity": capacity_value,
+        "commitment": commitment_value,
+        "ratio": ratio,
+        "status": status
     }

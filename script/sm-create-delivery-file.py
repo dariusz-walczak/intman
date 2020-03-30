@@ -21,6 +21,7 @@ import cjm.cfg
 import cjm.codes
 import cjm.commitment
 import cjm.issue
+import cjm.run
 import cjm.schema
 import cjm.sprint
 import cjm.team
@@ -338,4 +339,4 @@ def print_summary(delivery, team_data):
 
 
 if __name__ == '__main__':
-    sys.exit(main(parse_options(sys.argv[1:])))
+    cjm.run.run(main, parse_options(sys.argv[1:]))

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script creating sprint commitment report file"""
 
 # Standard library imports
-import decimal
 import json
 import sys
-import traceback
 
 # Third party imports
 import colorama
@@ -20,6 +19,7 @@ import cjm.codes
 import cjm.data
 import cjm.issue
 import cjm.request
+import cjm.run
 import cjm.schema
 import cjm.sprint
 import cjm.team
@@ -29,6 +29,7 @@ COMMENT_ARG_NAME = "--by-comment"
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -74,6 +75,7 @@ def parse_options(args):
 
 
 def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["issue"]["include unassigned"] = options.include_unassigned
 
@@ -140,7 +142,7 @@ def main(options):
         print(json.dumps(commitment, indent=4, sort_keys=False))
     else:
         if options.show_summary:
-            print_summary(team_data, sprint_data, capacity_data, commitment)
+            print_summary(cfg, team_data, sprint_data, capacity_data, commitment)
         else:
             print_issue_list(commitment, team_data)
 
@@ -149,6 +151,7 @@ def main(options):
 
 
 def print_issue_list(commitment_data, team_data):
+    """Print the detailed issue status table"""
     person_lut = dict((p["account id"], p) for p in team_data["people"])
 
     def __fmt_assignee(issue):
@@ -165,62 +168,13 @@ def print_issue_list(commitment_data, team_data):
         tablefmt="orgtbl"))
 
 
-def format_ratio_status(ratio):
-    if ratio < 40:
-        return colorama.Fore.BLUE + colorama.Style.BRIGHT + "🡇🡇🡇" + colorama.Style.RESET_ALL
-    elif ratio < 60:
-        return colorama.Fore.BLUE + "🡇🡇" + colorama.Style.RESET_ALL
-    elif ratio < 80:
-        return colorama.Fore.BLUE + colorama.Style.DIM + "🡇" + colorama.Style.RESET_ALL
-    elif ratio > 140:
-        return colorama.Fore.RED + colorama.Style.BRIGHT + "🡅🡅🡅" + colorama.Style.RESET_ALL
-    elif ratio > 120:
-        return colorama.Fore.RED + "🡅🡅" + colorama.Style.RESET_ALL
-    elif ratio > 100:
-        return colorama.Fore.RED + colorama.Style.DIM + "🡅" + colorama.Style.RESET_ALL
-    return None
-
-
-def format_alien_status(commitment):
-    if commitment > 20:
-        return colorama.Fore.RED + colorama.Style.BRIGHT + "🡅🡅🡅" + colorama.Style.RESET_ALL
-    elif commitment > 10:
-        return colorama.Fore.RED + "🡅🡅🡅" + colorama.Style.RESET_ALL
-    elif commitment > 0:
-        return colorama.Fore.RED + colorama.Style.DIM + "🡅" + colorama.Style.RESET_ALL
-    else:
-        return ""
-
-
-def determine_row_summary(commitment, capacity):
-    if capacity > 0:
-        ratio = decimal.Decimal(commitment) / decimal.Decimal(capacity) * 100
-        ratio = int(ratio.quantize(decimal.Decimal("0"), decimal.ROUND_HALF_UP))
-        status = format_ratio_status(ratio)
-    else:
-        ratio = None
-        status = format_alien_status(commitment - capacity)
-
-    return {
-        "capacity": capacity,
-        "commitment": commitment,
-        "ratio": ratio,
-        "status": status
-    }
-
-
-def sum_commitment(issues):
-    return sum([int(i["story points"]) for i in issues])
-
-def print_summary(team_data, sprint_data, capacity_data, commitment_data):
-    team_capacity = cjm.capacity.process_team_capacity(sprint_data, capacity_data)
-    person_capacity_lut = {
-        p["account id"]: cjm.capacity.process_person_capacity(team_capacity, p)
-        for p in capacity_data["people"]}
+def print_summary(cfg, team_data, sprint_data, capacity_data, commitment_data):
+    """Print the report summary table"""
+    person_capacity_lut = cjm.capacity.make_person_capacity_lut(sprint_data, capacity_data)
     total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())
 
-    assigned_commitment = sum_commitment(cjm.issue.assigned_issues(commitment_data))
-    unassigned_commitment = sum_commitment(cjm.issue.unassigned_issues(commitment_data))
+    assigned_commitment = cjm.commitment.calc_total(cjm.issue.assigned_issues(commitment_data))
+    unassigned_commitment = cjm.commitment.calc_total(cjm.issue.unassigned_issues(commitment_data))
 
     def __v2s(val):
         return "" if val is None else str(val)
@@ -232,25 +186,27 @@ def print_summary(team_data, sprint_data, capacity_data, commitment_data):
     def __make_person_row(person_data):
         capacity = (
             person_capacity_lut.get(person_data["account id"], {}).get("sprint capacity", 0))
-        commitment = sum_commitment(
+        commitment = cjm.commitment.calc_total(
             cjm.issue.person_issues(commitment_data["issues"], person_data))
-        summary = determine_row_summary(commitment, capacity)
+        summary = cjm.capacity.determine_summary(commitment, capacity)
 
         def __col(val):
             if summary["capacity"] or summary["commitment"]:
-                return (colorama.Fore.WHITE + __v2s(val) + colorama.Style.RESET_ALL)
+                return colorama.Fore.WHITE + __v2s(val) + colorama.Style.RESET_ALL
             else:
-                return (colorama.Fore.WHITE + colorama.Style.DIM + __v2s(val) +
-                        colorama.Style.RESET_ALL)
+                return (
+                    colorama.Fore.WHITE + colorama.Style.DIM + __v2s(val) +
+                    colorama.Style.RESET_ALL)
 
         return (
             __col(cjm.team.format_full_name(person_data)), __col(summary["commitment"]),
-            __col(summary["capacity"]), __col(__r2s(summary["ratio"])), summary["status"])
+            __col(summary["capacity"]), __col(__r2s(summary["ratio"])),
+            __col(cjm.presentation.format_status(summary["status"])))
 
 
     def __make_unassigned_row():
         capacity = total_capacity - assigned_commitment
-        summary = determine_row_summary(unassigned_commitment, capacity)
+        summary = cjm.capacity.determine_summary(unassigned_commitment, capacity)
 
         def __col(val):
             if summary["commitment"]:
@@ -261,11 +217,12 @@ def print_summary(team_data, sprint_data, capacity_data, commitment_data):
 
         return (
             __col("Unassigned"), __col(summary["commitment"]), __col(summary["capacity"]),
-            __col(__r2s(summary["ratio"])), __col(summary["status"]))
+            __col(__r2s(summary["ratio"])),
+            __col(cjm.presentation.format_status(summary["status"])))
 
     def __make_total_row():
         commitment = assigned_commitment + unassigned_commitment
-        summary = determine_row_summary(commitment, total_capacity)
+        summary = cjm.capacity.determine_summary(commitment, total_capacity)
 
         def __col(val):
             return (colorama.Fore.WHITE + colorama.Style.BRIGHT + __v2s(val) +
@@ -273,7 +230,8 @@ def print_summary(team_data, sprint_data, capacity_data, commitment_data):
 
         return (
             __col("Team Summary"), __col(summary["commitment"]), __col(summary["capacity"]),
-            __col(__r2s(summary["ratio"])), __col(summary["status"]))
+            __col(__r2s(summary["ratio"])),
+            __col(cjm.presentation.format_status(summary["status"])))
 
 
     def __sort_cb(person):
@@ -281,17 +239,11 @@ def print_summary(team_data, sprint_data, capacity_data, commitment_data):
 
     print(tabulate.tabulate(
         [__make_person_row(p) for p in sorted(team_data["people"], key=__sort_cb)] +
-        ([__make_unassigned_row()] if options.include_unassigned else []) +
+        ([__make_unassigned_row()] if cfg["issue"]["include unassigned"] else []) +
         [__make_total_row()],
         headers=["Full Name", "Commitment", "Capacity", "Com/Cap Ratio", "Status"],
         tablefmt="orgtbl"))
 
 
 if __name__ == '__main__':
-    options = parse_options(sys.argv[1:])
-    try:
-        sys.exit(main(options))
-    except cjm.codes.CjmError as e:
-        if options.verbose:
-            traceback.print_exc(file=sys.stderr)
-        exit(e.code)
+    cjm.run.run(main, parse_options(sys.argv[1:]))
