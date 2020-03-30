@@ -41,7 +41,8 @@ def init_defaults():
             "id": None
         },
         "issue": {
-            "include unassigned": False
+            "include unassigned": False,
+            "allow late delivery": False
         },
         "client": {
             "name": None

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script creating sprint delivery report file"""
 
 # Standard library imports
 import copy
@@ -8,7 +9,6 @@ import json
 import re
 import sys
 import datetime
-import bisect
 
 # Third party imports
 import jsonschema
@@ -27,6 +27,7 @@ import cjm.team
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -162,10 +163,92 @@ def _join_issue_lists(issues_com, issues_ext):
     return issues_com + [i for i in issues_ext if __ext_issue_uniq(i)]
 
 
+def _process_dropped_issues(cfg, sprint_data, all_issues):
+    """Determine dropped status of given issues"""
+    issues_drp = cjm.sprint.request_issues_by_comment(
+        cfg, "{0:s}/Dropped".format(sprint_data["comment prefix"]))
+
+    issue_lut = {i["id"]: i for i in all_issues}
+
+    for dropped_issue in issues_drp:
+        issue = issue_lut.get(dropped_issue["id"])
+
+        if issue is None:
+            sys.stderr.write(
+                "WARNING: An issue ({0:s}) has been found to have the dropped comment but no"
+                " corresponding committed or extended comment\n".format(dropped_issue["id"]))
+        else:
+            issue["dropped"] = True
+
+    return all_issues
+
+
+def _process_delivered_issues(cfg, sprint_data, all_issues):
+    """Determine delivery status of given issues.
+
+    Optionally, allow late delivery issues, i.e. issues that were delivered after the sprint end
+    but still contain (manually added) `/Delivered` comment
+    """
+    if cfg["issue"]["allow late delivery"]:
+        issues_delivered = cjm.sprint.request_issues_by_comment(
+            cfg, "{0:s}/Delivered".format(sprint_data["comment prefix"]))
+
+        delivered_ids = [i["id"] for i in issues_delivered]
+    else:
+        delivered_ids = []
+
+    sprint_end_date = (
+        dateutil.parser.parse(sprint_data["end date"]).date() + datetime.timedelta(days=1))
+
+    def __issue_done(issue):
+        if issue["id"] in delivered_ids:
+            return True
+
+        if issue["status"] != "Done" or issue["resolution date"] is None:
+            return False
+
+        issue_resolve_date = dateutil.parser.parse(issue["resolution date"]).date()
+        return issue_resolve_date < sprint_end_date
+
+    return [{**i, "delivered": __issue_done(i)} for i in all_issues]
+
+
+def _make_delivery_data(all_issues):
+    for issue in all_issues:
+        if issue["dropped"]:
+            issue["committed story points"] = 0
+            issue["delivered story points"] = 0
+            issue["outcome"] = "drop"
+        elif issue["delivered"]:
+            issue["delivered story points"] = issue["story points"]
+            issue["outcome"] = "done"
+        else:
+            issue["delivered story points"] = 0
+            issue["outcome"] = "open"
+
+        issue["income"] = "extend" if issue["extended"] else "commit"
+
+    total_committed = sum([i["committed story points"] for i in all_issues])
+    total_delivered = sum([i["story points"] for i in all_issues if i["delivered"]])
+
+    delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
+    delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
+
+    return {
+        "total": {
+            "committed": total_committed,
+            "delivered": total_delivered
+        },
+        "ratio": str(delivery_ratio),
+        "issues": sorted(all_issues, key=lambda i: i["id"])
+    }
+
 
 def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["issue"]["include unassigned"] = True
+    cfg["issue"]["allow late delivery"] = options.delivery_comment
 
     # Load sprint data:
 
@@ -203,76 +286,16 @@ def main(options):
 
     issues_ext = _retrieve_extension_issues(cfg, sprint_data, team_data)
 
-    issues = sorted(_join_issue_lists(issues_com, issues_ext), key=lambda i: i["id"])
+    issues = _join_issue_lists(issues_com, issues_ext)
 
     # Request dropped issues and change story point value to 0
-    issues_drp = cjm.sprint.request_issues_by_comment(
-        cfg, "{0:s}/Dropped".format(sprint_data["comment prefix"]))
 
-    for iss in issues_drp:
-        dropped_issue = bisect.bisect([i["id"] for i in issues], iss["id"])
-
-        if dropped_issue > len(issues):
-            sys.stderr.write(
-                "WARNING: Issue {0:s} has dropped comment for this sprint,"
-                " but it doesn't appear to be in commited or extended issues\n"
-                "".format(iss["id"]))
-        else:
-            issues[dropped_issue-1]["dropped"] = True
-
-
-    sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
-    sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
-
-    issues_delivered = []
-    if options.delivery_comment:
-        issues_delivered = cjm.sprint.request_issues_by_comment(
-            cfg, "{0:s}/Delivered".format(sprint_data["comment prefix"]))
-
-    delivered_issues_ids = [i["id"] for i in issues_delivered]
-    def __issue_done(issue):
-        if options.delivery_comment and issue["id"] in delivered_issues_ids:
-            return True
-
-        if issue["status"] != "Done" or issue["resolution date"] is None:
-            return False
-
-        issue_resolve_date = dateutil.parser.parse(issue["resolution date"]).date()
-        return issue_resolve_date < sprint_end_date
+    issues = _process_dropped_issues(cfg, sprint_data, issues)
+    issues = _process_delivered_issues(cfg, sprint_data, issues)
 
     # Determine delivered story points
 
-    for issue in issues:
-        issue["delivered"] = __issue_done(issue)
-
-        if issue["dropped"]:
-            issue["committed story points"] = 0
-            issue["delivered story points"] = 0
-            issue["outcome"] = "drop"
-        elif issue["delivered"]:
-            issue["delivered story points"] = issue["story points"]
-            issue["outcome"] = "done"
-        else:
-            issue["delivered story points"] = 0
-            issue["outcome"] = "open"
-
-        issue["income"] = "extend" if issue["extended"] else "commit"
-
-    total_committed = sum([i["committed story points"] for i in issues])
-    total_delivered = sum([i["story points"] for i in issues if __issue_done(i)])
-
-    delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
-    delivery_ratio = delivery_ratio.quantize(decimal.Decimal(".0000"), decimal.ROUND_HALF_UP)
-
-    delivery_data = {
-        "total": {
-            "committed": total_committed,
-            "delivered": total_delivered
-        },
-        "ratio": str(delivery_ratio),
-        "issues": issues,
-    }
-
+    delivery_data = _make_delivery_data(issues)
     delivery_schema = cjm.schema.load(cfg, "delivery.json")
     jsonschema.validate(delivery_data, delivery_schema)
 
@@ -288,6 +311,7 @@ def main(options):
 
 
 def print_issue_list(delivery, team_data):
+    """Print the detailed issue status table"""
     person_lut = dict((p["account id"], p) for p in team_data["people"])
 
     def __fmt_assignee(issue):
@@ -309,6 +333,7 @@ def print_issue_list(delivery, team_data):
 
 
 def print_summary(delivery, team_data):
+    """Print the report summary table"""
     pass
 
 
