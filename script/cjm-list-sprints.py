@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script listing all sprints related to given board"""
 
 # Standard library imports
 import sys
@@ -19,6 +20,7 @@ DEFAULT_FILE = ".cjm.json"
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -43,6 +45,7 @@ def parse_options(args):
 
 
 def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["board"]["id"] = options.board_id
 
@@ -80,8 +83,8 @@ def main(options):
         print(json.dumps(sprints, indent=4, sort_keys=False))
     else:
 
-        def __fmt_opt(v):
-            return "" if v is None else str(v)
+        def __fmt_opt(val):
+            return "" if val is None else str(val)
 
         print(tabulate.tabulate(
             [(s["id"], s["name"], s["state"], __fmt_opt(s["start_date"]), __fmt_opt(s["end_date"]))

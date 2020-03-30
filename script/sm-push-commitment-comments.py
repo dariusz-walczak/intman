@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Push comments indicating that given issues are committed"""
 
 # Standard library imports
 import sys
 
 # Third party imports
-import jsonschema
 import tabulate
 
 # Project imports
 import cjm.cfg
+import cjm.issue
 import cjm.schema
 import cjm.codes
 import cjm.sprint
@@ -19,97 +20,9 @@ import cjm.request
 
 _COMMITMENT_PREFIX_ARG_NAME = "--prefix"
 
-def make_comment_body(comment_text):
-    return {
-          "body": {
-            "type": "doc",
-            "version": 1,
-            "content": [
-                {
-                "type": "paragraph",
-                "content": [
-                    {
-                    "text": comment_text,
-                    "type": "text"
-                    }
-                    ] 
-                }
-              ]
-            }
-          }
-
-def main(options):
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
-    cfg["issue"]["include unassigned"] = True
-
-    # Load sprint data:
-
-    try:
-        with open(options.sprint_file) as sprint_file:
-            sprint_data = cjm.sprint.load_data(cfg, sprint_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Sprint data file ('{0:s}') I/O error\n".format(options.sprint_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    sprint_schema = cjm.schema.load(cfg, "sprint.json")
-    jsonschema.validate(sprint_data, sprint_schema)
-
-    cfg["sprint"]["id"] = sprint_data.get("id")
-    cfg["project"]["key"] = sprint_data["project"]["key"]
-
-    if cfg["sprint"]["id"] is None:
-        sys.stderr.write(
-            "ERROR: The sprint id is not specified by the sprint data file ('{0:s}')\n"
-            "".format(options.sprint_file))
-        return cjm.codes.CONFIGURATION_ERROR
-
-    # Load commitment data:
-
-    try:
-        with open(options.commitment_file) as commitment_file:
-            commitment_data = cjm.commitment.load_data(cfg, commitment_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Commitment data file ('{0:s}') I/O error\n".format(options.commitment_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    commitment_schema = cjm.schema.load(cfg, "commitment.json")
-    jsonschema.validate(commitment_data, commitment_schema)
-
-    comment_to_be_added = sprint_data["comment prefix"] + "/Committed"
-
-    # Retrieve all issues with the commitment comment added:
-    all_issues_with_comments = cjm.sprint.request_issues_by_comment(cfg, comment_to_be_added)
-
-    commitment_issues = commitment_data["issues"]
-
-    ids_commitment_issues = set([issue["id"] for issue in commitment_issues])
-    ids_all_issues_with_comments = set([issue["id"] for issue in all_issues_with_comments])
-    ids_commitment_issues_without_comments = ids_commitment_issues - ids_all_issues_with_comments
-
-    if options.preview:
-        print(tabulate.tabulate(
-            [(i["id"], i["key"], i["summary"],comment_to_be_added ) for i in commitment_issues if i["id"] in ids_commitment_issues_without_comments],
-            headers=["Id", "Key", "Summary", "Comment to be added"], tablefmt="orgtbl"))
-        return 0
-
-    for issue in commitment_issues:
-        if issue["id"] in ids_commitment_issues_without_comments:
-            comment_url = cjm.request.make_cj_url(cfg, "issue", str(issue["id"]), "comment")
-            body = make_comment_body(comment_to_be_added)
-
-            if options.verbose:
-                print(f"Posting '{comment_to_be_added}' to issue {issue['key']}")
-
-            cjm.request.make_cj_post_request(cfg, comment_url, body)
-            
-    return cjm.codes.NO_ERROR
-
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -141,6 +54,60 @@ def parse_options(args):
         help="Dont push comments but print whats about to happen to std output")
 
     return parser.parse_args(args)
+
+
+def main(options):
+    """Entry function"""
+    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
+    cfg["issue"]["include unassigned"] = True
+
+    # Load sprint data:
+
+    sprint_data = cjm.data.load(cfg, options.sprint_file, "sprint.json")
+
+    cfg["sprint"]["id"] = sprint_data.get("id")
+    cfg["project"]["key"] = sprint_data["project"]["key"]
+
+    if cfg["sprint"]["id"] is None:
+        sys.stderr.write(
+            "ERROR: The sprint id is not specified by the sprint data file ('{0:s}')\n"
+            "".format(options.sprint_file))
+        return cjm.codes.CONFIGURATION_ERROR
+
+
+    commitment_data = cjm.data.load(cfg, options.commitment_file, "commitment.json")
+
+
+    comment_to_be_added = sprint_data["comment prefix"] + "/Committed"
+
+    # Retrieve all issues with the commitment comment added:
+    all_issues_with_comments = cjm.sprint.request_issues_by_comment(cfg, comment_to_be_added)
+
+    commitment_issues = commitment_data["issues"]
+
+    ids_commitment_issues = set([issue["id"] for issue in commitment_issues])
+    ids_all_issues_with_comments = set([issue["id"] for issue in all_issues_with_comments])
+    ids_issues_without_comments = ids_commitment_issues - ids_all_issues_with_comments
+
+    if options.preview:
+        print(tabulate.tabulate(
+            [(i["id"], i["key"], i["summary"], comment_to_be_added)
+             for i in commitment_issues
+             if i["id"] in ids_issues_without_comments],
+            headers=["Id", "Key", "Summary", "Comment to be added"], tablefmt="orgtbl"))
+        return 0
+
+    for issue in commitment_issues:
+        if issue["id"] in ids_issues_without_comments:
+            comment_url = cjm.request.make_cj_url(cfg, "issue", str(issue["id"]), "comment")
+            body = cjm.issue.make_comment_body(comment_to_be_added)
+
+            if options.verbose:
+                print(f"Posting '{comment_to_be_added}' to issue {issue['key']}")
+
+            cjm.request.make_cj_post_request(cfg, comment_url, body)
+
+    return cjm.codes.NO_ERROR
 
 
 if __name__ == "__main__":

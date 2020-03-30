@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script listing all available Jira projects"""
 
 # Standard library imports
 import sys
@@ -16,6 +17,7 @@ import cjm.request
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -23,6 +25,7 @@ def parse_options(args):
 
 
 def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
 
     response = requests.get(

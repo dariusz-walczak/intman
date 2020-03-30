@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script from an old toolchain (STL=Sprint Task List) left for reference reasons"""
 
 # Standard library imports
 import argparse
@@ -18,6 +19,7 @@ import stl.sprint
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = json.load(open(".stl.json"))
     epic_list_default = defaults.get("epic list file", "epic-list.json")
     sow_data_default = defaults.get("sow data path", ".")
@@ -36,7 +38,7 @@ def parse_options(args):
         "--stl-data", action="store", metavar="PATH", dest="stl_data_path",
         default=stl_data_default,
         help="The stl data directory PATH (default: '{0:s}')".format(stl_data_default))
-        
+
     parser.add_argument(
         "jira_xml", action="store", metavar="FILE",
         help="The jira search result xml FILE path")
@@ -45,6 +47,7 @@ def parse_options(args):
 
 
 def main(options):
+    """Entry function"""
     # cfg = {
     #     "stl_data_path": options.stl_data_path,
     #     "sow_data_path": options.sow_data_path

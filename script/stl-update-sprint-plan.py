@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script from an old toolchain (STL=Sprint Task List) left for reference reasons"""
 
 # Standard library imports
 import argparse
@@ -21,6 +22,7 @@ _SPRINT_DATA_OPT = "--sprint-data"
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = json.load(open(".stl.json"))
     epic_list_default = defaults.get("epic list file", "epic-list.json")
     sprint_list_default = defaults.get("sprint list file", "sprint-list.json")
@@ -57,6 +59,7 @@ def parse_options(args):
 
 
 def extract_sprint_data(channel_element, sprint_data):
+    """Extract sprint weeks from the input file"""
     raw_sprint_name = channel_element.find("title").text
 
     name_match = re.search(r"WW(?P<ww1>\d\d)-WW(?P<ww2>\d\d)", raw_sprint_name)
@@ -69,6 +72,7 @@ def extract_sprint_data(channel_element, sprint_data):
 
 
 def main(options):
+    """Entry function"""
     cfg = {
         "stl_data_path": options.stl_data_path,
         "sow_data_path": options.sow_data_path,

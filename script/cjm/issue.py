@@ -120,3 +120,24 @@ def request_issues_by_keys(cfg, issue_keys):
             break
 
     return cjm.codes.NO_ERROR, issues
+
+
+def make_comment_body(comment_text):
+    """Build body of the add issue comment request"""
+    return {
+        "body": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "text": comment_text,
+                            "type": "text"
+                        }
+                    ]
+                }
+            ]
+        }
+    }

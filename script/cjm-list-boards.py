@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script listing boards"""
 
 # Standard library imports
 import sys
@@ -18,6 +19,7 @@ DEFAULT_FILE = ".cjm.json"
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -37,6 +39,7 @@ def parse_options(args):
 
 
 def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["project"]["key"] = options.project_key
 
