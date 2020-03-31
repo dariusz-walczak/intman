@@ -8,7 +8,7 @@ import sys
 import traceback
 
 # Project imports:
-import gem.error
+import cjm.codes
 
 
 def run(main, options):
@@ -23,8 +23,8 @@ def run(main, options):
     a GEM exception occurs
     """
     try:
-        sys.exit(main(options).value)
-    except gem.error.GemError as e:
+        sys.exit(main(options))
+    except cjm.codes.CjmError as e:
         if options.verbose:
             traceback.print_exc(file=sys.stderr)
-        sys.exit(e.code.value)
+        sys.exit(e.code)
