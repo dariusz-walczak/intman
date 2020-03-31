@@ -12,7 +12,7 @@ STATUS_CODES = enum.Enum(
     ("LOWEST", "LOWER", "LOW", "NEUTRAL", "HIGH", "HIGHER", "HIGHEST"))
 
 
-def format_status(code):
+def cb_format_status_cell(importance_code, value):
     """Provide presentation string representing given status code"""
     return {
         STATUS_CODES.HIGHEST: (
@@ -27,4 +27,64 @@ def format_status(code):
             colorama.Fore.BLUE + "🡇🡇" + colorama.Style.RESET_ALL),
         STATUS_CODES.LOWEST: (
             colorama.Fore.BLUE + colorama.Style.BRIGHT + "🡇🡇🡇" + colorama.Style.RESET_ALL)
-    }.get(code, "")
+    }.get(value, "")
+
+
+IMPORTANCE_CODES = enum.Enum("ImportanceCodes", ("LOW", "NORMAL", "HIGH"))
+
+def cb_format_default_cell(importance_code, value):
+    """Format presentation string using given value and importance code
+
+    :param code: One of the IMPORTANCE_CODES enum values; Influences cell color and brightness
+    :param value: Value to be converted to string and annotated with the presentation directives
+    """
+    return {
+        IMPORTANCE_CODES.LOW: (
+            colorama.Fore.WHITE + colorama.Style.DIM + value + colorama.Style.RESET_ALL),
+        IMPORTANCE_CODES.NORMAL: (
+            colorama.Fore.WHITE + value + colorama.Style.RESET_ALL),
+        IMPORTANCE_CODES.HIGH: (
+            colorama.Fore.WHITE + colorama.Style.BRIGHT + value + colorama.Style.RESET_ALL)
+    }.get(importance_code, value)
+
+
+def cb_format_default_value(val):
+    return "" if val is None else str(val)
+
+def cb_format_ratio_value(ratio):
+    return "" if ratio is None else "{0:14d}%".format(ratio)
+
+
+def default_cell(key):
+    return {
+        "key": key,
+        "value_cb": cb_format_default_value,
+        "format_cb": cb_format_default_cell
+    }
+
+def status_cell(key):
+    return {
+        "key": key,
+        "value_cb": None,
+        "format_cb": cb_format_status_cell
+    }
+
+def ratio_cell(key):
+    return {
+        "key": key,
+        "value_cb": cb_format_ratio_value,
+        "format_cb": cb_format_default_cell
+    }
+
+
+def format_cell(importance_code, cell, row):
+    value_cb = cell["value_cb"]
+    value_key = cell["key"]
+    value_raw = row[value_key]
+    format_cb = cell["format_cb"]
+    value = value_raw if value_cb is None else value_cb(value_raw)
+    return format_cb(importance_code, value)
+
+
+def format_row(importance_code, cells, row):
+    return [format_cell(importance_code, cell, row) for cell in cells]

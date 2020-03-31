@@ -7,13 +7,13 @@ import json
 import sys
 
 # Third party imports
-import colorama
 import jsonschema
 import tabulate
 
 # Project imports
 import cjm
 import cjm.capacity
+import cjm.commitment
 import cjm.cfg
 import cjm.codes
 import cjm.data
@@ -173,15 +173,17 @@ def print_summary(cfg, team_data, sprint_data, capacity_data, commitment_data):
     person_capacity_lut = cjm.capacity.make_person_capacity_lut(sprint_data, capacity_data)
     total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())
 
-    assigned_commitment = cjm.commitment.calc_total(cjm.issue.assigned_issues(commitment_data))
-    unassigned_commitment = cjm.commitment.calc_total(cjm.issue.unassigned_issues(commitment_data))
+    assigned_commitment = cjm.commitment.calc_total(
+        cjm.issue.assigned_issues(commitment_data["issues"]))
+    unassigned_commitment = cjm.commitment.calc_total(
+        cjm.issue.unassigned_issues(commitment_data["issues"]))
 
-    def __v2s(val):
-        return "" if val is None else str(val)
-
-    def __r2s(ratio):
-        return "" if ratio is None else "{0:14d}%".format(ratio)
-
+    cells = (
+        cjm.presentation.default_cell("caption"),
+        cjm.presentation.default_cell("commitment"),
+        cjm.presentation.default_cell("capacity"),
+        cjm.presentation.ratio_cell("ratio"),
+        cjm.presentation.status_cell("status"))
 
     def __make_person_row(person_data):
         capacity = (
@@ -190,48 +192,35 @@ def print_summary(cfg, team_data, sprint_data, capacity_data, commitment_data):
             cjm.issue.person_issues(commitment_data["issues"], person_data))
         summary = cjm.capacity.determine_summary(commitment, capacity)
 
-        def __col(val):
-            if summary["capacity"] or summary["commitment"]:
-                return colorama.Fore.WHITE + __v2s(val) + colorama.Style.RESET_ALL
-            else:
-                return (
-                    colorama.Fore.WHITE + colorama.Style.DIM + __v2s(val) +
-                    colorama.Style.RESET_ALL)
+        if summary["capacity"] or summary["commitment"]:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.NORMAL
+        else:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.LOW
 
-        return (
-            __col(cjm.team.format_full_name(person_data)), __col(summary["commitment"]),
-            __col(summary["capacity"]), __col(__r2s(summary["ratio"])),
-            __col(cjm.presentation.format_status(summary["status"])))
+        return cjm.presentation.format_row(
+            importance_code, cells,
+            {**summary, "caption": cjm.team.format_full_name(person_data)})
 
 
     def __make_unassigned_row():
         capacity = total_capacity - assigned_commitment
         summary = cjm.capacity.determine_summary(unassigned_commitment, capacity)
 
-        def __col(val):
-            if summary["commitment"]:
-                return __v2s(val)
-            else:
-                return (colorama.Fore.WHITE + colorama.Style.DIM + __v2s(val) +
-                        colorama.Style.RESET_ALL)
+        if summary["commitment"]:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.NORMAL
+        else:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.LOW
 
-        return (
-            __col("Unassigned"), __col(summary["commitment"]), __col(summary["capacity"]),
-            __col(__r2s(summary["ratio"])),
-            __col(cjm.presentation.format_status(summary["status"])))
+        return cjm.presentation.format_row(
+            importance_code, cells, {**summary, "caption": "Unasigned"})
 
     def __make_total_row():
         commitment = assigned_commitment + unassigned_commitment
         summary = cjm.capacity.determine_summary(commitment, total_capacity)
 
-        def __col(val):
-            return (colorama.Fore.WHITE + colorama.Style.BRIGHT + __v2s(val) +
-                    colorama.Style.RESET_ALL)
-
-        return (
-            __col("Team Summary"), __col(summary["commitment"]), __col(summary["capacity"]),
-            __col(__r2s(summary["ratio"])),
-            __col(cjm.presentation.format_status(summary["status"])))
+        return cjm.presentation.format_row(
+            cjm.presentation.IMPORTANCE_CODES.HIGH, cells,
+            {**summary, "caption": "Team Summary"})
 
 
     def __sort_cb(person):
