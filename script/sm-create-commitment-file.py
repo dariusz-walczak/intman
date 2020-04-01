@@ -74,6 +74,34 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
+def _process_sprint_issues(cfg, team_data):
+    issues_all = cjm.sprint.request_issues_by_sprint(cfg)
+    issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
+
+    for issue in issues_team:
+        issue["by sprint"] = True
+        issue["by comment"] = False
+
+    return dict((i["id"], i) for i in issues_team)
+
+
+def _process_commented_issues(cfg, sprint_data, team_data, issue_lut, comment_postfix):
+    issues_all = cjm.sprint.request_issues_by_comment(
+        cfg, "{0:s}/{1:s}".format(sprint_data["comment prefix"], comment_postfix))
+    issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
+
+    for issue in issues_team:
+        issue_id = issue["id"]
+        if issue_id in issue_lut:
+            issue_lut[issue_id]["by comment"] = True
+        else:
+            issue_lut[issue_id] = issue
+            issue_lut[issue_id]["by sprint"] = False
+            issue_lut[issue_id]["by comment"] = True
+
+    return issue_lut
+
+
 def main(options):
     """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
@@ -104,35 +132,25 @@ def main(options):
 
     # Retrieve issues assigned to the sprint:
 
-    issues_all = cjm.sprint.request_issues_by_sprint(cfg)
-    issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
-
-    for issue in issues_team:
-        issue["by sprint"] = True
-        issue["by comment"] = False
-
-    total_sp = sum([int(i["story points"]) for i in issues_team if i["story points"] is not None])
-    issue_lut = dict((i["id"], i) for i in issues_team)
+    if options.by_sprint_flag:
+        issue_lut = _process_sprint_issues(cfg, team_data)
+    else:
+        issue_lut = {}
 
     # Retrieve issues with the commitment comment added:
 
-    issues_all = cjm.sprint.request_issues_by_comment(
-        cfg, "{0:s}/Committed".format(sprint_data["comment prefix"]))
-    issues_team = cjm.team.filter_team_issues(cfg, issues_all, team_data)
+    if options.by_comment_flag:
+        issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Committed")
+        issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Extended")
 
-    for issue in issues_team:
-        issue_id = issue["id"]
-        if issue_id in issue_lut:
-            issue_lut[issue_id]["by comment"] = True
-        else:
-            issue_lut[issue_id] = issue
-            issue_lut[issue_id]["by sprint"] = False
-            issue_lut[issue_id]["by comment"] = True
-
-    issue_lut.update(dict((i["id"], i) for i in issues_team if i["id"] not in issue_lut))
+    #issue_lut.update(dict((i["id"], i) for i in issues_team if i["id"] not in issue_lut))
+    ## not needed?
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
 
+    total_sp = sum(
+        [int(i["story points"]) for i in issue_lut.values()
+         if i["story points"] is not None])
     commitment = {"total": {"committed": total_sp}, "issues": issues}
 
     commitment_schema = cjm.schema.load(cfg, "commitment.json")
