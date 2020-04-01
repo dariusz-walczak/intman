@@ -21,4 +21,4 @@ def load_data(cfg, commitment_file):
 
 def calc_total(issues):
     """Return sum of story points for given issues"""
-    return sum([int(i["story points"]) for i in issues])
+    return sum([int(i["story points"]) for i in issues if i["story points"] is not None])
