@@ -52,7 +52,7 @@ def cb_format_default_value(val):
     return "" if val is None else str(val)
 
 def cb_format_ratio_value(ratio):
-    return "" if ratio is None else "{0:14d}%".format(ratio)
+    return "" if ratio is None else "{0:14.2f}%".format(ratio)
 
 
 def default_cell(key):

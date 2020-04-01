@@ -182,8 +182,8 @@ def print_summary(cfg, team_data, sprint_data, capacity_data, commitment_data):
         cjm.presentation.default_cell("caption"),
         cjm.presentation.default_cell("commitment"),
         cjm.presentation.default_cell("capacity"),
-        cjm.presentation.ratio_cell("ratio"),
-        cjm.presentation.status_cell("status"))
+        cjm.presentation.ratio_cell("commitment ratio"),
+        cjm.presentation.status_cell("commitment status"))
 
     def __make_person_row(person_data):
         capacity = (
@@ -221,7 +221,6 @@ def print_summary(cfg, team_data, sprint_data, capacity_data, commitment_data):
         return cjm.presentation.format_row(
             cjm.presentation.IMPORTANCE_CODES.HIGH, cells,
             {**summary, "caption": "Team Summary"})
-
 
     def __sort_cb(person):
         return (person["last name"], person["first name"])

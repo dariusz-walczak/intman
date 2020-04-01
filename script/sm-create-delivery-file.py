@@ -17,9 +17,12 @@ import dateutil.parser
 
 # Project imports
 import cjm
+import cjm.capacity
 import cjm.cfg
 import cjm.codes
 import cjm.commitment
+import cjm.data
+import cjm.delivery
 import cjm.issue
 import cjm.run
 import cjm.schema
@@ -304,7 +307,7 @@ def main(options):
         print(json.dumps(delivery_data, indent=4, sort_keys=False))
     else:
         if options.show_summary:
-            print_summary(delivery_data, team_data)
+            print_summary(delivery_data, team_data, sprint_data, capacity_data, commitment_data)
         else:
             print_issue_list(delivery_data, team_data)
 
@@ -333,10 +336,89 @@ def print_issue_list(delivery, team_data):
         tablefmt="orgtbl"))
 
 
-def print_summary(delivery, team_data):
-    """Print the report summary table"""
-    pass
+def calc_total(issues, field_key):
+    return sum([int(i[field_key]) for i in issues])
 
+def print_summary(delivery_data, team_data, sprint_data, capacity_data, commitment_data):
+    """Print the report summary table"""
+    person_capacity_lut = cjm.capacity.make_person_capacity_lut(sprint_data, capacity_data)
+    total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())
+    total_committed = delivery_data["total"]["committed"]
+    total_delivered = delivery_data["total"]["delivered"]
+
+    unassigned_issues = cjm.issue.unassigned_issues(delivery_data["issues"])
+    assigned_issues = cjm.issue.assigned_issues(delivery_data["issues"])
+
+    assigned_committed = calc_total(assigned_issues, "committed story points")
+    unassigned_committed = calc_total(unassigned_issues, "committed story points")
+
+    cells = (
+        cjm.presentation.default_cell("caption"),
+        cjm.presentation.default_cell("delivery"),
+        cjm.presentation.default_cell("commitment"),
+        cjm.presentation.default_cell("capacity"),
+        cjm.presentation.ratio_cell("commitment ratio"),
+        cjm.presentation.status_cell("commitment status"),
+        cjm.presentation.ratio_cell("delivery ratio"),
+        cjm.presentation.status_cell("delivery status"))
+
+    def __make_person_row(person_data):
+        capacity = (
+            person_capacity_lut.get(person_data["account id"], {}).get("sprint capacity", 0))
+        commitment = calc_total(
+            cjm.issue.person_issues(delivery_data["issues"], person_data),
+            "committed story points")
+        delivery = calc_total(
+            cjm.issue.person_issues(delivery_data["issues"], person_data),
+            "delivered story points")
+        commitment_summary = cjm.capacity.determine_summary(commitment, capacity)
+        delivery_summary = cjm.delivery.determine_summary(delivery, commitment)
+
+        if commitment_summary["capacity"] or delivery_summary["commitment"]:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.NORMAL
+        else:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.LOW
+
+        return cjm.presentation.format_row(
+            importance_code, cells,
+            {**commitment_summary, **delivery_summary,
+             "caption": cjm.team.format_full_name(person_data)})
+
+    def __make_unassigned_row():
+        capacity = total_capacity - assigned_committed
+        commitment_summary = cjm.capacity.determine_summary(unassigned_committed, capacity)
+        commitment = unassigned_committed
+        delivery = calc_total(unassigned_issues, "delivered story points")
+        delivery_summary = cjm.delivery.determine_summary(delivery, commitment)
+
+        if delivery_summary["commitment"]:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.NORMAL
+        else:
+            importance_code = cjm.presentation.IMPORTANCE_CODES.LOW
+
+        return cjm.presentation.format_row(
+            importance_code, cells,
+            {**commitment_summary, **delivery_summary, "caption": "Unasigned"})
+
+    def __make_total_row():
+        commitment_summary = cjm.capacity.determine_summary(total_committed, total_capacity)
+        delivery_summary = cjm.delivery.determine_summary(total_delivered, total_committed)
+
+        return cjm.presentation.format_row(
+            cjm.presentation.IMPORTANCE_CODES.HIGH, cells,
+            {**commitment_summary, **delivery_summary, "caption": "Team Summary"})
+
+    def __sort_cb(person):
+        return (person["last name"], person["first name"])
+
+    print(tabulate.tabulate(
+        [__make_person_row(p) for p in sorted(team_data["people"], key=__sort_cb)] +
+        [__make_unassigned_row()] +
+        [__make_total_row()],
+        headers=[
+            "Full Name", "Delivery", "Commitment", "Capacity",
+            "Com/Cap Ratio", "Com Status", "Del/Com Ratio", "Del Status"],
+        tablefmt="orgtbl"))
 
 if __name__ == '__main__':
     cjm.run.run(main, parse_options(sys.argv[1:]))

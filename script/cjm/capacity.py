@@ -115,8 +115,10 @@ def determine_ratio_status(ratio):
 def determine_summary(commitment_value, capacity_value):
     """Determine capacity summary for given commitment and capacity values"""
     if capacity_value > 0:
-        ratio = decimal.Decimal(commitment_value) / decimal.Decimal(capacity_value) * 100
-        ratio = int(ratio.quantize(decimal.Decimal("0"), decimal.ROUND_HALF_UP))
+        ratio = (
+            decimal.Decimal("{0:d}.0000".format(commitment_value)) /
+            decimal.Decimal(capacity_value) * 100)
+        ratio = ratio.quantize(decimal.Decimal("0.00"), decimal.ROUND_HALF_UP)
         status = determine_ratio_status(ratio)
     else:
         ratio = None
@@ -125,6 +127,6 @@ def determine_summary(commitment_value, capacity_value):
     return {
         "capacity": capacity_value,
         "commitment": commitment_value,
-        "ratio": ratio,
-        "status": status
+        "commitment ratio": ratio,
+        "commitment status": status
     }
