@@ -10,6 +10,7 @@ import tabulate
 
 # Project imports
 import cjm.cfg
+import cjm.data
 import cjm.issue
 import cjm.schema
 import cjm.codes
@@ -33,8 +34,6 @@ def parse_options(args):
         help=(
             "Prefix to which the empty comment prefix will be changed{0:s}"
             "".format(cjm.cfg.fmt_dft(default_commitment_prefix))))
-
-    parser.add_argument('--verbose', '-v', action='count', default=0, help="Verbose")
 
     parser.add_argument(
         "--preview", action="store_true", dest="preview",
