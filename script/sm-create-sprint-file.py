@@ -31,6 +31,9 @@ def parse_options(args):
     default_project_code = defaults.get("project", {}).get("code")
     default_project_sow = defaults.get("project", {}).get("sow")
 
+    project_code_long = "--project-code"
+    project_sow_long = "--project-sow"
+
     start_flags = parser.add_mutually_exclusive_group()
     start_flags.add_argument(
         "--next-week", action="store_true", dest="next_week_flag",
@@ -52,12 +55,12 @@ def parse_options(args):
         default=default_length,
         help="The sprint length in DAYS (default: {0:d})".format(default_length))
     parser.add_argument(
-        "--project-code", action="store", metavar="CODE", dest="project_code",
+        project_code_long, action="store", metavar="CODE", dest="project_code",
         default=default_project_code,
         help=("The project CODE name to be used to form the sprint comment prefix{0:s}"
               "".format(cjm.cfg.fmt_dft(default_project_code))))
     parser.add_argument(
-        "--project-sow", action="store", metavar="CODE", dest="project_sow",
+        project_sow_long, action="store", metavar="CODE", dest="project_sow",
         default=default_project_sow,
         help=(
             "The project sow (scope of work) CODE to be used to form the sprint comment"
@@ -71,7 +74,19 @@ def parse_options(args):
             "Project with which the sprint will be associated{0:s}"
             "".format(cjm.cfg.fmt_dft(default_project_key))))
 
-    return parser.parse_args(args)
+    options = parser.parse_args(args)
+
+    if options.project_code is None:
+        parser.error(
+            "Project code not specified. Use the '{0:s}' option or the defaults file to specify it"
+            "".format(project_code_long))
+
+    if options.project_sow is None:
+        parser.error(
+            "Project sow not specified. Use the '{0:s}' option or the defaults file to specify it"
+            "".format(project_sow_long))
+
+    return options
 
 
 def determine_start_date(options):
