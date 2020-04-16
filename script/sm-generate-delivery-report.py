@@ -60,7 +60,7 @@ def parse_options(args):
             "".format(cjm.SM_CREATE_TEAM_FILE, cjm.schema.make_subpath("delivery.json"))))
 
     parser.add_argument(
-        "--output-file", action="store", metavar="PATH", dest="output_file_path",
+        "-o", "--output-file", action="store", metavar="PATH", dest="output_file_path",
         default=default_output_file_path,
         help=(
             "PATH to the output file into which the odt document will be written"
