@@ -148,8 +148,12 @@ def main(options):
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
 
+    for issue in issues:
+        if issue["story points"] is not None:
+            issue["story points"] = int(issue["story points"])
+
     total_sp = sum(
-        [int(i["story points"]) for i in issue_lut.values()
+        [i["story points"] for i in issue_lut.values()
          if i["story points"] is not None])
     commitment = {"total": {"committed": total_sp}, "issues": issues}
 
