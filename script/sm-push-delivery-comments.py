@@ -36,8 +36,8 @@ def parse_options(args):
             "".format(cjm.cfg.fmt_dft(default_commitment_prefix))))
 
     parser.add_argument(
-        "--preview", action="store_true", dest="preview",
-        help="Dont push comments but print whats about to happen to std output")
+        "--dry-run", action="store_true", dest="dry_run",
+        help="Print what's going to happen, only. Do not push any outcome comments to jira")
 
     parser.add_argument(
         "sprint_file", action="store",
@@ -123,7 +123,7 @@ def main(options):
     delivery_comment = sprint_data["comment prefix"] + "/Delivered"
     not_delivery_comment = sprint_data["comment prefix"] + "/NotDelivered"
 
-    if options.preview:
+    if options.dry_run:
         print("\nFollowing issues will recieve {0:s} comment".format(delivery_comment))
         print(tabulate.tabulate(
             [(p["id"], p["key"], p["summary"]) for p in no_closing_comment_done],
