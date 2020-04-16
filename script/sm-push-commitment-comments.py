@@ -10,6 +10,7 @@ import tabulate
 
 # Project imports
 import cjm.cfg
+import cjm.data
 import cjm.issue
 import cjm.schema
 import cjm.codes
