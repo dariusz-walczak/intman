@@ -238,7 +238,7 @@ def _make_delivery_data(all_issues):
         issue["income"] = "extend" if issue["extended"] else "commit"
 
     total_committed = sum([i["committed story points"] for i in all_issues])
-    total_delivered = sum([i["story points"] for i in all_issues if i["delivered"]])
+    total_delivered = sum([i["delivered story points"] for i in all_issues if i["delivered"]])
 
     if total_committed > 0:
         delivery_ratio = decimal.Decimal(total_delivered) / decimal.Decimal(total_committed)
