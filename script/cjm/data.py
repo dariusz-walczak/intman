@@ -27,3 +27,19 @@ def load(cfg, file_name, schema_name):
         raise cjm.codes.CjmError(cjm.codes.FILESYSTEM_ERROR)
 
     return data
+
+
+def make_flag_filter(field_name, filter_directive):
+    """Make filter function callback to filter out items basing on the provided field and
+    directive ("yes", "no", "all")"""
+    return lambda item: (
+        (filter_directive in ("all", "yes") and item[field_name]) or
+        (filter_directive in ("all", "no") and not item[field_name]))
+
+
+def make_defined_filter(field_name, filter_directive):
+    """Make filter function callback to filter out items basing on the provided field (being or not
+    being None) and the filter directive ("yes", "no", "all")"""
+    return lambda item: (
+        (filter_directive in ("all", "yes") and item[field_name] is not None) or
+        (filter_directive in ("all", "no") and not item[field_name] is None))

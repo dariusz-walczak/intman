@@ -68,6 +68,9 @@ def parse_options(args):
         "--include-unassigned", action="store_true", dest="include_unassigned", default=False,
         help="Include unassigned issues in the issue list")
     parser.add_argument(
+        "--estimated", action="store", dest="estimated_filter", choices=("all", "yes", "no"),
+        default="all", help="Filter the issues by the fact of being or not being estimated")
+    parser.add_argument(
         "-s", "--summary", action="store_true", dest="show_summary", default=False,
         help="Show the commitment summary instead of the detailed issue table")
 
@@ -147,6 +150,8 @@ def main(options):
     ## not needed?
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
+    issues = list(filter(
+        cjm.data.make_defined_filter("story points", options.estimated_filter), issues))
 
     for issue in issues:
         if issue["story points"] is not None:
@@ -155,7 +160,7 @@ def main(options):
     total_sp = sum(
         [i["story points"] for i in issue_lut.values()
          if i["story points"] is not None])
-    commitment = {"total": {"committed": total_sp}, "issues": issues}
+    commitment = {"total": {"committed": total_sp}, "issues": list(issues)}
 
     commitment_schema = cjm.schema.load(cfg, "commitment.json")
     jsonschema.validate(commitment, commitment_schema)

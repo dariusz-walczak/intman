@@ -303,15 +303,9 @@ def main(options):
 
     # Request dropped issues and change story point value to 0
 
-    def _boolean_issue_filter(issues, field_name, filter_directive):
-        return [
-            i for i in issues
-            if ((filter_directive in ("all", "yes") and i[field_name]) or
-                (filter_directive in ("all", "no") and not i[field_name]))]
-
     issues = _process_dropped_issues(cfg, sprint_data, issues)
     issues = _process_delivered_issues(cfg, sprint_data, issues)
-    issues = _boolean_issue_filter(issues, "delivered", options.delivered_filter)
+    issues = list(filter(cjm.data.make_flag_filter("delivered", options.delivered_filter), issues))
 
     # Determine delivered story points
 
@@ -353,7 +347,9 @@ def print_issue_list(delivery, team_data):
 
 
 def calc_total(issues, field_key):
+    """Calculate sum of given fields"""
     return sum([int(i[field_key]) for i in issues])
+
 
 def print_summary(delivery_data, team_data, sprint_data, capacity_data, commitment_data):
     """Print the report summary table"""
