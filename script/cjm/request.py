@@ -16,10 +16,32 @@ _CJ_AGILE_PATH = "rest/agile/1.0"
 _CJ_GADGET_PATH = "/rest/gadget/1.0"
 _CJ_ISSUE_PATH = "/browse"
 
+def _get_jira_host(cfg):
+    """Retrieve the jira host name from given configuration data. Raise an exception if it is not
+    specified"""
+    if cfg["jira"]["host"] is None:
+        sys.stderr.write(
+            "ERROR: Jira host name not specified. Use the '{0:s}' CLI option or the defaults"
+            " file to specify it\n".format(cjm.cfg.HOST_NAME_ARG_NAME))
+        raise cjm.codes.CjmError(cjm.codes.CONFIGURATION_ERROR)
+    return cfg["jira"]["host"]
+
+
+def _get_jira_scheme(cfg):
+    """Retrieve the jira scheme from given configuration data. Raise an exception if it is not
+    specified"""
+    if cfg["jira"]["scheme"] is None:
+        sys.stderr.write(
+            "ERROR: Jira scheme name not specified. Use the '{0:s}' CLI option or the defaults"
+            " file to specify it\n".format(cjm.cfg.SCHEME_ARG_NAME))
+        raise cjm.codes.CjmError(cjm.codes.CONFIGURATION_ERROR)
+    return cfg["jira"]["scheme"]
+
+
 def make_cj_url(cfg, *resource_path):
     """Construct a Cloud Jira API url"""
     url_parts = (
-        cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_API_PATH, *resource_path)),
+        _get_jira_scheme(cfg), _get_jira_host(cfg), "/".join((_CJ_API_PATH, *resource_path)),
         "", "", "")
     return urllib.parse.urlunparse(url_parts)
 
@@ -27,7 +49,7 @@ def make_cj_url(cfg, *resource_path):
 def make_cj_agile_url(cfg, *resource_path):
     """Construct a Jira Agile API url"""
     url_parts = (
-        cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_AGILE_PATH, *resource_path)),
+        _get_jira_scheme(cfg), _get_jira_host(cfg), "/".join((_CJ_AGILE_PATH, *resource_path)),
         "", "", "")
     return urllib.parse.urlunparse(url_parts)
 
@@ -35,7 +57,7 @@ def make_cj_agile_url(cfg, *resource_path):
 def make_cj_gadget_url(cfg, *resource_path):
     """Construct a Jira Gadget API url"""
     url_parts = (
-        cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_GADGET_PATH, *resource_path)),
+        _get_jira_scheme(cfg), _get_jira_host(cfg), "/".join((_CJ_GADGET_PATH, *resource_path)),
         "", "", "")
     return urllib.parse.urlunparse(url_parts)
 
@@ -43,7 +65,7 @@ def make_cj_gadget_url(cfg, *resource_path):
 def make_cj_issue_url(cfg, *resource_path):
     """Construct a Jira issue page url"""
     url_parts = (
-        cfg["jira"]["scheme"], cfg["jira"]["host"], "/".join((_CJ_ISSUE_PATH, *resource_path)),
+        _get_jira_scheme(cfg), _get_jira_host(cfg), "/".join((_CJ_ISSUE_PATH, *resource_path)),
         "", "", "")
     return urllib.parse.urlunparse(url_parts)
 

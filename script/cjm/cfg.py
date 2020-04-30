@@ -10,6 +10,8 @@ import json
 
 DEFAULT_FILE = ".cjm.json"
 
+HOST_NAME_ARG_NAME = "--host"
+SCHEME_ARG_NAME = "--scheme"
 USER_NAME_ARG_NAME = "--user"
 USER_TOKEN_ARG_NAME = "--token"
 
@@ -79,6 +81,8 @@ def apply_options(cfg, options):
     """Apply command line options parsed by the make_common_parser function to the context data
     tree created by the init_defaults function"""
     cfg = copy.copy(cfg)
+    cfg["jira"]["host"] = options.host_name
+    cfg["jira"]["scheme"] = options.scheme
     cfg["jira"]["user"]["name"] = options.user_name
     cfg["jira"]["user"]["token"] = options.user_token
     cfg["path"]["data"] = options.data_dir_path
@@ -103,10 +107,24 @@ def make_common_parser(defaults):
         os.path.join(
             os.path.realpath(__file__),
             "..", "..", "..", "data"))
-    default_user_name = defaults.get("jira", {}).get("user", {}).get("name", None)
-    default_user_token = defaults.get("jira", {}).get("user", {}).get("token", None)
+    default_user_name = defaults.get("jira", {}).get("user", {}).get("name")
+    default_user_token = defaults.get("jira", {}).get("user", {}).get("token")
+    default_host_name = defaults.get("jira", {}).get("host")
+    default_scheme = defaults.get("jira", {}).get("scheme")
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        SCHEME_ARG_NAME, action="store", metavar="NAME", dest="scheme",
+        default=default_scheme,
+        help=(
+            "URL scheme to be used to access the cloud Jira API{0:s}"
+            "".format(fmt_dft(default_scheme))))
+    parser.add_argument(
+        HOST_NAME_ARG_NAME, action="store", metavar="NAME", dest="host_name",
+        default=default_host_name,
+        help=(
+            "Host NAME to be used to access the cloud Jira API{0:s}"
+            "".format(fmt_dft(default_host_name))))
     parser.add_argument(
         USER_NAME_ARG_NAME, action="store", metavar="NAME", dest="user_name",
         default=default_user_name,

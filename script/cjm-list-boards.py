@@ -52,9 +52,10 @@ def main(options):
 
     for board in response.json()["values"]:
         project_key = cfg["project"]["key"]
+        board_project_key = board.get("location", {}).get("projectKey")
 
         if ((project_key is None) or options.all_boards or
-                (project_key == board["location"]["projectKey"])):
+            (board_project_key is not None and project_key == board_project_key)):
             board_data = {
                 "id": board["id"],
                 "name": board["name"]
