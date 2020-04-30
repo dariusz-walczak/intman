@@ -51,8 +51,8 @@ def parse_options(args):
             "".format(cjm.SM_CREATE_COMMITMENT_FILE, cjm.schema.make_subpath("commitment.json"))))
 
     parser.add_argument(
-        "--preview", action="store_true", dest="preview",
-        help="Dont push comments but print whats about to happen to std output")
+        "--dry-run", action="store_true", dest="dry_run",
+        help="Print what's going to happen, only. Do not push commitment comments to jira")
 
     return parser.parse_args(args)
 
@@ -78,7 +78,6 @@ def main(options):
 
     commitment_data = cjm.data.load(cfg, options.commitment_file, "commitment.json")
 
-
     comment_to_be_added = sprint_data["comment prefix"] + "/Committed"
 
     # Retrieve all issues with the commitment comment added:
@@ -90,13 +89,13 @@ def main(options):
     ids_all_issues_with_comments = set([issue["id"] for issue in all_issues_with_comments])
     ids_issues_without_comments = ids_commitment_issues - ids_all_issues_with_comments
 
-    if options.preview:
+    if options.dry_run:
         print(tabulate.tabulate(
             [(i["id"], i["key"], i["summary"], comment_to_be_added)
              for i in commitment_issues
              if i["id"] in ids_issues_without_comments],
             headers=["Id", "Key", "Summary", "Comment to be added"], tablefmt="orgtbl"))
-        return 0
+        return cjm.codes.NO_ERROR
 
     for issue in commitment_issues:
         if issue["id"] in ids_issues_without_comments:
