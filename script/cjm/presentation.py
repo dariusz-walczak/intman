@@ -49,13 +49,16 @@ def cb_format_default_cell(importance_code, value):
 
 
 def cb_format_default_value(val):
+    """Value formatting callback for default cell"""
     return "" if val is None else str(val)
 
 def cb_format_ratio_value(ratio):
+    """Value formatting callback for ratio cell"""
     return "" if ratio is None else "{0:14.2f}%".format(ratio)
 
 
 def default_cell(key):
+    """Get default cell specification to be provided to the format_row function"""
     return {
         "key": key,
         "value_cb": cb_format_default_value,
@@ -63,6 +66,7 @@ def default_cell(key):
     }
 
 def status_cell(key):
+    """Get status cell specification to be provided to the format_row function"""
     return {
         "key": key,
         "value_cb": None,
@@ -70,6 +74,7 @@ def status_cell(key):
     }
 
 def ratio_cell(key):
+    """Get ratio cell specification to be provided to the format_row function"""
     return {
         "key": key,
         "value_cb": cb_format_ratio_value,
@@ -78,6 +83,7 @@ def ratio_cell(key):
 
 
 def format_cell(importance_code, cell, row):
+    """Format cell value using given cell specification and row data"""
     value_cb = cell["value_cb"]
     value_key = cell["key"]
     value_raw = row[value_key]
@@ -87,4 +93,5 @@ def format_cell(importance_code, cell, row):
 
 
 def format_row(importance_code, cells, row):
+    """Format cells values using given cells specification and row data"""
     return [format_cell(importance_code, cell, row) for cell in cells]
