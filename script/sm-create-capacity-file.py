@@ -19,7 +19,6 @@ import cjm.codes
 import cjm.sprint
 import cjm.team
 
-_COMMITMENT_PREFIX_ARG_NAME = "--prefix"
 
 def parse_options(args):
     defaults = cjm.cfg.load_defaults()
@@ -28,7 +27,7 @@ def parse_options(args):
     default_commitment_prefix = ""  # defaults.get("project", {}).get("key")
 
     parser.add_argument(
-        _COMMITMENT_PREFIX_ARG_NAME, action="store", metavar="KEY", dest="commitment_prefix",
+        "--prefix", action="store", metavar="KEY", dest="commitment_prefix",
         default=default_commitment_prefix,
         help=(
             "Prefix to which the empty comment prefix will be changed{0:s}"
