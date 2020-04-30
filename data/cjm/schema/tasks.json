@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "set id": {
+            "type": "string",
+            "regex": "[a-f0-9]{32}"
+        },
+        "author": {
+            "type": "string"
+        },
+        "date": {
+            "type": "string",
+            "format": "date"
+        },
+        "tasks": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "summary": {
+                        "type": "string"
+                    },
+                    "story points": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "anyOf": [
+                    {
+                        "required": [
+                            "id",
+                            "summary",
+                            "story points"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "key",
+                            "summary",
+                            "story points"
+                        ]
+                    }
+                ]
+            },
+            "required": [
+                "key",
+                "summary",
+                "story points"
+            ]
+
+        }
+    },
+    "required": [
+        "set id",
+        "author",
+        "date",
+        "tasks"
+    ]
+}
