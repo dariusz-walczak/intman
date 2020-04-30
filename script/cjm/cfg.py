@@ -97,6 +97,22 @@ def fmt_dft(val):
     return "" if val is None else " (default: {0})".format(val)
 
 
+def fmt_dft_token(val):
+    """Generate obfuscated default token argument description
+
+    This secondary utility function is supporting formatting of command line argument help string
+    """
+    if val is None:
+        return ""
+
+    token_len = len(val)
+    char_cnt = max(int((token_len-4)/6), 0)
+    token = "{0:s}{1:s}{2:s}".format(
+        val[:char_cnt], "*"*(token_len-char_cnt*2), val[token_len-char_cnt:])
+
+    return " (default: {0})".format(token)
+
+
 def make_common_parser(defaults):
     """Create a new command line argument parser (using argparse module) and populate it with
     common options
@@ -136,7 +152,7 @@ def make_common_parser(defaults):
         default=default_user_token,
         help=(
             "User token to be used to access the cloud Jira API{0:s}"
-            "".format(fmt_dft(default_user_token))))
+            "".format(fmt_dft_token(default_user_token))))
     parser.add_argument(
         "--json-output", action="store_true", dest="json_output",
         help="Print the results serialized to JSON")
