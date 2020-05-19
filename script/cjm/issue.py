@@ -2,6 +2,7 @@
 
 # Standard library imports
 import copy
+import sys
 
 # Project imports
 import cjm.codes
@@ -93,6 +94,23 @@ def extract_issue_data(cfg, issue):
     }
 
 
+def request_issue(cfg, issue_key):
+    """Return issue identified by given key.
+    Return None if not found"""
+    issue_url = cjm.request.make_cj_url(cfg, "issue", issue_key)
+    response = cjm.request.make_cj_request(cfg, issue_url, tolerate_404=True)
+
+    if response.status_code == 404:
+        return None
+    elif response.status_code != 200:
+        sys.stderr.write(
+            "ERROR: The Jira API request ('{0:s}') failed with code {1:d}\n"
+            "".format(issue_url, response.status_code))
+        raise cjm.codes.CjmError(cjm.codes.REQUEST_ERROR)
+    response_json = response.json()
+    return extract_issue_data(cfg, response_json)
+
+
 def request_issues_by_keys(cfg, issue_keys):
     """Return issues identified by one of given keys"""
     if not issue_keys:
@@ -141,3 +159,75 @@ def make_comment_body(comment_text):
             ]
         }
     }
+
+
+def request_comment_create(cfg, issue_key, comment_json):
+    """Request addition of specified comment body to given issue
+    The comment body is constructed e.g. by the make_comment_body function"""
+    url = cjm.request.make_cj_url(cfg, "issue", issue_key, "comment")
+    return cjm.request.make_cj_post_request(cfg, url, json=comment_json).json()
+
+
+def request_issue_types(cfg):
+    """Return issue type list"""
+    url = cjm.request.make_cj_url(cfg, "issuetype")
+    return cjm.request.make_cj_request(cfg, url).json()
+
+
+def request_issue_link_types(cfg):
+    """Return issue link type list"""
+    url = cjm.request.make_cj_url(cfg, "issueLinkType")
+    return cjm.request.make_cj_request(cfg, url).json()["issueLinkTypes"]
+
+
+def request_issue_create(cfg, issue_spec):
+    """Post issue creation request"""
+    json = {
+        "update": {},
+        "fields": {
+            "summary": issue_spec["title"],
+            "issuetype": {
+                "id": issue_spec["type id"],
+            },
+            "project": {
+                "id": issue_spec["project id"],
+            },
+            "description": {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [
+                            {
+                                "text": issue_spec["summary"],
+                                "type": "text"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+
+    create_url = cjm.request.make_cj_url(cfg, "issue")
+    response = cjm.request.make_cj_post_request(cfg, create_url, json=json)
+    return request_issue(cfg, response.json()["key"])
+
+
+def request_issue_link_create(cfg, inward_key, outward_key, link_type):
+    """Post issue link"""
+    json = {
+        "inwardIssue": {
+            "key": inward_key
+        },
+        "outwardIssue": {
+            "key": outward_key
+        },
+        "type": {
+            "name": link_type
+        }
+    }
+
+    url = cjm.request.make_cj_url(cfg, "issueLink")
+    cjm.request.make_cj_post_request(cfg, url, json=json)

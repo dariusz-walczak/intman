@@ -70,7 +70,7 @@ def make_cj_issue_url(cfg, *resource_path):
     return urllib.parse.urlunparse(url_parts)
 
 
-def make_cj_request(cfg, url, params=None):
+def make_cj_request(cfg, url, params=None, tolerate_404=True):
     """Make Cloud Jira API GET request"""
     params = {} if params is None else params
 
@@ -90,7 +90,7 @@ def make_cj_request(cfg, url, params=None):
         url, params=params,
         auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"]))
 
-    if response.status_code != 200:
+    if (response.status_code != 200) and not (response.status_code == 404 and tolerate_404):
         sys.stderr.write(
             "ERROR: The Jira API request ('{0:s}') failed with code {1:d}\n"
             "".format(url, response.status_code))

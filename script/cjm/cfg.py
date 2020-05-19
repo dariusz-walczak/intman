@@ -50,7 +50,8 @@ def init_defaults():
             "name": None
         },
         "project": {
-            "key": None
+            "key": None,
+            "id": None
         },
         "path": {
             "data": None,

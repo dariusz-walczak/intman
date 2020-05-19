@@ -18,10 +18,13 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "id": {
+                    "idx": {
                         "type": "integer"
                     },
                     "key": {
+                        "type": "string"
+                    },
+                    "title": {
                         "type": "string"
                     },
                     "summary": {
@@ -36,12 +39,31 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "links": {
+                        "type": "object",
+                        "properties": {
+                            "related": {
+                                "type": "array",
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
                     }
                 },
                 "anyOf": [
                     {
                         "required": [
-                            "id",
+                            "idx",
+                            "title",
                             "summary",
                             "story points"
                         ]
@@ -49,6 +71,7 @@
                     {
                         "required": [
                             "key",
+                            "title",
                             "summary",
                             "story points"
                         ]

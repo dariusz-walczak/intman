@@ -6,6 +6,9 @@ REQUEST_ERROR = 2
 FILESYSTEM_ERROR = 3
 INTEGRATION_ERROR = 4 # Indicates that some assumption about how the Jira works seems to be false
 INVALID_ARGUMENT_ERROR = 5
+INPUT_DATA_ERROR = 6 # There is some problem with input data
+JIRA_DATA_ERROR = 7 # There is some problem with the jira stored data
+
 
 class CjmError(Exception):
     """Exception to be raised by cjm library functions and by cjm-* and sm-* scripts"""

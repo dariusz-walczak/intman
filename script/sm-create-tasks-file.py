@@ -6,7 +6,6 @@
 import datetime
 import json
 import secrets
-import string
 import sys
 
 # Third party imports
