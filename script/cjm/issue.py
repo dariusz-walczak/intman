@@ -47,6 +47,66 @@ def detect_story_point_field_id(cfg):
     raise cjm.codes.CjmError(cjm.codes.INTEGRATION_ERROR)
 
 
+def detect_epic_link_field_id(cfg):
+    """Determine identifier of the epic link issue field"""
+    url = cjm.request.make_cj_url(cfg, "field")
+    response = cjm.request.make_cj_request(cfg, url)
+
+    for field in response.json():
+        if field["name"] == "Epic Link":
+            return field["id"]
+
+    raise cjm.codes.CjmError(cjm.codes.INTEGRATION_ERROR)
+
+
+def detect_epic_name_field_id(cfg):
+    """Determine identifier of the epic name issue field"""
+    url = cjm.request.make_cj_url(cfg, "field")
+    response = cjm.request.make_cj_request(cfg, url)
+
+    for field in response.json():
+        if field["name"] == "Epic Name":
+            return field["id"]
+
+    raise cjm.codes.CjmError(cjm.codes.INTEGRATION_ERROR)
+
+
+EPIC_COLORS = {
+    "black": "ghx-label-1",
+    "dark-yellow": "ghx-label-2",
+    "light-yellow": "ghx-label-3",
+    "dark-blue": "ghx-label-4",
+    "dark-aqua": "ghx-label-5",
+    "light-green": "ghx-label-6",
+    "light-purple": "ghx-label-7",
+    "dark-purple": "ghx-label-8",
+    "light-pink": "ghx-label-9",
+    "light-blue": "ghx-label-10",
+    "light-aqua": "ghx-label-11",
+    "light-gray": "ghx-label-12",
+    "dark-green": "ghx-label-13",
+    "dark-red": "ghx-label-14"
+}
+
+
+def request_epic_update(cfg, issue_spec):
+    """Update epic name and optionally color"""
+    epic_name = issue_spec["epic"]["name"]
+    epic_color = issue_spec["epic"].get("color")
+
+    json = {
+        "name": epic_name
+    }
+
+    if epic_color is not None:
+        json["color"]: {
+            "key": EPIC_COLORS[epic_color]
+        }
+
+    url = cjm.request.make_cj_agile_url(cfg, "epic", issue_spec["key"])
+    cjm.request.make_cj_post_request(cfg, url, json=json)
+
+
 def request_issue_comments_regexp(cfg, issue_key, comment_re):
     """Return these of specific issue's comments that match given regular expression"""
     comments = []
@@ -209,6 +269,13 @@ def request_issue_create(cfg, issue_spec):
             }
         }
     }
+
+    if issue_spec.get("type name") == cfg["jira"]["issue"]["type"]["epic"]:
+        json["fields"][cfg["jira"]["fields"]["epic name"]] = issue_spec["epic"]["name"]
+    else:
+        epic_key = issue_spec.get("epic").get("link", {}).get("key")
+        if epic_key is not None:
+            json["fields"][cfg["jira"]["fields"]["epic link"]] = epic_key
 
     create_url = cjm.request.make_cj_url(cfg, "issue")
     response = cjm.request.make_cj_post_request(cfg, create_url, json=json)

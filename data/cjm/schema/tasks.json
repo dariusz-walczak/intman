@@ -40,6 +40,9 @@
                             }
                         ]
                     },
+                    "type name": {
+                        "type": "string"
+                    },
                     "links": {
                         "type": "object",
                         "properties": {
@@ -64,16 +67,14 @@
                         "required": [
                             "idx",
                             "title",
-                            "summary",
-                            "story points"
+                            "summary"
                         ]
                     },
                     {
                         "required": [
                             "key",
                             "title",
-                            "summary",
-                            "story points"
+                            "summary"
                         ]
                     }
                 ]

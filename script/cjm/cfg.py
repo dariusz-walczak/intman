@@ -33,7 +33,15 @@ def init_defaults():
                 "token": None
             },
             "fields": {
-                "story points": None
+                "story points": None,
+                "epic link": None,
+                "epic name": None
+            },
+            "issue": {
+                "type": {
+                    "epic": None,
+                    "task": None
+                }
             }
         },
         "sprint": {

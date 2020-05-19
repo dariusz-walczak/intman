@@ -52,6 +52,7 @@ def parse_options(args):
 
 
 def _process_issue_types(cfg, issues):
+    """Iterate through given issues and determine their jira type ids"""
     issue_types = cjm.issue.request_issue_types(cfg)
     issue_type_names = [i["name"] for i in issue_types]
     duplicate_issue_types = set([i for i in issue_type_names if issue_type_names.count(i) > 1])
@@ -64,7 +65,7 @@ def _process_issue_types(cfg, issues):
     issue_type_lut = dict((t["name"], t) for t in issue_types)
 
     for task in issues:
-        type_raw = task.get("type name", "Task")
+        type_raw = task.setdefault("type name", cfg["jira"]["issue"]["type"]["task"])
 
         try:
             task["type id"] = issue_type_lut[type_raw]["id"]
@@ -76,12 +77,14 @@ def _process_issue_types(cfg, issues):
 
 
 def _process_project_id(issues, project_id):
+    """Set the project id of given issues"""
     for task in issues:
         task["project id"] = project_id
     return issues
 
 
 def _determine_project_id(cfg):
+    """Determine project id number"""
     project_id = cfg["project"]["id"]
     project_key = cfg["project"]["key"]
 
@@ -98,6 +101,8 @@ def _determine_project_id(cfg):
 
 
 def _verify_relation_links(cfg, issues):
+    """Verify that the relation links specified in given issues are referencing resolvable
+    issues"""
     issue_by_local_id = dict((i["idx"], i) for i in issues)
 
     for issue in issues:
@@ -106,14 +111,38 @@ def _verify_relation_links(cfg, issues):
         for outward_raw in related:
             if isinstance(outward_raw, str):
                 if cjm.issue.request_issue(cfg, outward_raw) is None:
-                    sys.stderr.write("ERROR: Issue ({0:s}) doesn't exist\n".format(outward_raw))
+                    sys.stderr.write(
+                        "ERROR: Related issue ({0:s}) doesn't exist\n".format(outward_raw))
                     raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
             elif isinstance(outward_raw, int) and outward_raw not in issue_by_local_id:
-                sys.stderr.write("ERROR: Undefined local issue id ({0:d})\n".format(outward_raw))
+                sys.stderr.write(
+                    "ERROR: Undefined related issue local id ({0:d})\n".format(outward_raw))
                 raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
+
+        epic_link = issue.get("epic", {}).get("link", {})
+        epic_key = epic_link.get("key")
+        epic_idx = epic_link.get("idx")
+
+        if epic_key is not None:
+            if cjm.issue.request_issue(cfg, epic_key) is None:
+                sys.stderr.write("ERROR: Epic ({0:s}) doesn't exist\n".format(epic_key))
+                raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
+        elif epic_idx is not None:
+            if epic_idx not in issue_by_local_id:
+                sys.stderr.write(
+                    "ERROR: Undefined epic local id ({0:d})\n".format(epic_idx))
+                raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
+            else:
+                epic_type_name = cfg["jira"]["issue"]["type"]["epic"]
+                if issue_by_local_id[epic_idx].get("type name") != epic_type_name:
+                    sys.stderr.write(
+                        "ERROR: The issue referenced using local id ({0:d}) is not an Epic\n"
+                        "".format(epic_idx))
+                    raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
 
 
 def _extract_links(issues):
+    """Extract issue relations data from given issue list"""
     issue_by_local_id = dict((i["idx"], i) for i in issues)
     unique_related_links = set()
 
@@ -133,10 +162,13 @@ def _extract_links(issues):
 
 
 def _make_tracking_id(tasks_data, issue):
+    """Compose issue traking id string"""
     return "{0:s}/{1:04d}".format(tasks_data["set id"], issue["idx"])
 
 
 def _request_issue_by_tracking_id(cfg, tracking_id):
+    """Request issue by tracking id
+    Raise an error if more than one issue was returned"""
     found_issues = cjm.sprint.request_issues_by_comment(cfg, tracking_id)
 
     if not found_issues:
@@ -151,6 +183,7 @@ def _request_issue_by_tracking_id(cfg, tracking_id):
 
 
 def _create_issues(cfg, tasks_data, issues):
+    """Create given issues"""
     for issue in issues:
         if issue["actual"] is None:
             new_issue = cjm.issue.request_issue_create(cfg, issue)
@@ -166,6 +199,8 @@ def _create_issues(cfg, tasks_data, issues):
 
 
 def _process_jira_state(cfg, tasks_data, issues):
+    """Determine which of given issues have to be created and which of them are missing
+    the tracking comment"""
     for issue in issues:
         tracking_id = _make_tracking_id(tasks_data, issue)
         tracked_issue = _request_issue_by_tracking_id(cfg, tracking_id)
@@ -178,11 +213,36 @@ def _process_jira_state(cfg, tasks_data, issues):
         issue["has_tracking_comment"] = tracked_issue is not None
 
 
+def _process_epic_links(issues):
+    """Determine epic link key for all issues using local issue index
+    The function assumes that all the epics are already created"""
+    issue_by_local_id = dict((i["idx"], i) for i in issues)
+
+    for issue in issues:
+        epic_link = issue.get("epic", {}).get("link", {})
+        epic_key = epic_link.get("key")
+        epic_idx = epic_link.get("idx")
+
+        if epic_key is None and epic_idx is not None:
+            issue["epic"]["link"]["key"] = issue_by_local_id[epic_idx]["key"]
+
+
+def _update_epics(cfg, issues):
+    for issue in issues:
+        cjm.issue.request_epic_update(cfg, issue)
+
+
 def main(options):
     """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["project"]["id"] = options.project_id
     cfg["project"]["key"] = options.project_key
+
+    cfg["jira"]["fields"]["story points"] = cjm.issue.detect_story_point_field_id(cfg)
+    cfg["jira"]["fields"]["epic link"] = cjm.issue.detect_epic_link_field_id(cfg)
+    cfg["jira"]["fields"]["epic name"] = cjm.issue.detect_epic_name_field_id(cfg)
+    cfg["jira"]["issue"]["type"]["epic"] = "Epic"
+    cfg["jira"]["issue"]["type"]["task"] = "Task"
 
     # Load sprint data:
 
@@ -198,7 +258,15 @@ def main(options):
         print("Dry run TODO")
         return cjm.codes.NO_ERROR
 
-    _create_issues(cfg, tasks_data, issues)
+    _create_issues(
+        cfg, tasks_data,
+        [i for i in issues if i["type name"] == cfg["jira"]["issue"]["type"]["epic"]])
+    _update_epics(
+        cfg, [i for i in issues if i["type name"] == cfg["jira"]["issue"]["type"]["epic"]])
+    _process_epic_links(issues)
+    _create_issues(
+        cfg, tasks_data,
+        [i for i in issues if i["type name"] != cfg["jira"]["issue"]["type"]["epic"]])
 
     related_links = _extract_links(issues)
 
