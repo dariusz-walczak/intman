@@ -435,8 +435,8 @@ def add_style(textdoc, name):
 
     return None
 
-def generate(cfg, commitment_data, sprint_data):
-    """Document generation entry point"""
+def generate_odt_document(cfg, commitment_data, sprint_data):
+    """Main function generating the commitment report document"""
     textdoc = OpenDocumentText()
 
     logo(cfg, textdoc)
@@ -468,7 +468,7 @@ def main(options):
     commitment_data = cjm.data.load(cfg, options.commitment_file, "commitment.json")
     sprint_data = cjm.data.load(cfg, options.sprint_file, "sprint.json")
 
-    generate(cfg, commitment_data, sprint_data)
+    generate_odt_document(cfg, commitment_data, sprint_data)
 
     return cjm.codes.NO_ERROR
 
