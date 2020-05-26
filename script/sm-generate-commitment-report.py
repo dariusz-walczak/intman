@@ -9,7 +9,6 @@ import datetime as dt
 
 # Third party imports
 import holidays
-import jsonschema
 import numpy
 
 import odf.text
@@ -466,29 +465,8 @@ def main(options):
     cfg["path"]["output"] = options.output_file_path
     cfg["client"]["name"] = options.client_name
 
-    try:
-        with open(options.commitment_file) as commitment_file:
-            commitment_data = cjm.commitment.load_data(cfg, commitment_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Commitment data file ('{0:s}') I/O error\n".format(options.commitment_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    commitment_schema = cjm.schema.load(cfg, "commitment.json")
-    jsonschema.validate(commitment_data, commitment_schema)
-
-    try:
-        with open(options.sprint_file) as sprint_file:
-            sprint_data = cjm.sprint.load_data(cfg, sprint_file)
-    except IOError as e:
-        sys.stderr.write(
-            "ERROR: Sprint data file ('{0:s}') I/O error\n".format(options.sprint_file))
-        sys.stderr.write("    {0}\n".format(e))
-        return cjm.codes.FILESYSTEM_ERROR
-
-    sprint_schema = cjm.schema.load(cfg, "sprint.json")
-    jsonschema.validate(sprint_data, sprint_schema)
+    commitment_data = cjm.data.load(cfg, options.commitment_file, "commitment.json")
+    sprint_data = cjm.data.load(cfg, options.sprint_file, "sprint.json")
 
     generate(cfg, commitment_data, sprint_data)
 
