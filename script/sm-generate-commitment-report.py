@@ -12,11 +12,11 @@ import holidays
 import numpy
 
 import odf.text
-from odf import dc
-from odf.draw import Frame, Image
-from odf.opendocument import OpenDocumentText
+import odf.dc
+import odf.draw
+import odf.opendocument
 import odf.style
-from odf.table import Table, TableColumn, TableRow, TableCell
+import odf.table
 
 # Project imports
 import cjm
@@ -101,10 +101,10 @@ def logo(cfg, textdoc):
     """Add Mobica logo"""
     style = add_style(textdoc, "style")
 
-    logo_frame = Frame(
+    logo_frame = odf.draw.Frame(
         width="2.7cm", height="2.7cm", x="0cm", y="0cm", anchortype="as-char", stylename=style)
     href = textdoc.addPicture(os.path.join(cfg["path"]["data"], "odt", "logo.jpg"))
-    logo_frame.addElement(Image(href=href))
+    logo_frame.addElement(odf.draw.Image(href=href))
     textdoc.text.addElement(logo_frame)
 
 
@@ -120,105 +120,105 @@ def data_table(cfg, textdoc, sprint_data):
     title = "Mobica " + project_title + " sprint commitment (" + project_workweek + ")"
 
     h = odf.text.H(outlinelevel=1, stylename=title_style, text=title)
-    textdoc.meta.addElement(dc.Title(text=title))
+    textdoc.meta.addElement(odf.dc.Title(text=title))
     textdoc.text.addElement(h)
 
     textdoc.text.addElement(odf.text.P())
 
-    table = Table()
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab1_w1))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab1_w2))
+    table = odf.table.Table()
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab1_w1))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab1_w2))
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Client")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=cfg["client"]["name"])
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Project")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=project_title)
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Sprint Weeks")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=project_workweek)
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Sprint Duration")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(
         stylename=desc_cell_style,
         text="{0:s} to {1:s}".format(sprint_data["start date"], sprint_data["end date"]))
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Sprint Workdays")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=calculate_workdays(sprint_data["start date"],
                                                                       sprint_data["end date"]))
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Report Author")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=get_report_author(cfg))
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Report Date")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=dt.datetime.today().strftime('%d-%m-%Y'))
     tc2.addElement(p)
@@ -263,25 +263,25 @@ def committed_tasks_list(cfg, textdoc, commitment_data):
     textdoc.text.addElement(h3)
     textdoc.text.addElement(odf.text.P())
 
-    table = Table()
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w1))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w2))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w3))
+    table = odf.table.Table()
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w1))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w2))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w3))
 
-    table_header = TableRow()
+    table_header = odf.table.TableRow()
     table.addElement(table_header)
 
-    tc1_top = TableCell()
+    tc1_top = odf.table.TableCell()
     table_header.addElement(tc1_top)
     p = odf.text.P(stylename=title_cell_style, text="Task ID")
     tc1_top.addElement(p)
 
-    tc2_top = TableCell()
+    tc2_top = odf.table.TableCell()
     table_header.addElement(tc2_top)
     p = odf.text.P(stylename=title_cell_style, text="Task Title")
     tc2_top.addElement(p)
 
-    tc3_top = TableCell()
+    tc3_top = odf.table.TableCell()
     table_header.addElement(tc3_top)
     p = odf.text.P(stylename=title_cell_style, text="Story Points")
     tc3_top.addElement(p)
@@ -289,44 +289,44 @@ def committed_tasks_list(cfg, textdoc, commitment_data):
     rows_containing_data = 1
 
     for issue in commitment_data["issues"]:
-        tr = TableRow()
+        tr = odf.table.TableRow()
         table.addElement(tr)
 
         commitment_issue_url = cjm.request.make_cj_issue_url(cfg, str(issue["key"]))
 
-        tc1 = TableCell()
+        tc1 = odf.table.TableCell()
         tr.addElement(tc1)
         p = odf.text.P()
         a = odf.text.A(stylename=desc_cell_style, href=commitment_issue_url, text=issue["key"])
         p.addElement(a)
         tc1.addElement(p)
 
-        tc2 = TableCell()
+        tc2 = odf.table.TableCell()
         tr.addElement(tc2)
         p = odf.text.P(stylename=desc_cell_style, text=issue["summary"])
         tc2.addElement(p)
 
-        tc3 = TableCell()
+        tc3 = odf.table.TableCell()
         tr.addElement(tc3)
         p = odf.text.P(stylename=desc_cell_style, text=issue["story points"])
         tc3.addElement(p)
 
         rows_containing_data += 1
 
-    table_footer = TableRow()
+    table_footer = odf.table.TableRow()
     table.addElement(table_footer)
 
-    tc1_bottom = TableCell()
+    tc1_bottom = odf.table.TableCell()
     table_footer.addElement(tc1_bottom)
     p = odf.text.P(stylename=title_cell_style, text="")
     tc1_bottom.addElement(p)
 
-    tc2_bottom = TableCell()
+    tc2_bottom = odf.table.TableCell()
     table_footer.addElement(tc2_bottom)
     p = odf.text.P(stylename=title_cell_style, text="Total:")
     tc2_bottom.addElement(p)
 
-    tc3_bottom = TableCell(
+    tc3_bottom = odf.table.TableCell(
         stylename=title_cell_style,
         formula="SUM(<C2:C" + str(rows_containing_data) + ">)", valuetype="float")
     table_footer.addElement(tc3_bottom)
@@ -437,7 +437,7 @@ def add_style(textdoc, name):
 
 def generate_odt_document(cfg, commitment_data, sprint_data):
     """Main function generating the commitment report document"""
-    textdoc = OpenDocumentText()
+    textdoc = odf.opendocument.OpenDocumentText()
 
     logo(cfg, textdoc)
 
