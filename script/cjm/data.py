@@ -42,4 +42,4 @@ def make_defined_filter(field_name, filter_directive):
     being None) and the filter directive ("yes", "no", "all")"""
     return lambda item: (
         (filter_directive in ("all", "yes") and item[field_name] is not None) or
-        (filter_directive in ("all", "no") and not item[field_name] is None))
+        (filter_directive in ("all", "no") and item[field_name] is None))
