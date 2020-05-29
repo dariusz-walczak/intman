@@ -3,29 +3,30 @@
 """Command line script generating commitment report odt file"""
 
 # Standard library imports
+import datetime
 import os
 import sys
-import datetime as dt
 
 # Third party imports
 import holidays
 import numpy
-
-import odf.text
 import odf.dc
 import odf.draw
 import odf.opendocument
 import odf.style
 import odf.table
+import odf.text
 
 # Project imports
 import cjm
 import cjm.cfg
-import cjm.request
 import cjm.codes
+import cjm.commitment
+import cjm.data
+import cjm.request
+import cjm.run
 import cjm.schema
 import cjm.sprint
-import cjm.commitment
 
 
 def parse_options(args):
@@ -220,7 +221,7 @@ def data_table(cfg, textdoc, sprint_data):
 
     tc2 = odf.table.TableCell()
     tr.addElement(tc2)
-    p = odf.text.P(stylename=desc_cell_style, text=dt.datetime.today().strftime('%d-%m-%Y'))
+    p = odf.text.P(stylename=desc_cell_style, text=datetime.datetime.today().strftime('%d-%m-%Y'))
     tc2.addElement(p)
 
     textdoc.text.addElement(table)
@@ -435,28 +436,40 @@ def add_style(textdoc, name):
 
     return None
 
+
+def copy_styles(src_doc, dst_doc):
+    for style_node in src_doc.styles.childNodes:
+        if style_node.tagName == 'style:default-style':
+            dst_doc.styles.addElement(style_node)
+
+
 def generate_odt_document(cfg, commitment_data, sprint_data):
     """Main function generating the commitment report document"""
-    textdoc = odf.opendocument.OpenDocumentText()
+    output_doc = odf.opendocument.OpenDocumentText()
 
-    logo(cfg, textdoc)
+    style_source_doc = odf.opendocument.load(
+        os.path.join(cfg["path"]["data"], "odt", "report-template.odt"))
+
+    copy_styles(style_source_doc, output_doc)
+
+    logo(cfg, output_doc)
 
     for _ in range(4):
-        textdoc.text.addElement(odf.text.P())
+        output_doc.text.addElement(odf.text.P())
 
-    data_table(cfg, textdoc, sprint_data)
+    data_table(cfg, output_doc, sprint_data)
 
     for _ in range(1):
-        textdoc.text.addElement(odf.text.P())
+        output_doc.text.addElement(odf.text.P())
 
-    summary(textdoc, commitment_data)
+    summary(output_doc, commitment_data)
 
     for _ in range(2):
-        textdoc.text.addElement(odf.text.P())
+        output_doc.text.addElement(odf.text.P())
 
-    committed_tasks_list(cfg, textdoc, commitment_data)
+    committed_tasks_list(cfg, output_doc, commitment_data)
 
-    textdoc.save(cfg["path"]["output"])
+    output_doc.save(cfg["path"]["output"])
 
 
 def main(options):
