@@ -4,19 +4,18 @@
 # Standard library imports
 import os
 import sys
-import datetime as dt
+import datetime
 
 # Third party imports
-import jsonschema
-import numpy as np
 import holidays
-
+import jsonschema
+import numpy
+import odf.dc
+import odf.draw
+import odf.opendocument
+import odf.style
+import odf.table
 import odf.text
-from odf import dc
-from odf.draw import Frame, Image
-from odf.opendocument import OpenDocumentText
-from odf.style import Style, ParagraphProperties, TableColumnProperties, TextProperties, GraphicProperties
-from odf.table import Table, TableColumn, TableRow, TableCell
 
 # Project imports
 import cjm
@@ -89,9 +88,9 @@ def calculate_workdays(start_date, end_date):
 
     pl_holidays = []
     for date, _ in holidays.PL(years=[start_year, end_year]).items():
-        pl_holidays.append(np.datetime64(date))
+        pl_holidays.append(numpy.datetime64(date))
 
-    workdays = np.busday_count(np.datetime64(start_date), np.datetime64(end_date), holidays=pl_holidays)
+    workdays = numpy.busday_count(numpy.datetime64(start_date), numpy.datetime64(end_date), holidays=pl_holidays)
     return workdays
 
 
@@ -107,9 +106,9 @@ def get_report_author(cfg):
 def logo(cfg, textdoc):
     style = add_style(textdoc, "style")
 
-    logo_frame = Frame(width="2.7cm", height="2.7cm", x="0cm", y="0cm", anchortype="as-char", stylename=style)
+    logo_frame = odf.draw.Frame(width="2.7cm", height="2.7cm", x="0cm", y="0cm", anchortype="as-char", stylename=style)
     href = textdoc.addPicture(os.path.join(cfg["path"]["data"], "odt", "logo.jpg"))
-    logo_frame.addElement(Image(href=href))
+    logo_frame.addElement(odf.draw.Image(href=href))
     textdoc.text.addElement(logo_frame)
 
 
@@ -130,118 +129,118 @@ def data_table(cfg, textdoc, sprint_data, delivery_data):
             "   " + "(" + str(percentage_delivered) + "%)"
 
     h = odf.text.H(outlinelevel=1, stylename=title_style, text=title)
-    textdoc.meta.addElement(dc.Title(text=title))
+    textdoc.meta.addElement(odf.dc.Title(text=title))
     textdoc.text.addElement(h)
 
     textdoc.text.addElement(odf.text.P())
 
-    table = Table()
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab1_w1))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab1_w2))
+    table = odf.table.Table()
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab1_w1))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab1_w2))
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Client")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=cfg["client"]["name"])
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Project")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=project_title)
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Sprint Weeks")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=project_workweek)
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Sprint Duration")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=sprint_data["start date"] + " to " + sprint_data["end date"])
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Sprint Workdays")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=calculate_workdays(sprint_data["start date"],
                                                                       sprint_data["end date"]))
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Delivery Ratio")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=ratio)
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Report Author")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
     p = odf.text.P(stylename=desc_cell_style, text=get_report_author(cfg))
     tc2.addElement(p)
 
-    tr = TableRow()
+    tr = odf.table.TableRow()
     table.addElement(tr)
 
-    tc1 = TableCell()
+    tc1 = odf.table.TableCell()
     tr.addElement(tc1)
     p = odf.text.P(stylename=title_cell_style, text="Report Date")
     tc1.addElement(p)
 
-    tc2 = TableCell()
+    tc2 = odf.table.TableCell()
     tr.addElement(tc2)
-    p = odf.text.P(stylename=desc_cell_style, text=dt.datetime.today().strftime('%d-%m-%Y'))
+    p = odf.text.P(stylename=desc_cell_style, text=datetime.datetime.today().strftime('%d-%m-%Y'))
     tc2.addElement(p)
 
     textdoc.text.addElement(table)
@@ -300,37 +299,37 @@ def committed_tasks_list(cfg, textdoc, delivery_data):
     textdoc.text.addElement(h3)
     textdoc.text.addElement(odf.text.P())
 
-    table = Table()
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w1))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w2))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w3))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w4))
-    table.addElement(TableColumn(numbercolumnsrepeated=1, stylename=tab2_w5))
+    table = odf.table.Table()
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w1))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w2))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w3))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w4))
+    table.addElement(odf.table.TableColumn(numbercolumnsrepeated=1, stylename=tab2_w5))
 
-    table_header = TableRow()
+    table_header = odf.table.TableRow()
     table.addElement(table_header)
 
-    tc1_top = TableCell()
+    tc1_top = odf.table.TableCell()
     table_header.addElement(tc1_top)
     p = odf.text.P(stylename=title_cell_style, text="Task ID")
     tc1_top.addElement(p)
 
-    tc2_top = TableCell()
+    tc2_top = odf.table.TableCell()
     table_header.addElement(tc2_top)
     p = odf.text.P(stylename=title_cell_style, text="Task Title")
     tc2_top.addElement(p)
 
-    tc3_top = TableCell()
+    tc3_top = odf.table.TableCell()
     table_header.addElement(tc3_top)
     p = odf.text.P(stylename=title_cell_style, text="Committed")
     tc3_top.addElement(p)
 
-    tc4_top = TableCell()
+    tc4_top = odf.table.TableCell()
     table_header.addElement(tc4_top)
     p = odf.text.P(stylename=title_cell_style, text="Delivered")
     tc4_top.addElement(p)
 
-    tc5_top = TableCell()
+    tc5_top = odf.table.TableCell()
     table_header.addElement(tc5_top)
     p = odf.text.P(stylename=title_cell_style, text="Note")
     tc5_top.addElement(p)
@@ -338,38 +337,38 @@ def committed_tasks_list(cfg, textdoc, delivery_data):
     rows_containing_data = 1
 
     for issue in delivery_data["issues"]:
-        tr = TableRow()
+        tr = odf.table.TableRow()
         table.addElement(tr)
 
         commitment_issue_url = cjm.request.make_cj_issue_url(cfg, str(issue["key"]))
 
-        tc1 = TableCell()
+        tc1 = odf.table.TableCell()
         tr.addElement(tc1)
         p = odf.text.P()
         a = odf.text.A(stylename=desc_cell_style, href=commitment_issue_url, text=issue["key"])
         p.addElement(a)
         tc1.addElement(p)
 
-        tc2 = TableCell()
+        tc2 = odf.table.TableCell()
         tr.addElement(tc2)
         p = odf.text.P(stylename=desc_cell_style, text=issue["summary"])
         tc2.addElement(p)
 
-        tc3 = TableCell()
+        tc3 = odf.table.TableCell()
         tr.addElement(tc3)
         p = odf.text.P(
             stylename=desc_cell_style,
             text="{0:d}".format(issue["committed story points"]))
         tc3.addElement(p)
 
-        tc4 = TableCell()
+        tc4 = odf.table.TableCell()
         tr.addElement(tc4)
         p = odf.text.P(
             stylename=desc_cell_style,
             text="{0:d}".format(issue["delivered story points"]))
         tc4.addElement(p)
 
-        tc5 = TableCell()
+        tc5 = odf.table.TableCell()
         tr.addElement(tc5)
 
         def __adapt_outcome(issue):
@@ -391,28 +390,28 @@ def committed_tasks_list(cfg, textdoc, delivery_data):
 
         rows_containing_data += 1
 
-    table_footer = TableRow()
+    table_footer = odf.table.TableRow()
     table.addElement(table_footer)
 
-    tc1_bottom = TableCell()
+    tc1_bottom = odf.table.TableCell()
     table_footer.addElement(tc1_bottom)
     p = odf.text.P(stylename=title_cell_style, text="")
     tc1_bottom.addElement(p)
 
-    tc2_bottom = TableCell()
+    tc2_bottom = odf.table.TableCell()
     table_footer.addElement(tc2_bottom)
     p = odf.text.P(stylename=title_cell_style, text="Total:")
     tc2_bottom.addElement(p)
 
-    tc3_bottom = TableCell(stylename=title_cell_style,
+    tc3_bottom = odf.table.TableCell(stylename=title_cell_style,
                            formula="SUM(<C2:C" + str(rows_containing_data) + ">)", valuetype="float")
     table_footer.addElement(tc3_bottom)
 
-    tc4_bottom = TableCell(stylename=title_cell_style,
+    tc4_bottom = odf.table.TableCell(stylename=title_cell_style,
                            formula="SUM(<D2:D" + str(rows_containing_data) + ">)", valuetype="float")
     table_footer.addElement(tc4_bottom)
 
-    tc5_bottom = TableCell(stylename=title_cell_style,
+    tc5_bottom = odf.table.TableCell(stylename=title_cell_style,
                            formula="", valuetype="float")
     table_footer.addElement(tc5_bottom)
 
@@ -422,109 +421,109 @@ def committed_tasks_list(cfg, textdoc, delivery_data):
 def add_style(textdoc, name):
     # STYLE
     if name == "style":
-        style = Style(name='s1', parentstylename="Graphics", family="graphic")
-        style.addElement(GraphicProperties(verticalpos="from-top", horizontalpos="from-left"))
+        style = odf.style.Style(name='s1', parentstylename="Graphics", family="graphic")
+        style.addElement(odf.style.GraphicProperties(verticalpos="from-top", horizontalpos="from-left"))
         textdoc.automaticstyles.addElement(style)
         return style
 
     # TABLE 1 COLUMNS STYLE
     if name == "tab1_w1":
-        tab1_w1 = Style(name="w1", family="table-column")
-        tab1_w1.addElement(TableColumnProperties(columnwidth="4cm"))
+        tab1_w1 = odf.style.Style(name="w1", family="table-column")
+        tab1_w1.addElement(odf.style.TableColumnProperties(columnwidth="4cm"))
         textdoc.automaticstyles.addElement(tab1_w1)
         return tab1_w1
 
     if name == "tab1_w2":
-        tab1_w2 = Style(name="w2", family="table-column")
-        tab1_w2.addElement(TableColumnProperties(columnwidth="13cm"))
+        tab1_w2 = odf.style.Style(name="w2", family="table-column")
+        tab1_w2.addElement(odf.style.TableColumnProperties(columnwidth="13cm"))
         textdoc.automaticstyles.addElement(tab1_w2)
         return tab1_w2
 
     # TABLE 2 COLUMNS STYLE
     if name == "tab2_w1":
-        tab2_w1 = Style(name="w1", family="table-column")
-        tab2_w1.addElement(TableColumnProperties(columnwidth="2cm"))
+        tab2_w1 = odf.style.Style(name="w1", family="table-column")
+        tab2_w1.addElement(odf.style.TableColumnProperties(columnwidth="2cm"))
         textdoc.automaticstyles.addElement(tab2_w1)
         return tab2_w1
 
     if name == "tab2_w2":
-        tab2_w2 = Style(name="w2", family="table-column")
-        tab2_w2.addElement(TableColumnProperties(columnwidth="8cm"))
+        tab2_w2 = odf.style.Style(name="w2", family="table-column")
+        tab2_w2.addElement(odf.style.TableColumnProperties(columnwidth="8cm"))
         textdoc.automaticstyles.addElement(tab2_w2)
         return tab2_w2
 
     if name == "tab2_w3":
-        tab2_w3 = Style(name="w3", family="table-column")
-        tab2_w3.addElement(TableColumnProperties(columnwidth="2.5cm"))
+        tab2_w3 = odf.style.Style(name="w3", family="table-column")
+        tab2_w3.addElement(odf.style.TableColumnProperties(columnwidth="2.5cm"))
         textdoc.automaticstyles.addElement(tab2_w3)
         return tab2_w3
 
     if name == "tab2_w4":
-        tab2_w4 = Style(name="w4", family="table-column")
-        tab2_w4.addElement(TableColumnProperties(columnwidth="2.5cm"))
+        tab2_w4 = odf.style.Style(name="w4", family="table-column")
+        tab2_w4.addElement(odf.style.TableColumnProperties(columnwidth="2.5cm"))
         textdoc.automaticstyles.addElement(tab2_w4)
         return tab2_w4
 
     if name == "tab2_w5":
-        tab2_w5 = Style(name="w5", family="table-column")
-        tab2_w5.addElement(TableColumnProperties(columnwidth="2cm"))
+        tab2_w5 = odf.style.Style(name="w5", family="table-column")
+        tab2_w5.addElement(odf.style.TableColumnProperties(columnwidth="2cm"))
         textdoc.automaticstyles.addElement(tab2_w5)
         return tab2_w5
 
     # TITLE STYLE
     if name == "title_style":
-        title_style = Style(name="Mobica Heading 1", family="paragraph")
-        title_style.addElement(TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "14pt",
+        title_style = odf.style.Style(name="Mobica Heading 1", family="paragraph")
+        title_style.addElement(odf.style.TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "14pt",
                                                           'fontweight': "bold"}))
         textdoc.styles.addElement(title_style)
         return title_style
 
     # TITLE CELL STYLE
     if name == "title_cell_style":
-        title_cell_style = Style(name="Mobica Table Header Left", family="paragraph")
-        title_cell_style.addElement(ParagraphProperties(padding="0.04in"))
-        title_cell_style.addElement(TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt",
+        title_cell_style = odf.style.Style(name="Mobica Table Header Left", family="paragraph")
+        title_cell_style.addElement(odf.style.ParagraphProperties(padding="0.04in"))
+        title_cell_style.addElement(odf.style.TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt",
                                                                'fontweight': "bold"}))
-        title_cell_style.addElement(GraphicProperties(fill="solid", fillcolor="#99ccff"))
+        title_cell_style.addElement(odf.style.GraphicProperties(fill="solid", fillcolor="#99ccff"))
         textdoc.styles.addElement(title_cell_style)
         return title_cell_style
 
     # DESCRIPTION CELL STYLE
     if name == "desc_cell_style":
-        desc_cell_style = Style(name="Mobica Table Cell", family="paragraph")
-        desc_cell_style.addElement(ParagraphProperties(padding="0.04in"))
-        desc_cell_style.addElement(TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt",
+        desc_cell_style = odf.style.Style(name="Mobica Table Cell", family="paragraph")
+        desc_cell_style.addElement(odf.style.ParagraphProperties(padding="0.04in"))
+        desc_cell_style.addElement(odf.style.TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt",
                                                               'fontweight': "normal"}))
         textdoc.styles.addElement(desc_cell_style)
         return desc_cell_style
 
     # TITLE CELL 2 STYLE
     if name == "title2_style":
-        title2_style = Style(name="Mobica Heading 2", family="paragraph")
+        title2_style = odf.style.Style(name="Mobica Heading 2", family="paragraph")
         title2_style.addElement(
-            TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "12pt", 'fontweight': "bold"}))
+            odf.style.TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "12pt", 'fontweight': "bold"}))
         textdoc.styles.addElement(title2_style)
         return title2_style
 
     # DEFAULT STYLE
     if name == "default_style":
-        default_style = Style(name="Default Mobica Style", family="paragraph")
+        default_style = odf.style.Style(name="Default Mobica Style", family="paragraph")
         default_style.addElement(
-            TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt", 'fontweight': "normal"}))
+            odf.style.TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt", 'fontweight': "normal"}))
         textdoc.styles.addElement(default_style)
         return default_style
 
     # DEFAULT STYLE BOLD
     if name == "default_bold_style":
-        default_bold_style = Style(name="Default Mobica Style Bold", family="paragraph")
+        default_bold_style = odf.style.Style(name="Default Mobica Style Bold", family="paragraph")
         default_bold_style.addElement(
-            TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt", 'fontweight': "bold"}))
+            odf.style.TextProperties(attributes={'fontfamily': 'Verdana', 'fontsize': "10pt", 'fontweight': "bold"}))
         textdoc.styles.addElement(default_bold_style)
         return default_bold_style
 
 
 def generate(cfg, sprint_data, commitment_data, delivery_data):
-    textdoc = OpenDocumentText()
+    textdoc = odf.opendocument.OpenDocumentText()
 
     logo(cfg, textdoc)
 
