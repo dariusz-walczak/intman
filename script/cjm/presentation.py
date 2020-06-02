@@ -2,6 +2,7 @@
 
 # Standard library imports
 import enum
+import sys
 
 # Third party imports
 import colorama
@@ -95,3 +96,32 @@ def format_cell(importance_code, cell, row):
 def format_row(importance_code, cells, row):
     """Format cells values using given cells specification and row data"""
     return [format_cell(importance_code, cell, row) for cell in cells]
+
+
+def color_issue_key(key):
+    """Color issue key for output message construction purposes"""
+    return "{0:s}{1:s}{2:s}".format(colorama.Fore.MAGENTA, key, colorama.Style.RESET_ALL)
+
+
+def color_issue_comment(comment):
+    """Color issue comment for output message construction purposes"""
+    return "{0:s}{1:s}{2:s}".format(colorama.Fore.CYAN, comment, colorama.Style.RESET_ALL)
+
+
+def color_emph(text):
+    """Color emphasized text for output message construction purposes"""
+    return "{0:s}{1:s}{2:s}".format(colorama.Style.BRIGHT, text, colorama.Style.RESET_ALL)
+
+
+def print_data_warnings(warnings):
+    """Print data processing warnings"""
+    if warnings:
+        sys.stderr.write(
+            "{}{}WARNINGS:{}\n"
+            "".format(colorama.Fore.RED, colorama.Style.BRIGHT, colorama.Style.RESET_ALL))
+
+    for key in sorted(warnings.keys()):
+        sys.stderr.write(
+            "    {0:s}: \n        {1:s}\n".format(
+                color_issue_key(key),
+                "\n        ".join([w["msg"] for w in warnings[key]])))

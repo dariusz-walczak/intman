@@ -73,7 +73,7 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def _make_augment_issue_cb(cfg, extended, sprint_data=None):
+def _make_augment_issue_cb(cfg, extended, sprint_data, warnings):
     if extended:
         ext_comment_re = re.compile(
             r"{0:s}/Extended \((?P<committed>[0-9]+)/(?P<deliverable>[0-9]+)\)"
@@ -87,28 +87,37 @@ def _make_augment_issue_cb(cfg, extended, sprint_data=None):
             return 0
         else:
             if len(set(comments)) > 1:
-                sys.stderr.write(
-                    "WARNING: Issue '{0:s}' has more than one sprint extension comment. Only"
-                    " the first meaningful one will be used. Delete all erroneous comments"
-                    " for the sprint '{1:s}'\n"
-                    "".format(issue["key"], sprint_data["comment prefix"]))
+                cjm.data.add_warning(
+                    warnings, issue["key"],
+                    "Issue has more than one ({0:s}) sprint extension comments. Only the first"
+                    " meaningful comment will be used. Delete all erroneous extension comments"
+                    " prefixed by '{1:s}'"
+                    "".format(
+                        cjm.presentation.color_emph("{0:d}".format(len(set(comments)))),
+                        cjm.presentation.color_issue_comment(sprint_data["comment prefix"])))
             sp_committed = int(comments[0].group("committed"))
             sp_deliverable = int(comments[0].group("deliverable"))
             if sp_deliverable != issue["story points"]:
-                sys.stderr.write(
-                    "WARNING: Regarding issue {0:s}: Story point value inconsistency between"
-                    " the story points field ({1:d}) and the sprint extension comment"
-                    " ({2:d}/{3:d}). The value taken from the story points field will be used"
-                    " for reporting purposes and the committed value will be assumed to be 0\n"
-                    "".format(issue["key"], issue["story points"], sp_committed, sp_deliverable))
+                cjm.data.add_warning(
+                    warnings, issue["key"],
+                    "Story point value inconsistency between the story points field ({0:s}) and"
+                    " the sprint extension comment ({1:s}). The value taken from the story points"
+                    " field will be used for reporting purposes and the committed value will be"
+                    " assumed to be 0"
+                    "".format(
+                        cjm.presentation.color_emph("{0:d}".format(issue["story points"])),
+                        cjm.presentation.color_emph(
+                            "{0:d}/{1:d}".format(sp_committed, sp_deliverable))))
                 return 0
             elif sp_committed > sp_deliverable:
-                sys.stderr.write(
-                    "WARNING: Regarding issue {0:s}: According to the sprint extension"
-                    " comment, the number of committed story points ({1:d}) is greater than"
-                    " the number of deliverable story points ({2:d}). The deliverable number"
-                    " of story points will be used in both cases\n"
-                    "".format(issue["key"], sp_committed, sp_deliverable))
+                cjm.data.add_warning(
+                    warnings, issue["key"],
+                    "According to the sprint extension comment, the number of committed story"
+                    " points ({0:s}) is greater than the number of deliverable story points"
+                    " ({1:s}). The deliverable number of story points will be used in both cases"
+                    "".format(
+                        cjm.presentation.color_emph("{0:d}".format(sp_committed)),
+                        cjm.presentation.color_emph("{0:d}".format(sp_deliverable))))
                 return sp_deliverable
             else:
                 return sp_committed
@@ -127,22 +136,24 @@ def _make_augment_issue_cb(cfg, extended, sprint_data=None):
 
     return __augment_issue_cb
 
-def _retrieve_issues(cfg, issue_keys):
+
+def _retrieve_issues(cfg, issue_keys, warnings):
     issues = cjm.issue.request_issues_by_keys(cfg, issue_keys)
 
     response_keys = set([i["key"] for i in issues])
     request_keys = set(issue_keys)
 
     if response_keys != request_keys:
-        sys.stderr.write(
-            "WARNING: Following issues were requested but not included in the response ({0:s})\n"
-            "".format(", ".join(sorted(request_keys-response_keys))))
+        for key in sorted(request_keys-response_keys):
+            cjm.data.add_warning(
+                warnings, key,
+                "Issue details were requested from Jira server but not included in its response")
 
-    augment_cb = _make_augment_issue_cb(cfg, False)
+    augment_cb = _make_augment_issue_cb(cfg, False, None, warnings)
     return [augment_cb(i) for i in issues]
 
 
-def _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data):
+def _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data, warnings):
     commitment_lut = dict((i["key"], i) for i in commitment_data["issues"])
 
     confirm_postfix = "ConfirmSp"
@@ -160,28 +171,34 @@ def _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data):
             comments = cjm.issue.request_issue_comments_regexp(cfg, issue_key, confirm_re)
 
             if not comments:
-                sys.stderr.write(
-                    "WARNING: Issue ({0:s}) story points value changed from the committed {1:d} to"
-                    " the current {2:d}. To confirm this change add '{3:s}' comment to the issue\n"
-                    "".format(issue_key, prev_sp, curr_sp, confirm_comment))
+                cjm.data.add_warning(
+                    warnings, issue_key,
+                    "Issue story points value changed from the committed {0:s} to the current"
+                    " {1:s}. To confirm this change add '{2:s}' comment to the issue"
+                    "".format(
+                        cjm.presentation.color_emph("{0:d}".format(prev_sp)),
+                        cjm.presentation.color_emph("{0:d}".format(curr_sp)),
+                        cjm.presentation.color_issue_comment(confirm_comment)))
 
 
-def _retrieve_extension_issues(cfg, sprint_data, team_data):
+def _retrieve_extension_issues(cfg, sprint_data, team_data, warnings):
     issues = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
-    augment_cb = _make_augment_issue_cb(cfg, True, sprint_data)
+    augment_cb = _make_augment_issue_cb(cfg, True, sprint_data, warnings)
     return [augment_cb(i) for i in cjm.team.filter_team_issues(cfg, issues, team_data)]
 
 
-def _join_issue_lists(issues_com, issues_ext):
+def _join_issue_lists(issues_com, issues_ext, warnings):
     com_keys = [i["key"] for i in issues_com]
 
     def __ext_issue_uniq(issue):
-        if issue["key"] in com_keys:
-            sys.stderr.write(
-                "WARNING: Issue '{0:s}' was found in the commitment data file and at the same"
-                " time it was found out to be marked with sprint extension comment. The comment"
-                " will be ignored\n".format(issue["key"]))
+        issue_key = issue["key"]
+
+        if issue_key in com_keys:
+            cjm.data.add_warning(
+                warnings, issue_key,
+                "Issue was found in the commitment data file and at the same time it was found out"
+                " to be marked with sprint extension comment. The comment will be ignored")
             return False
         else:
             return True
@@ -189,7 +206,7 @@ def _join_issue_lists(issues_com, issues_ext):
     return issues_com + [i for i in issues_ext if __ext_issue_uniq(i)]
 
 
-def _process_dropped_issues(cfg, sprint_data, all_issues):
+def _process_dropped_issues(cfg, sprint_data, all_issues, warnings):
     """Determine dropped status of given issues"""
     issues_drp = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Dropped".format(sprint_data["comment prefix"]))
@@ -200,9 +217,9 @@ def _process_dropped_issues(cfg, sprint_data, all_issues):
         issue = issue_lut.get(dropped_issue["id"])
 
         if issue is None:
-            sys.stderr.write(
-                "WARNING: An issue ({0:s}) has been found to have the dropped comment but no"
-                " corresponding committed or extended comment\n".format(dropped_issue["id"]))
+            cjm.data.add_warning(
+                warnings, dropped_issue["key"],
+                "Issue has the dropped comment but no corresponding committed or extended comment")
         else:
             issue["dropped"] = True
 
@@ -307,18 +324,19 @@ def main(options):
 
     # Request all committed issues:
 
-    issues_com = _retrieve_issues(cfg, [i["key"] for i in commitment_data["issues"]])
-    _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data)
+    warnings = {}
+    issues_com = _retrieve_issues(cfg, [i["key"] for i in commitment_data["issues"]], warnings)
+    _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data, warnings)
 
     # Request all extension issues and determine their commitment story points:
 
-    issues_ext = _retrieve_extension_issues(cfg, sprint_data, team_data)
+    issues_ext = _retrieve_extension_issues(cfg, sprint_data, team_data, warnings)
 
-    issues = _join_issue_lists(issues_com, issues_ext)
+    issues = _join_issue_lists(issues_com, issues_ext, warnings)
 
     # Request dropped issues and change story point value to 0
 
-    issues = _process_dropped_issues(cfg, sprint_data, issues)
+    issues = _process_dropped_issues(cfg, sprint_data, issues, warnings)
     issues = _process_delivered_issues(cfg, sprint_data, issues)
     issues = list(filter(cjm.data.make_flag_filter("delivered", options.delivered_filter), issues))
 
@@ -335,6 +353,8 @@ def main(options):
             print_summary(delivery_data, team_data, sprint_data, capacity_data)
         else:
             print_issue_list(delivery_data, team_data)
+
+    cjm.presentation.print_data_warnings(warnings)
 
     return cjm.codes.NO_ERROR
 

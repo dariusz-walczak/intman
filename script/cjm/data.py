@@ -43,3 +43,13 @@ def make_defined_filter(field_name, filter_directive):
     return lambda item: (
         (filter_directive in ("all", "yes") and item[field_name] is not None) or
         (filter_directive in ("all", "no") and item[field_name] is None))
+
+
+def add_warning(warnings, issue_key, message):
+    """Add a new warning to the warning accumulator (warnings)"""
+    warnings.setdefault(issue_key, []).append(
+        {
+            "key": issue_key,
+            "msg": message
+        }
+    )
