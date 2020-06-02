@@ -135,7 +135,7 @@ def request_issue_comments_regexp(cfg, issue_key, comment_re):
         if start_at >= response_json["total"]:
             break
 
-    return cjm.codes.NO_ERROR, comments
+    return comments
 
 
 def extract_issue_data(cfg, issue):

@@ -81,11 +81,7 @@ def _make_augment_issue_cb(cfg, extended, sprint_data=None):
         assert sprint_data is not None
 
     def __retrieve_ext_committed_sps(issue):
-        result_code, comments = \
-            cjm.issue.request_issue_comments_regexp(cfg, issue["key"], ext_comment_re)
-
-        if result_code:
-            raise cjm.codes.CjmError(result_code)
+        comments = cjm.issue.request_issue_comments_regexp(cfg, issue["key"], ext_comment_re)
 
         if not comments:
             return 0
@@ -144,6 +140,30 @@ def _retrieve_issues(cfg, issue_keys):
 
     augment_cb = _make_augment_issue_cb(cfg, False)
     return [augment_cb(i) for i in issues]
+
+
+def _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data):
+    commitment_lut = dict((i["key"], i) for i in commitment_data["issues"])
+
+    confirm_postfix = "ConfirmSp"
+    confirm_comment = "{0:s}/{1:s}".format(sprint_data["comment prefix"], confirm_postfix)
+    confirm_re = re.compile(
+        r"{0:s}/{1:s}"
+        "".format(re.escape(sprint_data["comment prefix"]), re.escape(confirm_postfix)))
+
+    for issue in issues_com:
+        issue_key = issue["key"]
+        curr_sp = issue["story points"]
+        prev_sp = commitment_lut[issue_key]["story points"]
+
+        if curr_sp != prev_sp:
+            comments = cjm.issue.request_issue_comments_regexp(cfg, issue_key, confirm_re)
+
+            if not comments:
+                sys.stderr.write(
+                    "WARNING: Issue ({0:s}) story points value changed from the committed {1:d} to"
+                    " the current {2:d}. To confirm this change add '{3:s}' comment to the issue\n"
+                    "".format(issue_key, prev_sp, curr_sp, confirm_comment))
 
 
 def _retrieve_extension_issues(cfg, sprint_data, team_data):
@@ -288,6 +308,7 @@ def main(options):
     # Request all committed issues:
 
     issues_com = _retrieve_issues(cfg, [i["key"] for i in commitment_data["issues"]])
+    _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data)
 
     # Request all extension issues and determine their commitment story points:
 
