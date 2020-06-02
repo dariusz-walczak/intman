@@ -132,10 +132,7 @@ def _make_augment_issue_cb(cfg, extended, sprint_data=None):
     return __augment_issue_cb
 
 def _retrieve_issues(cfg, issue_keys):
-    result_code, issues = cjm.issue.request_issues_by_keys(cfg, issue_keys)
-
-    if result_code:
-        return result_code
+    issues = cjm.issue.request_issues_by_keys(cfg, issue_keys)
 
     response_keys = set([i["key"] for i in issues])
     request_keys = set(issue_keys)
@@ -146,7 +143,7 @@ def _retrieve_issues(cfg, issue_keys):
             "".format(", ".join(sorted(request_keys-response_keys))))
 
     augment_cb = _make_augment_issue_cb(cfg, False)
-    return cjm.codes.NO_ERROR, [augment_cb(i) for i in issues]
+    return [augment_cb(i) for i in issues]
 
 
 def _retrieve_extension_issues(cfg, sprint_data, team_data):
@@ -290,10 +287,7 @@ def main(options):
 
     # Request all committed issues:
 
-    result_code, issues_com = _retrieve_issues(cfg, [i["key"] for i in commitment_data["issues"]])
-
-    if result_code:
-        return result_code
+    issues_com = _retrieve_issues(cfg, [i["key"] for i in commitment_data["issues"]])
 
     # Request all extension issues and determine their commitment story points:
 
@@ -317,7 +311,7 @@ def main(options):
         print(json.dumps(delivery_data, indent=4, sort_keys=False))
     else:
         if options.show_summary:
-            print_summary(delivery_data, team_data, sprint_data, capacity_data, commitment_data)
+            print_summary(delivery_data, team_data, sprint_data, capacity_data)
         else:
             print_issue_list(delivery_data, team_data)
 
@@ -351,7 +345,7 @@ def calc_total(issues, field_key):
     return sum([int(i[field_key]) for i in issues])
 
 
-def print_summary(delivery_data, team_data, sprint_data, capacity_data, commitment_data):
+def print_summary(delivery_data, team_data, sprint_data, capacity_data):
     """Print the report summary table"""
     person_capacity_lut = cjm.capacity.make_person_capacity_lut(sprint_data, capacity_data)
     total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())

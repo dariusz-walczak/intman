@@ -174,7 +174,7 @@ def request_issue(cfg, issue_key):
 def request_issues_by_keys(cfg, issue_keys):
     """Return issues identified by one of given keys"""
     if not issue_keys:
-        return cjm.codes.NO_ERROR, []
+        return []
 
     issues = []
     issues_url = cjm.request.make_cj_url(cfg, "search")
@@ -197,7 +197,7 @@ def request_issues_by_keys(cfg, issue_keys):
         if start_at >= response_json["total"]:
             break
 
-    return cjm.codes.NO_ERROR, issues
+    return issues
 
 
 def make_comment_body(comment_text):
