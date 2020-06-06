@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-import sys
-import json
-import dateutil.parser
 import datetime
+import dateutil.parser
+import json
+import sys
 
 # Third party imports
 import jsonschema

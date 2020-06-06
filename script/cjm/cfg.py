@@ -59,6 +59,8 @@ def init_defaults():
         },
         "project": {
             "key": None,
+            "code": None,
+            "sow": None,
             "id": None
         },
         "path": {
@@ -130,8 +132,8 @@ def make_common_parser(defaults):
     specific arguments"""
     default_data_path = os.path.relpath(
         os.path.join(
-            os.path.realpath(__file__),
-            "..", "..", "..", "data"))
+            os.path.dirname(os.path.realpath(__file__)),
+            "..", "..", "data"))
     default_user_name = defaults.get("jira", {}).get("user", {}).get("name")
     default_user_token = defaults.get("jira", {}).get("user", {}).get("token")
     default_host_name = defaults.get("jira", {}).get("host")

@@ -122,6 +122,6 @@ def print_data_warnings(warnings):
 
     for key in sorted(warnings.keys()):
         sys.stderr.write(
-            "    {0:s}: \n        {1:s}\n".format(
+            "    {0:s}\n        {1:s}\n".format(
                 color_issue_key(key),
                 "\n        ".join([w["msg"] for w in warnings[key]])))
