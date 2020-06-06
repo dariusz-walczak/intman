@@ -4,12 +4,11 @@
 
 # Standard library imports
 import datetime
-import dateutil.parser
 import os
 import sys
 
 # Third party imports
-import holidays
+import dateutil.parser
 import numpy
 import odf.dc
 import odf.draw
@@ -29,6 +28,9 @@ import cjm.request
 import cjm.run
 import cjm.schema
 import cjm.sprint
+
+
+_ISO_DATE_STYLENAME = "N121"
 
 
 def parse_options(args):
@@ -91,13 +93,15 @@ def remove_meta_element(doc, namespace, local_part):
         e for e in doc.meta.childNodes if e.qname != (namespace, local_part)]
 
 
-def add_elements(dst_element, *elements):
+def add_elements(parent_element, *elements):
+    """Add given xml dom elements to the parent element and then return it"""
     for element in elements:
-        dst_element.addElement(element)
-    return dst_element
+        parent_element.addElement(element)
+    return parent_element
 
 
 def append_doc_title(cfg, doc, sprint_data):
+    """Add document title"""
     title = "Mobica {0:s} Sprint Commitment ({1:s})".format(
         sprint_data["project"]["name"],
         _get_sprint_weeks(cfg))
@@ -117,6 +121,8 @@ def _get_sprint_weeks(cfg):
 
 
 def append_head_table(cfg, doc, sprint_data):
+    """Add document header table"""
+
     def __get_duration(sprint_data):
         return "{0:s} to {1:s}".format(sprint_data["start date"], sprint_data["end date"])
 
@@ -138,11 +144,11 @@ def append_head_table(cfg, doc, sprint_data):
         if val != "CURRENT_DATE":
             val_p = odf.text.P(text=val, stylename=doc.getStyleByName("Mobica Table Cell"))
         else:
-            # TODO: Make the data-style-name configurable
             val_p = add_elements(
                 odf.text.P(stylename=doc.getStyleByName("Mobica Table Cell")),
                 odf.text.Date(
-                    datastylename="N121", datevalue=datetime.datetime.utcnow().isoformat()))
+                    datastylename=_ISO_DATE_STYLENAME,
+                    datevalue=datetime.datetime.utcnow().isoformat()))
 
         return add_elements(
             odf.table.TableRow(),
@@ -180,7 +186,9 @@ def append_head_table(cfg, doc, sprint_data):
             *[__make_row(spec) for spec in rows]))
 
 
-def append_summary_section(cfg, doc, sprint_data, capacity_data, commitment_data):
+def append_summary_section(doc, sprint_data, capacity_data, commitment_data):
+    """Add commitment summary section"""
+
     committed_text = (
         "The total number of committed story points is {0:d}."
         "".format(commitment_data["total"]["committed"]))
@@ -208,6 +216,8 @@ def append_summary_section(cfg, doc, sprint_data, capacity_data, commitment_data
 
 
 def make_caption_cell_props():
+    """Create table cell properties object for caption cells"""
+
     tcp = odf.style.TableCellProperties()
     tcp.setAttrNS(odf.namespaces.FONS, "background-color", "#99ccff")
     tcp.setAttrNS(odf.namespaces.FONS, "padding", "0.0382in")
@@ -216,6 +226,8 @@ def make_caption_cell_props():
 
 
 def make_value_cell_props():
+    """Create table cell properties object for value cells"""
+
     tcp = odf.style.TableCellProperties()
     tcp.setAttrNS(odf.namespaces.FONS, "padding", "0.0382in")
     tcp.setAttrNS(odf.namespaces.FONS, "border", "0.05pt solid #000000")
@@ -223,6 +235,8 @@ def make_value_cell_props():
 
 
 def append_tasks_section(cfg, doc, commitment_data):
+    """Add commitment tasks table section"""
+
     add_elements(
         doc.automaticstyles,
         add_elements(
@@ -329,7 +343,7 @@ def generate_odt_document(cfg, capacity_data, commitment_data, sprint_data):
 
     append_doc_title(cfg, output_doc, sprint_data)
     append_head_table(cfg, output_doc, sprint_data)
-    append_summary_section(cfg, output_doc, sprint_data, capacity_data, commitment_data)
+    append_summary_section(output_doc, sprint_data, capacity_data, commitment_data)
     append_tasks_section(cfg, output_doc, commitment_data)
 
     output_doc.save(cfg["path"]["output"])
