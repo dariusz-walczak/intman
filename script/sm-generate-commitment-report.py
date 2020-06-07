@@ -27,6 +27,7 @@ import cjm.request
 import cjm.run
 import cjm.schema
 import cjm.sprint
+import cjm.team
 
 
 def parse_options(args):
@@ -74,15 +75,6 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def get_report_author(cfg):
-    """Request full name of the current user"""
-    current_user_url = cjm.request.make_cj_gadget_url(cfg, "currentUser")
-    response = cjm.request.make_cj_request(cfg, current_user_url)
-    current_user_json = response.json()
-
-    return current_user_json["fullName"]
-
-
 def append_head_table(cfg, doc, sprint_data):
     """Add document header table"""
 
@@ -92,7 +84,7 @@ def append_head_table(cfg, doc, sprint_data):
         ("Sprint Weeks", cjm.report.make_sprint_period_val(cfg)),
         ("Sprint Duration", cjm.report.make_sprint_duration_val(sprint_data)),
         ("Sprint Workdays", cjm.report.make_sprint_workdays_val(cfg)),
-        ("Report Author", get_report_author(cfg)),
+        ("Report Author", cjm.team.request_user_full_name(cfg)),
         ("Report Date", cjm.report.make_current_date_cell_val_cb()))
 
     cjm.report.append_head_table(doc, rows)

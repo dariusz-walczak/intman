@@ -24,6 +24,7 @@ def add_elements(parent_element, *elements):
 
 
 def create_issue_anchor_element(cfg, doc, issue_key):
+    """Create xml dom anchor linking to specified issue"""
     return odf.text.A(
         stylename=doc.getStyleByName("Internet link"),
         visitedstylename=doc.getStyleByName("Visited Internet Link"),
@@ -93,6 +94,8 @@ def make_sprint_workdays_val(cfg):
 
 
 def make_current_date_cell_val_cb():
+    """Create a callback returning current date paragraph to be used optionally used with one of
+    the append_head_table data_rows"""
     return lambda doc: add_elements(
         odf.text.P(stylename=doc.getStyleByName("Mobica Table Cell")),
         odf.text.Date(

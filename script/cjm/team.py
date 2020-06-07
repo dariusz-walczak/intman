@@ -39,3 +39,12 @@ def filter_team_issues(cfg, issues, team_data):
 def format_full_name(person):
     """Format person full name"""
     return "{0:s}, {1:s}".format(person["last name"], person["first name"])
+
+
+def request_user_full_name(cfg):
+    """Request full name of the current user"""
+    current_user_url = cjm.request.make_cj_gadget_url(cfg, "currentUser")
+    response = cjm.request.make_cj_request(cfg, current_user_url)
+    current_user_json = response.json()
+
+    return current_user_json["fullName"]
