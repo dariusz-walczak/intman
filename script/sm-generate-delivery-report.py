@@ -7,6 +7,7 @@ import sys
 import datetime
 
 # Third party imports
+import dateutil.parser
 import holidays
 import numpy
 import odf.dc
@@ -19,14 +20,16 @@ import odf.text
 # Project imports
 import cjm
 import cjm.cfg
-import cjm.data
-import cjm.request
 import cjm.codes
+import cjm.commitment
+import cjm.data
+import cjm.delivery
+import cjm.report
+import cjm.request
+import cjm.run
 import cjm.schema
 import cjm.sprint
-import cjm.delivery
 import cjm.team
-import cjm.commitment
 
 
 def parse_options(args):
@@ -34,7 +37,7 @@ def parse_options(args):
     parser = cjm.cfg.make_common_parser(defaults)
 
     default_output_file_path = "delivery_report.odt"
-    default_client_name = "CLIENT"
+    default_client_name = defaults.get("client", {}).get("name", "INTEL")
 
     parser.add_argument(
         "sprint_file", action="store",
@@ -62,18 +65,13 @@ def parse_options(args):
         default=default_output_file_path,
         help=(
             "PATH to the output file into which the odt document will be written"
-            " (default: '{0:s}')".format(default_output_file_path)
-        )
-    )
+            " (default: '{0:s}')".format(default_output_file_path)))
 
     parser.add_argument(
         "--client", action="store", metavar="NAME", dest="client_name",
         default=default_client_name,
         help=(
-            "NAME of the client"
-            " (default: '{0:s}')".format(default_client_name)
-        )
-    )
+            "NAME of the client{0:s}".format(cjm.cfg.fmt_dft(default_client_name))))
 
     return parser.parse_args(args)
 
@@ -545,27 +543,266 @@ def add_style(textdoc, name):
         return default_bold_style
 
 
-def generate(cfg, sprint_data, commitment_data, delivery_data):
-    textdoc = odf.opendocument.OpenDocumentText()
+def append_head_table(cfg, doc, sprint_data, delivery_summary):
+    """Add document header table"""
 
-    logo(cfg, textdoc)
+    ratio = "{0:d}/{1:d} ({2:f}%)".format(
+        delivery_summary["delivery"],
+        delivery_summary["commitment"],
+        delivery_summary["delivery ratio"])
 
-    for lines in range(4):
-        textdoc.text.addElement(odf.text.P())
+    def __delivery_ratio_cell_val_cb(doc):
+        part1 = "{0:d}/{1:d} (".format(
+            delivery_summary["delivery"], delivery_summary["commitment"])
+        part2 = "{0:f}%".format(delivery_summary["delivery ratio"])
+        part3 = ")"
 
-    data_table(cfg, textdoc, sprint_data, delivery_data)
+        return cjm.report.add_elements(
+            odf.text.P(stylename=doc.getStyleByName("Mobica Table Cell")),
+            odf.text.Span(text=part1),
+            odf.text.Span(text=part2, stylename=doc.getStyleByName("Strong Emphasis")),
+            odf.text.Span(text=part3))
 
-    for lines in range(1):
-        textdoc.text.addElement(odf.text.P())
+    rows = (
+        ("Client", cfg["client"]["name"]),
+        ("Project", sprint_data["project"]["name"]),
+        ("Sprint Weeks", cjm.report.make_sprint_period_val(cfg)),
+        ("Sprint Duration", cjm.report.make_sprint_duration_val(sprint_data)),
+        ("Sprint Workdays", cjm.report.make_sprint_workdays_val(cfg)),
+        ("Delivery Ratio", __delivery_ratio_cell_val_cb),
+        ("Report Author", get_report_author(cfg)),
+        ("Report Date", cjm.report.make_current_date_cell_val_cb()))
 
-    summary(textdoc, commitment_data, delivery_data)
+    cjm.report.append_head_table(doc, rows)
 
-    for lines in range(2):
-        textdoc.text.addElement(odf.text.P())
 
-    committed_tasks_list(cfg, textdoc, delivery_data)
+def append_summary_section(doc, sprint_data, commitment_data, delivery_summary):
+    """Add delivery summary section"""
 
-    textdoc.save(cfg["path"]["output"])
+    committed_originally_text = (
+        "The total number of story points originally committed was {0:d}."
+        "".format(commitment_data["total"]["committed"]))
+    committed_final_text_1 = (
+        "The number of story points taken for delivery ratio calculation was {0:d}"
+        "".format(delivery_summary["commitment"]))
+    committed_final_text_2 =(
+        " (the result of all the drops and extensions).")
+    delivered_text = (
+        "The total number of delivered story points was {0:d}."
+        "".format(delivery_summary["delivery"]))
+    ratio_text = (
+        "The sprint delivery ratio is {0:f}%."
+        "".format(delivery_summary["delivery ratio"]))
+
+    cjm.report.add_elements(
+        doc.text,
+        odf.text.H(
+            outlinelevel=2, stylename=doc.getStyleByName("Mobica Heading 2"),
+            text="Summary"),
+        cjm.report.add_elements(
+            odf.text.List(stylename="L1"),
+            cjm.report.add_elements(
+                odf.text.ListItem(),
+                odf.text.P(
+                    text=committed_originally_text,
+                    stylename=doc.getStyleByName("Mobica Default"))),
+            cjm.report.add_elements(
+                odf.text.ListItem(),
+                cjm.report.add_elements(
+                    odf.text.P(stylename=doc.getStyleByName("Mobica Default")),
+                    odf.text.Span(
+                        text=committed_final_text_1,
+                        stylename=doc.getStyleByName("Strong Emphasis")),
+                    odf.text.Span(
+                        text=committed_final_text_2))),
+            cjm.report.add_elements(
+                odf.text.ListItem(),
+                odf.text.P(
+                    text=delivered_text,
+                    stylename=doc.getStyleByName("Mobica Default"))),
+            cjm.report.add_elements(
+                odf.text.ListItem(),
+                odf.text.P(
+                    text=ratio_text,
+                    stylename=doc.getStyleByName("Mobica Important")))))
+
+
+def append_tasks_section(cfg, doc, delivery_data):
+    """Add delivered tasks table section"""
+
+    cjm.report.add_elements(
+        doc.automaticstyles,
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues", family="table"),
+            odf.style.TableProperties(width="6.7in", align="margins")),
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues.A", family="table-column"),
+            odf.style.TableColumnProperties(columnwidth="1in")),
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues.B", family="table-column"),
+            odf.style.TableColumnProperties(columnwidth="3in")),
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues.C", family="table-column"),
+            odf.style.TableColumnProperties(columnwidth="0.9in")),
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues.E", family="table-column"),
+            odf.style.TableColumnProperties(columnwidth="0.9in")),
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues.y", family="table-row"),
+            odf.style.TableRowProperties(keeptogether="always")),
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues.x.1", family="table-cell"),
+            cjm.report.make_caption_hor_cell_props()),
+        cjm.report.add_elements(
+            odf.style.Style(name="Table.Issues.x.y", family="table-cell"),
+            cjm.report.make_value_cell_props()))
+
+    def __make_row(issue):
+        outcome = {
+            "done": "done",
+            "open": "not done",
+            "drop": "dropped"}.get(issue["outcome"], "")
+        income = {
+            "extend": " (extended)",
+            "commit": ""}.get(issue["income"], "")
+
+        return cjm.report.add_elements(
+            odf.table.TableRow(stylename=doc.getStyleByName("Table.Issues.y")),
+            cjm.report.add_elements(
+                odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
+                cjm.report.add_elements(
+                    odf.text.P(stylename=doc.getStyleByName("Mobica Table Cell")),
+                    cjm.report.create_issue_anchor_element(cfg, doc, issue["key"]))),
+            cjm.report.add_elements(
+                odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
+                odf.text.P(
+                    stylename=doc.getStyleByName("Mobica Table Cell"),
+                    text=issue["summary"])),
+            cjm.report.add_elements(
+                odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
+                odf.text.P(
+                    stylename=doc.getStyleByName("Mobica Table Cell Right"),
+                    text="{0:d}".format(issue["committed story points"]))),
+            cjm.report.add_elements(
+                odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
+                odf.text.P(
+                    stylename=doc.getStyleByName("Mobica Table Cell Right"),
+                    text="{0:d}".format(issue["delivered story points"]))),
+            cjm.report.add_elements(
+                odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
+                odf.text.P(
+                    stylename=doc.getStyleByName("Mobica Table"),
+                    text="{0:s}{1:s}".format(outcome, income))))
+
+    cjm.report.add_elements(
+        doc.text,
+        odf.text.H(
+            outlinelevel=2, stylename=doc.getStyleByName("Mobica Heading 2"),
+            text="Task List"),
+        cjm.report.add_elements(
+            odf.table.Table(stylename="Table.Issues"),
+            odf.table.TableColumn(stylename="Table.Issues.A"),
+            odf.table.TableColumn(stylename="Table.Issues.B"),
+            odf.table.TableColumn(stylename="Table.Issues.C", numbercolumnsrepeated=2),
+            odf.table.TableColumn(stylename="Table.Issues.E"),
+            cjm.report.add_elements(
+                odf.table.TableHeaderRows(),
+                cjm.report.add_elements(
+                    odf.table.TableRow(stylename=doc.getStyleByName("Table.Issues.y")),
+                    cjm.report.add_elements(
+                        odf.table.TableCell(
+                            stylename=doc.getStyleByName("Table.Issues.x.1"),
+                            numberrowsspanned=2),
+                        odf.text.P(
+                            text="Task Id",
+                            stylename=doc.getStyleByName("Mobica Table Header Left"))),
+                                        cjm.report.add_elements(
+                        odf.table.TableCell(
+                            stylename=doc.getStyleByName("Table.Issues.x.1"),
+                            numberrowsspanned=2),
+                        odf.text.P(
+                            text="Task Title",
+                            stylename=doc.getStyleByName("Mobica Table Header Left"))),
+                    cjm.report.add_elements(
+                        odf.table.TableCell(
+                            stylename=doc.getStyleByName("Table.Issues.x.1"),
+                            numbercolumnsspanned=3),
+                        odf.text.P(
+                            text="Story Points",
+                            stylename=doc.getStyleByName("Mobica Table Header Center"))),
+                    odf.table.CoveredTableCell(),
+                    odf.table.CoveredTableCell()),
+                cjm.report.add_elements(
+                    odf.table.TableRow(stylename=doc.getStyleByName("Table.Issues.y")),
+                    odf.table.CoveredTableCell(),
+                    odf.table.CoveredTableCell(),
+                    cjm.report.add_elements(
+                        odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.1")),
+                        odf.text.P(text="Committed", stylename="Mobica Table Header Small Right")),
+                    cjm.report.add_elements(
+                        odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.1")),
+                        odf.text.P(text="Delivered", stylename="Mobica Table Header Small Right")),
+                    cjm.report.add_elements(
+                        odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.1")),
+                        odf.text.P(text="Note", stylename="Mobica Table Header Small Left")))),
+            *[__make_row(issue) for issue in delivery_data["issues"]],
+            cjm.report.add_elements(
+                odf.table.TableRow(stylename=doc.getStyleByName("Table.Issues.y")),
+                cjm.report.add_elements(
+                    odf.table.TableCell(
+                        stylename=doc.getStyleByName("Table.Issues.x.1"),
+                        numbercolumnsspanned="2"),
+                    odf.text.P(
+                        text="Total:",
+                        stylename=doc.getStyleByName("Mobica Table Header Right"))),
+                odf.table.CoveredTableCell(),
+                cjm.report.add_elements(
+                    odf.table.TableCell(
+                        stylename=doc.getStyleByName("Table.Issues.x.1"),
+                        valuetype="float",
+                        formula="SUM(<C3:C{0:d}>)".format(len(delivery_data["issues"])+2)),
+                    odf.text.P(
+                        stylename=doc.getStyleByName("Mobica Table Header Right"))),
+                cjm.report.add_elements(
+                    odf.table.TableCell(
+                        stylename=doc.getStyleByName("Table.Issues.x.1"),
+                        valuetype="float",
+                        formula="SUM(<D3:D{0:d}>)".format(len(delivery_data["issues"])+2)),
+                    odf.text.P(
+                        stylename=doc.getStyleByName("Mobica Table Header Right"))),
+                odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.1")))))
+
+
+def generate_odt_document(cfg, sprint_data, commitment_data, delivery_data):
+    doc = odf.opendocument.load(
+        os.path.join(cfg["path"]["data"], "odt", "report-template.odt"))
+    doc.text.childNodes = []
+
+    total_committed = delivery_data["total"]["committed"]
+    total_delivered = delivery_data["total"]["delivered"]
+    delivery_summary = cjm.delivery.determine_summary(total_delivered, total_committed)    
+
+    cjm.report.append_doc_title(cfg, doc, sprint_data, "Delivery")
+    append_head_table(cfg, doc, sprint_data, delivery_summary)
+    append_summary_section(doc, sprint_data, commitment_data, delivery_summary)
+    append_tasks_section(cfg, doc, delivery_data)
+
+#    for lines in range(4):
+#        textdoc.text.addElement(odf.text.P())
+#
+#    data_table(cfg, textdoc, sprint_data, delivery_data)
+#
+#    for lines in range(1):
+#        textdoc.text.addElement(odf.text.P())
+#
+#    summary(textdoc, commitment_data, delivery_data)
+#
+#    for lines in range(2):
+#        textdoc.text.addElement(odf.text.P())
+#
+#    committed_tasks_list(cfg, textdoc, delivery_data)
+
+    doc.save(cfg["path"]["output"])
 
 
 def main(options):
@@ -577,13 +814,13 @@ def main(options):
     commitment_data = cjm.data.load(cfg, options.commitment_file, "commitment.json")
     delivery_data = cjm.data.load(cfg, options.delivery_file, "delivery.json")
 
-    generate(cfg, sprint_data, commitment_data, delivery_data)
+    cfg["sprint"]["start date"] = dateutil.parser.parse(sprint_data["start date"]).date()
+    cfg["sprint"]["end date"] = dateutil.parser.parse(sprint_data["end date"]).date()
+
+    generate_odt_document(cfg, sprint_data, commitment_data, delivery_data)
 
     return cjm.codes.NO_ERROR
 
 
 if __name__ == "__main__":
-    try:
-        exit(main(parse_options(sys.argv[1:])))
-    except cjm.codes.CjmError as e:
-        exit(e.code)
+    cjm.run.run(main, parse_options(sys.argv[1:]))

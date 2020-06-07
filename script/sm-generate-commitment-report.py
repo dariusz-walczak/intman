@@ -3,13 +3,11 @@
 """Command line script generating commitment report odt file"""
 
 # Standard library imports
-import datetime
 import os
 import sys
 
 # Third party imports
 import dateutil.parser
-import numpy
 import odf.dc
 import odf.draw
 import odf.opendocument
@@ -24,13 +22,11 @@ import cjm.cfg
 import cjm.codes
 import cjm.commitment
 import cjm.data
+import cjm.report
 import cjm.request
 import cjm.run
 import cjm.schema
 import cjm.sprint
-
-
-_ISO_DATE_STYLENAME = "N121"
 
 
 def parse_options(args):
@@ -87,103 +83,19 @@ def get_report_author(cfg):
     return current_user_json["fullName"]
 
 
-def remove_meta_element(doc, namespace, local_part):
-    """Remove meta element specified by local_part name from the given document"""
-    doc.meta.childNodes[:] = [
-        e for e in doc.meta.childNodes if e.qname != (namespace, local_part)]
-
-
-def add_elements(parent_element, *elements):
-    """Add given xml dom elements to the parent element and then return it"""
-    for element in elements:
-        parent_element.addElement(element)
-    return parent_element
-
-
-def append_doc_title(cfg, doc, sprint_data):
-    """Add document title"""
-    title = "Mobica {0:s} Sprint Commitment ({1:s})".format(
-        sprint_data["project"]["name"],
-        _get_sprint_weeks(cfg))
-
-    remove_meta_element(doc, odf.namespaces.DCNS, "title")
-    doc.meta.addElement(odf.dc.Title(text=title))
-
-    add_elements(
-        doc.text,
-        add_elements(
-            odf.text.H(outlinelevel=1, stylename=doc.getStyleByName("Mobica Heading 1")),
-            odf.text.Title()))
-
-def _get_sprint_weeks(cfg):
-    return cjm.sprint.generate_sprint_period_name(
-        cfg["sprint"]["start date"], cfg["sprint"]["end date"])
-
-
 def append_head_table(cfg, doc, sprint_data):
     """Add document header table"""
-
-    def __get_duration(sprint_data):
-        return "{0:s} to {1:s}".format(sprint_data["start date"], sprint_data["end date"])
-
-    def __get_workdays(cfg):
-        return numpy.busday_count(cfg["sprint"]["start date"], cfg["sprint"]["end date"]).item()
 
     rows = (
         ("Client", cfg["client"]["name"]),
         ("Project", sprint_data["project"]["name"]),
-        ("Sprint Weeks", _get_sprint_weeks(cfg)),
-        ("Sprint Duration", __get_duration(sprint_data)),
-        ("Sprint Workdays", __get_workdays(cfg)),
+        ("Sprint Weeks", cjm.report.make_sprint_period_val(cfg)),
+        ("Sprint Duration", cjm.report.make_sprint_duration_val(sprint_data)),
+        ("Sprint Workdays", cjm.report.make_sprint_workdays_val(cfg)),
         ("Report Author", get_report_author(cfg)),
-        ("Report Date", "CURRENT_DATE"))
+        ("Report Date", cjm.report.make_current_date_cell_val_cb()))
 
-    def __make_row(spec):
-        cpt, val = spec
-
-        if val != "CURRENT_DATE":
-            val_p = odf.text.P(text=val, stylename=doc.getStyleByName("Mobica Table Cell"))
-        else:
-            val_p = add_elements(
-                odf.text.P(stylename=doc.getStyleByName("Mobica Table Cell")),
-                odf.text.Date(
-                    datastylename=_ISO_DATE_STYLENAME,
-                    datevalue=datetime.datetime.utcnow().isoformat()))
-
-        return add_elements(
-            odf.table.TableRow(),
-            add_elements(
-                odf.table.TableCell(stylename=doc.getStyleByName("Table1.A.x")),
-                odf.text.P(text=cpt, stylename=doc.getStyleByName("Mobica Table Header Left"))),
-            add_elements(
-                odf.table.TableCell(stylename=doc.getStyleByName("Table1.B.x")),
-                val_p))
-
-    add_elements(
-        doc.automaticstyles,
-        add_elements(
-            odf.style.Style(name="Table1.A", family="table-column"),
-            odf.style.TableColumnProperties(columnwidth="1.7in")),
-        add_elements(
-            odf.style.Style(name="Table1.A", family="table-column"),
-            odf.style.TableColumnProperties(columnwidth="5in")))
-
-    add_elements(
-        doc.automaticstyles,
-        add_elements(
-            odf.style.Style(name="Table1.A.x", family="table-cell"),
-            make_caption_cell_props()),
-        add_elements(
-            odf.style.Style(name="Table1.B.x", family="table-cell"),
-            make_value_cell_props()))
-
-    add_elements(
-        doc.text,
-        add_elements(
-            odf.table.Table(),
-            odf.table.TableColumn(numbercolumnsrepeated=1, stylename="Table1.A"),
-            odf.table.TableColumn(numbercolumnsrepeated=1, stylename="Table1.B"),
-            *[__make_row(spec) for spec in rows]))
+    cjm.report.append_head_table(doc, rows)
 
 
 def append_summary_section(doc, sprint_data, capacity_data, commitment_data):
@@ -196,129 +108,104 @@ def append_summary_section(doc, sprint_data, capacity_data, commitment_data):
         "The sprint capacity is {0:d} story points."
         "".format(_calc_team_capacity(sprint_data, capacity_data)))
 
-    add_elements(
+    cjm.report.add_elements(
         doc.text,
         odf.text.H(
             outlinelevel=2, stylename=doc.getStyleByName("Mobica Heading 2"),
             text="Summary"),
-        add_elements(
+        cjm.report.add_elements(
             odf.text.List(stylename="L1"),
-            add_elements(
+            cjm.report.add_elements(
                 odf.text.ListItem(),
                 odf.text.P(
                     stylename=doc.getStyleByName("Mobica Important"),
                     text=committed_text)),
-            add_elements(
+            cjm.report.add_elements(
                 odf.text.ListItem(),
                 odf.text.P(
                     stylename=doc.getStyleByName("Mobica Default"),
                     text=capacity_text))))
 
 
-def make_caption_cell_props():
-    """Create table cell properties object for caption cells"""
-
-    tcp = odf.style.TableCellProperties()
-    tcp.setAttrNS(odf.namespaces.FONS, "background-color", "#99ccff")
-    tcp.setAttrNS(odf.namespaces.FONS, "padding", "0.0382in")
-    tcp.setAttrNS(odf.namespaces.FONS, "border", "0.05pt solid #000000")
-    return tcp
-
-
-def make_value_cell_props():
-    """Create table cell properties object for value cells"""
-
-    tcp = odf.style.TableCellProperties()
-    tcp.setAttrNS(odf.namespaces.FONS, "padding", "0.0382in")
-    tcp.setAttrNS(odf.namespaces.FONS, "border", "0.05pt solid #000000")
-    return tcp
-
-
 def append_tasks_section(cfg, doc, commitment_data):
     """Add commitment tasks table section"""
 
-    add_elements(
+    cjm.report.add_elements(
         doc.automaticstyles,
-        add_elements(
+        cjm.report.add_elements(
             odf.style.Style(name="Table.Issues", family="table"),
             odf.style.TableProperties(width="6.7in", align="margins")),
-        add_elements(
+        cjm.report.add_elements(
             odf.style.Style(name="Table.Issues.A", family="table-column"),
             odf.style.TableColumnProperties(columnwidth="1in")),
-        add_elements(
+        cjm.report.add_elements(
             odf.style.Style(name="Table.Issues.B", family="table-column"),
             odf.style.TableColumnProperties(columnwidth="4.6in")),
-        add_elements(
+        cjm.report.add_elements(
             odf.style.Style(name="Table.Issues.C", family="table-column"),
             odf.style.TableColumnProperties(columnwidth="1.1in")),
-        add_elements(
+        cjm.report.add_elements(
             odf.style.Style(name="Table.Issues.y", family="table-row"),
             odf.style.TableRowProperties(keeptogether="always")),
-        add_elements(
+        cjm.report.add_elements(
             odf.style.Style(name="Table.Issues.x.1", family="table-cell"),
-            make_caption_cell_props()),
-        add_elements(
+            cjm.report.make_caption_hor_cell_props()),
+        cjm.report.add_elements(
             odf.style.Style(name="Table.Issues.x.y", family="table-cell"),
-            make_value_cell_props()))
+            cjm.report.make_value_cell_props()))
 
     def __make_row(issue):
-        issue_url = cjm.request.make_cj_issue_url(cfg, str(issue["key"]))
-
-        return add_elements(
+        return cjm.report.add_elements(
             odf.table.TableRow(stylename=doc.getStyleByName("Table.Issues.y")),
-            add_elements(
+            cjm.report.add_elements(
                 odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
-                add_elements(
+                cjm.report.add_elements(
                     odf.text.P(stylename=doc.getStyleByName("Mobica Table Cell")),
-                    odf.text.A(
-                        stylename=doc.getStyleByName("Internet link"),
-                        visitedstylename=doc.getStyleByName("Visited Internet Link"),
-                        href=issue_url,
-                        text=issue["key"]))),
-            add_elements(
+                    cjm.report.create_issue_anchor_element(cfg, doc, issue["key"]))),
+            cjm.report.add_elements(
                 odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
                 odf.text.P(
                     stylename=doc.getStyleByName("Mobica Table Cell"),
                     text=issue["summary"])),
-            add_elements(
+            cjm.report.add_elements(
                 odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.y")),
                 odf.text.P(
                     stylename=doc.getStyleByName("Mobica Table Cell Right"),
                     text=issue["story points"])))
 
-    add_elements(
+    cjm.report.add_elements(
         doc.text,
         odf.text.H(
             outlinelevel=2, stylename=doc.getStyleByName("Mobica Heading 2"),
             text="Committed Task List"),
-        add_elements(
+        cjm.report.add_elements(
             odf.table.Table(stylename="Table.Issues"),
-            odf.table.TableColumn(numbercolumnsrepeated=1, stylename="Table.Issues.A"),
-            odf.table.TableColumn(numbercolumnsrepeated=1, stylename="Table.Issues.B"),
-            odf.table.TableColumn(numbercolumnsrepeated=1, stylename="Table.Issues.C"),
-            add_elements(
+            odf.table.TableColumn(stylename="Table.Issues.A"),
+            odf.table.TableColumn(stylename="Table.Issues.B"),
+            odf.table.TableColumn(stylename="Table.Issues.C"),
+            cjm.report.add_elements(
                 odf.table.TableHeaderRows(),
-                add_elements(
+                cjm.report.add_elements(
                     odf.table.TableRow(stylename=doc.getStyleByName("Table.Issues.y")),
-                    add_elements(
+                    cjm.report.add_elements(
                         odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.1")),
                         odf.text.P(
                             text="Task Id",
                             stylename=doc.getStyleByName("Mobica Table Header Left"))),
-                    add_elements(
+                    cjm.report.add_elements(
                         odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.1")),
                         odf.text.P(
                             text="Task Title",
                             stylename=doc.getStyleByName("Mobica Table Header Left"))),
-                    add_elements(
+                    cjm.report.add_elements(
                         odf.table.TableCell(stylename=doc.getStyleByName("Table.Issues.x.1")),
                         odf.text.P(
                             text="Story Points",
                             stylename=doc.getStyleByName("Mobica Table Header Right"))))),
             *[__make_row(issue) for issue in commitment_data["issues"]],
-            add_elements(
+            cjm.report.add_elements(
                 odf.table.TableRow(stylename=doc.getStyleByName("Table.Issues.y")),
-                add_elements(
+                cjm.report.add_elements(
                     odf.table.TableCell(
                         stylename=doc.getStyleByName("Table.Issues.x.1"),
                         numbercolumnsspanned="2"),
@@ -326,7 +213,7 @@ def append_tasks_section(cfg, doc, commitment_data):
                         text="Total:",
                         stylename=doc.getStyleByName("Mobica Table Header Right"))),
                 odf.table.CoveredTableCell(),
-                add_elements(
+                cjm.report.add_elements(
                     odf.table.TableCell(
                         stylename=doc.getStyleByName("Table.Issues.x.1"),
                         valuetype="float",
@@ -337,16 +224,16 @@ def append_tasks_section(cfg, doc, commitment_data):
 
 def generate_odt_document(cfg, capacity_data, commitment_data, sprint_data):
     """Main function generating the commitment report document"""
-    output_doc = odf.opendocument.load(
+    doc = odf.opendocument.load(
         os.path.join(cfg["path"]["data"], "odt", "report-template.odt"))
-    output_doc.text.childNodes = []
+    doc.text.childNodes = []
 
-    append_doc_title(cfg, output_doc, sprint_data)
-    append_head_table(cfg, output_doc, sprint_data)
-    append_summary_section(output_doc, sprint_data, capacity_data, commitment_data)
-    append_tasks_section(cfg, output_doc, commitment_data)
+    cjm.report.append_doc_title(cfg, doc, sprint_data, "Commitment")
+    append_head_table(cfg, doc, sprint_data)
+    append_summary_section(doc, sprint_data, capacity_data, commitment_data)
+    append_tasks_section(cfg, doc, commitment_data)
 
-    output_doc.save(cfg["path"]["output"])
+    doc.save(cfg["path"]["output"])
 
 
 def _calc_team_capacity(sprint_data, capacity_data):

@@ -8,8 +8,9 @@ import json
 import jsonschema
 
 # Project imports
-import cjm.schema
+import cjm.presentation
 import cjm.request
+import cjm.schema
 
 
 def load_data(cfg, delivery_file):
