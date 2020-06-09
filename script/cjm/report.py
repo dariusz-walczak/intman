@@ -98,9 +98,9 @@ def make_sprint_period_val(cfg):
         cfg["sprint"]["start date"], cfg["sprint"]["end date"])
 
 
-def make_sprint_workdays_val(cfg):
+def make_sprint_workdays_val(capacity_data):
     """Compose sprint workday value to be put into the report head table"""
-    return numpy.busday_count(cfg["sprint"]["start date"], cfg["sprint"]["end date"]).item()
+    return capacity_data["workday count"] - len(capacity_data["shared holidays"])
 
 
 def make_current_date_cell_val_cb():

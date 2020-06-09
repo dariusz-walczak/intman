@@ -75,7 +75,7 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def append_head_table(cfg, doc, sprint_data):
+def append_head_table(cfg, doc, sprint_data, team_capacity):
     """Add document header table"""
 
     rows = (
@@ -83,14 +83,14 @@ def append_head_table(cfg, doc, sprint_data):
         ("Project", sprint_data["project"]["name"]),
         ("Sprint Weeks", cjm.report.make_sprint_period_val(cfg)),
         ("Sprint Duration", cjm.report.make_sprint_duration_val(sprint_data)),
-        ("Sprint Workdays", cjm.report.make_sprint_workdays_val(cfg)),
+        ("Sprint Workdays", cjm.report.make_sprint_workdays_val(team_capacity)),
         ("Report Author", cjm.team.request_user_full_name(cfg)),
         ("Report Date", cjm.report.make_current_date_cell_val_cb()))
 
     cjm.report.append_head_table(doc, rows)
 
 
-def append_summary_section(doc, sprint_data, capacity_data, commitment_data):
+def append_summary_section(doc, capacity_data, team_capacity, commitment_data):
     """Add commitment summary section"""
 
     committed_text = (
@@ -98,7 +98,7 @@ def append_summary_section(doc, sprint_data, capacity_data, commitment_data):
         "".format(commitment_data["total"]["committed"]))
     capacity_text = (
         "The sprint capacity is {0:d} story points."
-        "".format(_calc_team_capacity(sprint_data, capacity_data)))
+        "".format(_calc_team_capacity(capacity_data, team_capacity)))
 
     cjm.report.add_elements(
         doc.text,
@@ -220,16 +220,17 @@ def generate_odt_document(cfg, capacity_data, commitment_data, sprint_data):
         os.path.join(cfg["path"]["data"], "odt", "report-template.odt"))
     doc.text.childNodes = []
 
+    team_capacity = cjm.capacity.process_team_capacity(sprint_data, capacity_data)
+
     cjm.report.append_doc_title(cfg, doc, sprint_data, "Commitment")
-    append_head_table(cfg, doc, sprint_data)
-    append_summary_section(doc, sprint_data, capacity_data, commitment_data)
+    append_head_table(cfg, doc, sprint_data, team_capacity)
+    append_summary_section(doc, capacity_data, team_capacity, commitment_data)
     append_tasks_section(cfg, doc, commitment_data)
 
     doc.save(cfg["path"]["output"])
 
 
-def _calc_team_capacity(sprint_data, capacity_data):
-    team_capacity = cjm.capacity.process_team_capacity(sprint_data, capacity_data)
+def _calc_team_capacity(capacity_data, team_capacity):
     return sum(
         cjm.capacity.process_person_capacity(team_capacity, p)["sprint capacity"]
         for p in capacity_data["people"])

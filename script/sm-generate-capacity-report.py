@@ -72,7 +72,7 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def append_head_table(cfg, doc, sprint_data):
+def append_head_table(cfg, doc, sprint_data, team_capacity):
     """Add document header table"""
 
     rows = (
@@ -80,7 +80,7 @@ def append_head_table(cfg, doc, sprint_data):
         ("Project", sprint_data["project"]["name"]),
         ("Sprint Weeks", cjm.report.make_sprint_period_val(cfg)),
         ("Sprint Duration", cjm.report.make_sprint_duration_val(sprint_data)),
-        ("Sprint Workdays", cjm.report.make_sprint_workdays_val(cfg)),
+        ("Sprint Workdays", cjm.report.make_sprint_workdays_val(team_capacity)),
         ("Report Author", cjm.team.request_user_full_name(cfg)),
         ("Report Date", cjm.report.make_current_date_cell_val_cb()))
 
@@ -375,11 +375,9 @@ def generate_odt_document(cfg, sprint_data, capacity_data):
         key=lambda p: (p["last name"], p["first name"]))
 
     cjm.report.append_doc_title(cfg, doc, sprint_data, "Capacity")
-    append_head_table(cfg, doc, sprint_data)
+    append_head_table(cfg, doc, sprint_data, team_capacity)
     append_capacity_table(doc, sprint_data, people)
     append_weekly_section(cfg, doc, people)
-    #append_summary_section(doc, commitment_data, delivery_summary)
-    #append_tasks_section(cfg, doc, delivery_data)
 
     doc.save(cfg["path"]["output"])
 

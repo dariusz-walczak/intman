@@ -43,7 +43,8 @@ def process_team_capacity(sprint_data, capacity_data):
     return {
         "sprint start date": sprint_start_date,
         "sprint end date": sprint_end_date,
-        "workday count": workday_count,
+        "workday count": workday_count, # Number or workdays in the sprint BEFORE the shared
+                                        #  holidays deduction
         "national holidays": national_holidays,
         "extra holidays": extra_holidays,
         "shared holidays": shared_holidays
