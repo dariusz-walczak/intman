@@ -23,6 +23,16 @@ def add_elements(parent_element, *elements):
     return parent_element
 
 
+def join_elements(parent_element, glue_element, *elements):
+    """Add given xml dom elements to the parent element and interleave them with the glue element.
+    Return the parent element"""
+    for element in elements[:-1]:
+        add_elements(parent_element, element, glue_element)
+
+    add_elements(parent_element, elements[-1])
+
+    return parent_element
+
 def create_issue_anchor_element(cfg, doc, issue_key):
     """Create xml dom anchor linking to specified issue"""
     return odf.text.A(

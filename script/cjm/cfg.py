@@ -63,6 +63,14 @@ def init_defaults():
             "sow": None,
             "id": None
         },
+        "report": {
+            "capacity": {
+                "page break": {
+                    "absence section": True,
+                    "weekly table": False
+                }
+            }
+        },
         "path": {
             "data": None,
             "output": None
