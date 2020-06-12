@@ -13,10 +13,11 @@ import tabulate
 # Project imports
 import cjm
 import cjm.cfg
+import cjm.codes
 import cjm.request
+import cjm.run
 import cjm.schema
 import cjm.sprint
-import cjm.codes
 
 
 _PROJECT_KEY_ARG_NAME = "--project-key"
@@ -149,7 +150,4 @@ def main(options):
 
 
 if __name__ == '__main__':
-    try:
-        exit(main(parse_options(sys.argv[1:])))
-    except cjm.codes.CjmError as e:
-        exit(e.code)
+    cjm.run.run(main, parse_options(sys.argv[1:]))

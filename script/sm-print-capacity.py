@@ -15,6 +15,7 @@ import tabulate
 import cjm.capacity
 import cjm.cfg
 import cjm.data
+import cjm.run
 import cjm.schema
 import cjm.codes
 import cjm.sprint
@@ -82,17 +83,5 @@ def main(options):
             headers=["Last Name", "First Name", "Daily Cap.", "Workdays", "Sprint Cap."],
             tablefmt="orgtbl"))
 
-#    _, start_ww, _ = sprint_start_date.isocalendar()
-#    _, end_ww, _ = sprint_end_date.isocalendar()
-#
-#    sprint_weeks = []
-#
-#    for date in range(sprint_start_date, sprint_end_date + datetime.timedelta(days=1)):
-
-
-
 if __name__ == "__main__":
-    try:
-        exit(main(parse_options(sys.argv[1:])))
-    except cjm.codes.CjmError as e:
-        exit(e.code)
+    cjm.run.run(main, parse_options(sys.argv[1:]))
