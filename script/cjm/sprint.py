@@ -7,10 +7,27 @@ import json
 import jsonschema
 
 # Project imports
+import cjm.data
 import cjm.issue
 import cjm.schema
 import cjm.request
 import cjm.codes
+
+
+def apply_data_file_paths(cfg, sprint_data):
+    def apply_data_file_path(cfg, variant, default):
+        if cfg["path"][variant] is None:
+            cfg["path"][variant] = sprint_data.get("file", {}).get(variant, default)
+        return cfg
+
+    cfg = apply_data_file_path(cfg, "team", "team.json")
+    cfg = apply_data_file_path(
+        cfg, "capacity", cjm.data.make_default_file_name(sprint_data, "capacity"))
+    cfg = apply_data_file_path(
+        cfg, "commitment", cjm.data.make_default_file_name(sprint_data, "commitment"))
+    cfg = apply_data_file_path(
+        cfg, "delivery", cjm.data.make_default_file_name(sprint_data, "delivery"))
+    return cfg
 
 
 def generate_sprint_period_name(start_dt, end_dt):

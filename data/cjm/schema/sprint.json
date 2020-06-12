@@ -30,6 +30,15 @@
                 "name": {"type": "string"}
             },
             "required": ["key", "name"]
+        },
+        "file": {
+            "type": "object",
+            "properties": {
+                "team": {"type": "string"},
+                "capacity": {"type": "string"},
+                "commitment": {"type": "string"},
+                "delivery": {"type": "string"}
+            }
         }
     },
     "required": ["start date", "end date", "name", "project", "comment prefix"]

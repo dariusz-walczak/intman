@@ -73,7 +73,11 @@ def init_defaults():
         },
         "path": {
             "data": None,
-            "output": None
+            "output": None,
+            "team": None,
+            "capacity": None,
+            "commitment": None,
+            "delivery": None
         }
     }
 
@@ -105,6 +109,10 @@ def apply_options(cfg, options):
     cfg["jira"]["user"]["name"] = options.user_name
     cfg["jira"]["user"]["token"] = options.user_token
     cfg["path"]["data"] = options.data_dir_path
+    cfg["path"]["team"] = options.team_file_path
+    cfg["path"]["capacity"] = options.capacity_file_path
+    cfg["path"]["commitment"] = options.commitment_file_path
+    cfg["path"]["delivery"] = options.delivery_file_path
     return cfg
 
 
@@ -179,6 +187,18 @@ def make_common_parser(defaults):
         "--data-dir", action="store", metavar="PATH", dest="data_dir_path",
         default=default_data_path,
         help="Toolchain data directory PATH (default: '{0:s}')".format(default_data_path))
+    parser.add_argument(
+        "--team-file", action="store", metavar="PATH", dest="team_file_path",
+        help="Override of the default team data file associated with given sprint")
+    parser.add_argument(
+        "--capacity-file", action="store", metavar="PATH", dest="capacity_file_path",
+        help="Override of the default capacity data file associated with given sprint")
+    parser.add_argument(
+        "--commitment-file", action="store", metavar="PATH", dest="commitment_file_path",
+        help="Override of the default commitment data file associated with given sprint")
+    parser.add_argument(
+        "--delivery-file", action="store", metavar="PATH", dest="delivery_file_path",
+        help="Override of the default delivery data file associated with given sprint")
     parser.add_argument(
         "--verbose", action="store_true", dest="verbose",
         help="Provide verbose diagnostic information")

@@ -17,6 +17,7 @@ import odf.text
 
 # Project imports
 import cjm
+import cjm.capacity
 import cjm.cfg
 import cjm.codes
 import cjm.commitment
