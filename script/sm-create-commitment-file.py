@@ -24,9 +24,6 @@ import cjm.schema
 import cjm.sprint
 import cjm.team
 
-SPRINT_ARG_NAME = "--by-sprint"
-COMMENT_ARG_NAME = "--by-comment"
-
 
 def parse_options(args):
     """Parse command line options"""
@@ -55,21 +52,19 @@ def parse_options(args):
             "".format(cjm.SM_CREATE_CAPACITY_FILE, cjm.schema.make_subpath("capacity.json"))))
 
     parser.add_argument(
-        SPRINT_ARG_NAME, action="store_true", dest="by_sprint_flag",
-        help=(
-            "Select issues associated with the given sprint. Can be combined with '{0:s}' flag"
-            "".format(COMMENT_ARG_NAME)))
-    parser.add_argument(
-        COMMENT_ARG_NAME, action="store_true", dest="by_comment_flag",
-        help=(
-            "Select issues with the commitment comment added. Can be combined with '{0:s}' flag"
-            "".format(SPRINT_ARG_NAME)))
-    parser.add_argument(
         "--include-unassigned", action="store_true", dest="include_unassigned", default=False,
         help="Include unassigned issues in the issue list")
     parser.add_argument(
         "--estimated", action="store", dest="estimated_filter", choices=("all", "yes", "no"),
         default="all", help="Filter the issues by the fact of being or not being estimated")
+    parser.add_argument(
+        "--commented", action="store", dest="comment_filter", choices=("all", "yes", "no"),
+        default="all", help=(
+            "Filter the issues by the fact of them having or not having the commitment comment"))
+    parser.add_argument(
+        "--associated", action="store", dest="sprint_filter", choices=("all", "yes", "no"),
+        default="all", help=(
+            "Filter the issues by the fact of them being associated with the sprint"))
     parser.add_argument(
         "-s", "--summary", action="store_true", dest="show_summary", default=False,
         help="Show the commitment summary instead of the detailed issue table")
@@ -135,23 +130,20 @@ def main(options):
 
     # Retrieve issues assigned to the sprint:
 
-    if options.by_sprint_flag:
-        issue_lut = _process_sprint_issues(cfg, team_data)
-    else:
-        issue_lut = {}
+    issue_lut = _process_sprint_issues(cfg, team_data)
 
     # Retrieve issues with the commitment comment added:
 
-    if options.by_comment_flag:
-        issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Committed")
-        issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Extended")
-
-    #issue_lut.update(dict((i["id"], i) for i in issues_team if i["id"] not in issue_lut))
-    ## not needed?
+    issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Committed")
+    issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Extended")
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
     issues = list(filter(
         cjm.data.make_defined_filter("story points", options.estimated_filter), issues))
+    issues = list(filter(
+        cjm.data.make_flag_filter("by comment", options.comment_filter), issues))
+    issues = list(filter(
+        cjm.data.make_flag_filter("by sprint", options.sprint_filter), issues))
 
     for issue in issues:
         if issue["story points"] is not None:
