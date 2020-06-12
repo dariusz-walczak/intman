@@ -10,14 +10,15 @@ import tabulate
 
 # Project imports
 import cjm.cfg
-import cjm.data
-import cjm.issue
-import cjm.schema
 import cjm.codes
-import cjm.sprint
 import cjm.commitment
-import cjm.request
+import cjm.data
 import cjm.delivery
+import cjm.issue
+import cjm.request
+import cjm.run
+import cjm.schema
+import cjm.sprint
 
 _COMMITMENT_PREFIX_ARG_NAME = "--prefix"
 
@@ -135,7 +136,4 @@ def main(options):
     return cjm.codes.NO_ERROR
 
 if __name__ == "__main__":
-    try:
-        sys.exit(main(parse_options(sys.argv[1:])))
-    except cjm.codes.CjmError as e:
-        exit(e.code)
+    cjm.run.run(main, parse_options(sys.argv[1:]))

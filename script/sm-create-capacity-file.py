@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script creating sprint capacity report file"""
 
 # Standard library imports
 import datetime
@@ -14,13 +15,15 @@ import holidays
 
 # Project imports
 import cjm.cfg
-import cjm.schema
 import cjm.codes
+import cjm.run
+import cjm.schema
 import cjm.sprint
 import cjm.team
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -42,9 +45,9 @@ def parse_options(args):
 
     return parser.parse_args(args)
 
-   
-def main(options):
 
+def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
 
     # Load sprint data:
@@ -65,37 +68,37 @@ def main(options):
     # Load team data:
 
     team_data = cjm.data.load(cfg, cfg["path"]["team"], "team.json")
-    
+
     def __holidays_in_sprint():
         sprint_holidays = []
         sprint_start_date = dateutil.parser.parse(sprint_data["start date"]).date()
         sprint_end_date = dateutil.parser.parse(sprint_data["end date"]).date()
         sprint_start_date = sprint_start_date - datetime.timedelta(days=1)
         sprint_end_date = sprint_end_date + datetime.timedelta(days=1)
-        
+
         sprint_year = range(sprint_start_date.year, sprint_end_date.year+1)
 
         def __is_weekend(date):
             return date.weekday() >= 5
 
         for date, _ in sorted(holidays.PL(years=sprint_year).items()):
-            if date > sprint_start_date and date < sprint_end_date and not __is_weekend(date) : 
-                sprint_holidays.append(date) 
+            if date > sprint_start_date and date < sprint_end_date and not __is_weekend(date):
+                sprint_holidays.append(date)
 
-        return sprint_holidays 
+        return sprint_holidays
 
-    holidays_str = [ d.strftime("%Y-%m-%d") for d in __holidays_in_sprint()]
+    holidays_str = [d.strftime("%Y-%m-%d") for d in __holidays_in_sprint()]
 
     people = team_data["people"]
     for p in team_data["people"]:
         p["personal holidays"] = []
 
     capacity_json = {
-            "people" : people,
-            "national holidays": holidays_str,
-            "additional holidays": []
-            }
-    
+        "people" : people,
+        "national holidays": holidays_str,
+        "additional holidays": []
+    }
+
     capacity_schema = cjm.schema.load(cfg, "capacity.json")
     jsonschema.validate(capacity_json, capacity_schema)
 
@@ -103,10 +106,15 @@ def main(options):
         print(json.dumps(capacity_json, indent=4, sort_keys=False))
     else:
         if holidays_str:
-            print(tabulate.tabulate( [ (i+1,d) for i,d in enumerate(holidays_str)], headers=["Holiday date"], tablefmt="orgtbl"))
-        print(tabulate.tabulate(
-            [(p["account id"], p["first name"]+" "+p["last name"], p["daily capacity"]) for p in team_data["people"]],
-            headers=["Account ID", "Name", "Daily capacity"], tablefmt="orgtbl"))
+            print(
+                tabulate.tabulate(
+                    [(i+1, d) for i, d in enumerate(holidays_str)],
+                    headers=["Holiday date"], tablefmt="orgtbl"))
+        print(
+            tabulate.tabulate(
+                [(p["account id"], p["first name"]+" "+p["last name"], p["daily capacity"])
+                 for p in team_data["people"]],
+                headers=["Account ID", "Name", "Daily capacity"], tablefmt="orgtbl"))
 
 if __name__ == "__main__":
-    exit(main(parse_options(sys.argv[1:])))
+    cjm.run.run(main, parse_options(sys.argv[1:]))
