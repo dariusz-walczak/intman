@@ -148,7 +148,11 @@ def _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data, warn
     for issue in issues_com:
         issue_key = issue["key"]
         curr_sp = issue["story points"]
-        prev_sp = commitment_lut[issue_key]["story points"]
+        prev_sp = (lambda p: 0 if p is None else p)(commitment_lut[issue_key]["story points"])
+
+        if curr_sp == 0:
+            cjm.data.add_warning(
+                warnings, issue_key,"Issue story points not specified or equal to 0")
 
         if curr_sp != prev_sp:
             comments = cjm.issue.request_issue_comments_regexp(cfg, issue_key, confirm_re)
