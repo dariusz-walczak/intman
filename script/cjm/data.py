@@ -32,6 +32,7 @@ def load(cfg, file_name, schema_name):
 
 
 def make_default_file_name(sprint_data, variant):
+    """Construct default sprint data file name"""
     start_date = dateutil.parser.parse(sprint_data["start date"]).date()
     end_date = dateutil.parser.parse(sprint_data["end date"]).date()
 

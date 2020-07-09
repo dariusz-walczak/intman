@@ -86,8 +86,7 @@ EPIC_COLORS = {
     "dark-violet":  "ghx-label-10", # 998dd9
     "black":        "ghx-label-12", # 42526e
     "light-cyan":   "ghx-label-13"  # 79e2f2
-    # Experiment with greater ghx indices, start with 15
-}
+} # Experiment with greater ghx indices, start with 15
 
 
 def request_epic_update(cfg, issue_spec):

@@ -4,7 +4,6 @@
 import datetime
 
 # Third party imports
-import numpy
 import odf.dc
 import odf.namespaces
 import odf.text
