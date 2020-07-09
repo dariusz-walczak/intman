@@ -71,21 +71,22 @@ def detect_epic_name_field_id(cfg):
     raise cjm.codes.CjmError(cjm.codes.INTEGRATION_ERROR)
 
 
+# "ghx-label-1" = "ghx-label-4"  = b3d4ff
+# "ghx-label-5" = "ghx-label-11" = 4c9aff
+# "ghx-label-8" = "ghx-label-14" = c0b6f2
 EPIC_COLORS = {
-    "black": "ghx-label-1",
-    "dark-yellow": "ghx-label-2",
-    "light-yellow": "ghx-label-3",
-    "dark-blue": "ghx-label-4",
-    "dark-aqua": "ghx-label-5",
-    "light-green": "ghx-label-6",
-    "light-purple": "ghx-label-7",
-    "dark-purple": "ghx-label-8",
-    "light-pink": "ghx-label-9",
-    "light-blue": "ghx-label-10",
-    "light-aqua": "ghx-label-11",
-    "light-gray": "ghx-label-12",
-    "dark-green": "ghx-label-13",
-    "dark-red": "ghx-label-14"
+    "light-blue":   "ghx-label-1",  # b3d4ff
+    "light-green":  "ghx-label-2",  # 79f2c0
+    "dark-red":     "ghx-label-3",  # ff8f73
+    "dark-blue":    "ghx-label-5",  # 4c9aff
+    "light-red":    "ghx-label-6",  # ffbdad
+    "dark-cyan":    "ghx-label-7",  # 00c7e6
+    "light-violet": "ghx-label-8",  # c0b6f2
+    "dark-yellow":  "ghx-label-9",  # ffc400
+    "dark-violet":  "ghx-label-10", # 998dd9
+    "black":        "ghx-label-12", # 42526e
+    "light-cyan":   "ghx-label-13"  # 79e2f2
+    # Experiment with greater ghx indices, start with 15
 }
 
 
