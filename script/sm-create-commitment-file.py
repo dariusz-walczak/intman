@@ -177,8 +177,9 @@ def print_issue_list(commitment_data, team_data):
 
 def print_summary(cfg, team_data, sprint_data, capacity_data, commitment_data):
     """Print the report summary table"""
-    person_capacity_lut = cjm.capacity.make_person_capacity_lut(sprint_data, capacity_data)
-    total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())
+    person_capacity_list = cjm.capacity.process_person_capacity_list(sprint_data, capacity_data)
+    person_capacity_lut = cjm.capacity.make_person_capacity_lut(person_capacity_list)
+    total_capacity = sum(p["sprint capacity"] for p in person_capacity_list)
 
     assigned_commitment = cjm.commitment.calc_total(
         cjm.issue.assigned_issues(commitment_data["issues"]))

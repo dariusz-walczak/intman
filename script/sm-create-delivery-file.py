@@ -152,7 +152,7 @@ def _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data, warn
 
         if curr_sp == 0:
             cjm.data.add_warning(
-                warnings, issue_key,"Issue story points not specified or equal to 0")
+                warnings, issue_key, "Issue story points not specified or equal to 0")
 
         if curr_sp != prev_sp:
             comments = cjm.issue.request_issue_comments_regexp(cfg, issue_key, confirm_re)
@@ -376,8 +376,9 @@ def calc_total(issues, field_key):
 
 def print_summary(delivery_data, team_data, sprint_data, capacity_data):
     """Print the report summary table"""
-    person_capacity_lut = cjm.capacity.make_person_capacity_lut(sprint_data, capacity_data)
-    total_capacity = sum(p["sprint capacity"] for p in person_capacity_lut.values())
+    person_capacity_list = cjm.capacity.process_person_capacity_list(sprint_data, capacity_data)
+    person_capacity_lut = cjm.capacity.make_person_capacity_lut(person_capacity_list)
+    total_capacity = sum(p["sprint capacity"] for p in person_capacity_list)
     total_committed = delivery_data["total"]["committed"]
     total_delivered = delivery_data["total"]["delivered"]
 

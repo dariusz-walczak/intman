@@ -75,13 +75,19 @@ def process_person_capacity(team_capacity, person_data):
     }
 
 
-def make_person_capacity_lut(sprint_data, capacity_data):
-    """Convenience method returning a personal capacity lookup table for given capacity data"""
+def process_person_capacity_list(sprint_data, capacity_data):
+    """Convenience method returning a list of personal capacity data based on provided sprint and
+    capacity data"""
     team_capacity = process_team_capacity(sprint_data, capacity_data)
-    return {
-        p["account id"]: process_person_capacity(team_capacity, p)
-        for p in capacity_data["people"]}
+    return [process_person_capacity(team_capacity, p) for p in capacity_data["people"]]
 
+
+def make_person_capacity_lut(person_capacity_list):
+    """Convenience method converting the list returned by process_person_capacity_list to a lookup
+    table.
+
+    The method filter outs people without jira account specified"""
+    return {p["account id"]: p for p in person_capacity_list if p["account id"]}
 
 def determine_alien_status(commitment_value):
     """Determine commitment ratio status code for given commitment value with the assumption that
