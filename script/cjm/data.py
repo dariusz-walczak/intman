@@ -24,7 +24,7 @@ def load(cfg, file_name, schema_name):
             jsonschema.validate(data, schema)
     except IOError as e:
         sys.stderr.write(
-            "ERROR: Team data file ('{0:s}') I/O error\n".format(file_name))
+            "ERROR: JSON data file ('{0:s}') I/O error\n".format(file_name))
         sys.stderr.write("    {0}\n".format(e))
         raise cjm.codes.CjmError(cjm.codes.FILESYSTEM_ERROR)
 
