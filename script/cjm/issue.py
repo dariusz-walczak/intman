@@ -273,7 +273,7 @@ def request_issue_create(cfg, issue_spec):
     if issue_spec.get("type name") == cfg["jira"]["issue"]["type"]["epic"]:
         json["fields"][cfg["jira"]["fields"]["epic name"]] = issue_spec["epic"]["name"]
     else:
-        epic_key = issue_spec.get("epic").get("link", {}).get("key")
+        epic_key = issue_spec.get("epic", {}).get("link", {}).get("key")
         if epic_key is not None:
             json["fields"][cfg["jira"]["fields"]["epic link"]] = epic_key
 
