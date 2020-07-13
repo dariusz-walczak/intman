@@ -4,6 +4,7 @@
 
 # Standard library imports
 import csv
+import copy
 import datetime
 import json
 import secrets
@@ -61,6 +62,57 @@ def _get_required_field(idx, row, field_name):
     return val
 
 
+def _get_optional_field(row, field_name, default=None):
+    try:
+        val = row[field_name]
+    except KeyError:
+        return default
+
+    if val is None or val == "":
+        return default
+    return val
+
+
+def _get_optional_int(idx, row, field_name, default=None):
+    val = _get_optional_field(row, field_name)
+
+    if val is None:
+        return default
+
+    try:
+        return int(val)
+    except ValueError as e:
+        sys.stderr.write(
+            "ERROR: Row #{0:d}: The '{1:s}' field doesn't contain valid integer ('{2:s}')\n"
+            "".format(idx, field_name, val))
+        raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
+
+
+def _get_link_list(row, field_name):
+    def __convert_ref(ref):
+        try:
+            return int(ref)
+        except ValueError:
+            return ref.strip()
+
+    raw_val = _get_optional_field(row, field_name, default="")
+    return [__convert_ref(ref) for ref in raw_val.split(" ") if ref != ""]
+
+
+def _add_optional_field(row, field_name, val):
+    row = copy.copy(row)
+    if val is not None:
+        row[field_name] = val
+    return row
+
+
+def _add_conditional_field(row, field_name, val):
+    row = copy.copy(row)
+    if val:
+        row[field_name] = val
+    return row
+
+
 def main(options):
     """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
@@ -68,12 +120,31 @@ def main(options):
     tasks_raw = load_tasks(cfg, options.tasks_file)
 
     def __adapt_task(idx, row):
-        return {
+        task = {
             "title": _get_required_field(idx, row, "title"),
-            "summary": "-",
-            "idx": idx,
-            "story points": None
+            "summary": _get_optional_field(row, "summary", "-"),
+            "idx": idx
         }
+
+        task = _add_optional_field(
+            task, "type name", _get_optional_field(row, "type name"))
+        task = _add_optional_field(
+            task, "story points",
+            _get_optional_int(
+                idx, row, "story points",
+                0 if task.get("type name") != "Epic" else None))
+
+        epic = _add_optional_field({}, "name", _get_optional_field(row, "epic name"))
+        epic = _add_optional_field(epic, "color", _get_optional_field(row, "epic color"))
+        epic_link = _add_optional_field({}, "idx", _get_optional_field(row, "epic idx"))
+        epic_link = _add_optional_field(epic_link, "key", _get_optional_field(row, "epic key"))
+        epic = _add_conditional_field(epic, "link", epic_link)
+        task = _add_conditional_field(task, "epic", epic)
+
+        links = _add_conditional_field({}, "related", _get_link_list(row, "related"))
+        task = _add_conditional_field(task, "links", links)
+
+        return task
 
     tasks_json = {
         "set id": secrets.token_hex(16),
