@@ -195,7 +195,7 @@ def append_tasks_section(cfg, doc, commitment_data):
                     odf.table.TableCell(
                         stylename=doc.getStyleByName("Table.Issues.x.1"),
                         valuetype="float",
-                        formula="SUM(<C2:C{0:d}>)".format(len(commitment_data["issues"]))),
+                        formula="SUM(<C2:C{0:d}>)".format(len(commitment_data["issues"])+1)),
                     odf.text.P(
                         stylename=doc.getStyleByName("Mobica Table Header Right"))))))
 
