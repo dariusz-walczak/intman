@@ -136,7 +136,7 @@ def main(options):
 
         epic = _add_optional_field({}, "name", _get_optional_field(row, "epic name"))
         epic = _add_optional_field(epic, "color", _get_optional_field(row, "epic color"))
-        epic_link = _add_optional_field({}, "idx", _get_optional_field(row, "epic idx"))
+        epic_link = _add_optional_field({}, "idx", _get_optional_int(idx, row, "epic idx"))
         epic_link = _add_optional_field(epic_link, "key", _get_optional_field(row, "epic key"))
         epic = _add_conditional_field(epic, "link", epic_link)
         task = _add_conditional_field(task, "epic", epic)
