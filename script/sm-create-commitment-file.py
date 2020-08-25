@@ -169,9 +169,10 @@ def print_issue_list(commitment_data, team_data):
     print(tabulate.tabulate(
         [(i["id"], i["key"], i["summary"], __fmt_assignee(i), i["story points"],
           "Sprint" if i["by sprint"] else "",
-          "Comment" if i["by comment"] else "")
+          "Comment" if i["by comment"] else "",
+          i["status"])
          for i in commitment_data["issues"]],
-        headers=["Id", "Key", "Summary", "Assignee", "Story Points", "Sprint", "Comment"],
+        headers=["Id", "Key", "Summary", "Assignee", "Story Points", "Sprint", "Comment", "Status"],
         tablefmt="orgtbl"))
 
 
