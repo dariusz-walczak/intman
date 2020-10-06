@@ -110,7 +110,7 @@ def color_issue_comment(comment):
 
 def color_emph(text):
     """Color emphasized text for output message construction purposes"""
-    return "{0:s}{1:s}{2:s}".format(colorama.Style.BRIGHT, text, colorama.Style.RESET_ALL)
+    return "{0:s}{1}{2:s}".format(colorama.Style.BRIGHT, text, colorama.Style.RESET_ALL)
 
 
 def print_data_warnings(warnings):
