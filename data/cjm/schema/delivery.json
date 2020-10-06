@@ -47,7 +47,14 @@
                         "type": "string"
                     },
                     "assignee id": {
-                        "type": "string"
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     },
                     "status": {
                         "anyOf": [
