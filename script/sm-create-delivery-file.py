@@ -168,6 +168,19 @@ def _verify_committed_issues(cfg, sprint_data, issues_com, commitment_data, warn
                         cjm.presentation.color_issue_comment(confirm_comment)))
 
 
+def _verify_assignees(issues, person_lut, warnings):
+    for issue in issues:
+        if issue["assignee id"] is None:
+            cjm.data.add_warning(
+                warnings, issue["key"],
+                "Issue unassigned")
+        elif issue["assignee id"] not in person_lut:
+            cjm.data.add_warning(
+                warnings, issue["key"],
+                "Issue assigned to an unknown account ({0:s})"
+                "".format(cjm.presentation.color_emph(issue["assignee id"])))
+
+
 def _retrieve_extension_issues(cfg, sprint_data, team_data, warnings):
     issues = cjm.sprint.request_issues_by_comment(
         cfg, "{0:s}/Extended".format(sprint_data["comment prefix"]))
@@ -322,6 +335,9 @@ def main(options):
 
     issues = _join_issue_lists(issues_com, issues_ext, warnings)
 
+    person_lut = dict((p["account id"], p) for p in team_data["people"])
+    _verify_assignees(issues, person_lut, warnings)
+
     # Request dropped issues and change story point value to 0
 
     issues = _process_dropped_issues(cfg, sprint_data, issues, warnings)
@@ -340,20 +356,20 @@ def main(options):
         if options.show_summary:
             print_summary(delivery_data, team_data, sprint_data, capacity_data)
         else:
-            print_issue_list(delivery_data, team_data)
+            print_issue_list(delivery_data, person_lut)
 
     cjm.presentation.print_data_warnings(warnings)
 
     return cjm.codes.NO_ERROR
 
 
-def print_issue_list(delivery, team_data):
+def print_issue_list(delivery, person_lut):
     """Print the detailed issue status table"""
-    person_lut = dict((p["account id"], p) for p in team_data["people"])
-
     def __fmt_assignee(issue):
         if issue["assignee id"] is None:
             return ""
+        elif issue["assignee id"] not in person_lut:
+            return issue["assignee id"]
         else:
             return "{0:s}, {1:s}".format(
                 person_lut[issue["assignee id"]]["last name"],
