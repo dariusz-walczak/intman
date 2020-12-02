@@ -52,6 +52,10 @@ def parse_options(args):
         default="all", help=(
             "Filter the issues by the fact of them being associated with the sprint"))
     parser.add_argument(
+        "-e", "--exclude", action="append", metavar="ID", dest="exclude_ids",
+        help="ID of issues to be excluded from the commitment")
+
+    parser.add_argument(
         "-s", "--summary", action="store_true", dest="show_summary", default=False,
         help="Show the commitment summary instead of the detailed issue table")
 
@@ -126,6 +130,8 @@ def main(options):
     issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Extended")
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
+    if options.exclude_ids is not None:
+        issues = [i for i in issues if i["key"] not in options.exclude_ids]
     issues = list(filter(
         cjm.data.make_defined_filter("story points", options.estimated_filter), issues))
     issues = list(filter(
@@ -138,8 +144,7 @@ def main(options):
             issue["story points"] = int(issue["story points"])
 
     total_sp = sum(
-        [i["story points"] for i in issue_lut.values()
-         if i["story points"] is not None])
+        [i["story points"] for i in issues if i["story points"] is not None])
     commitment = {"total": {"committed": total_sp}, "issues": list(issues)}
 
     commitment_schema = cjm.schema.load(cfg, "commitment.json")
