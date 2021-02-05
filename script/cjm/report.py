@@ -1,6 +1,7 @@
 """ODF report generation helpers and shared functions"""
 
 # Standard library imports
+import copy
 import datetime
 
 # Third party imports
@@ -26,7 +27,7 @@ def join_elements(parent_element, glue_element, *elements):
     """Add given xml dom elements to the parent element and interleave them with the glue element.
     Return the parent element"""
     for element in elements[:-1]:
-        add_elements(parent_element, element, glue_element)
+        add_elements(parent_element, element, copy.copy(glue_element))
 
     add_elements(parent_element, elements[-1])
 
