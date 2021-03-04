@@ -8,7 +8,6 @@ import json
 
 # Third party imports
 import dateutil.parser
-import requests
 import tabulate
 
 # Project imports
@@ -49,35 +48,42 @@ def main(options):
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["board"]["id"] = options.board_id
 
-    response = requests.get(
-        cjm.request.make_cj_agile_url(cfg, "board/{0:d}/sprint".format(cfg["board"]["id"])),
-        auth=(cfg["jira"]["user"]["name"], cfg["jira"]["user"]["token"])
-    )
+    start_at = 0
+    max_results = 50
+    url = cjm.request.make_cj_agile_url(cfg, "board/{0:d}/sprint".format(cfg["board"]["id"]))
 
     sprints = []
 
-    for sprint in response.json()["values"]:
-        # project_key = cfg["project"]["key"]
+    while True:
+        response = cjm.request.make_cj_request(
+            cfg, url, {"startAt": start_at, "maxResults": max_results})
+        response_json = response.json()
 
-        if sprint["originBoardId"] == cfg["board"]["id"]:
-            sprint_data = {
-                "id": sprint["id"],
-                "name": sprint["name"],
-                "state": sprint["state"],
-                "start_date": (
-                    dateutil.parser.parse(sprint["startDate"]).date().isoformat()
-                    if "startDate" in sprint
-                    else None),
-                "end_date": (
-                    dateutil.parser.parse(sprint["endDate"]).date().isoformat()
-                    if "endDate" in sprint
-                    else None),
-                "complete_date": (
-                    dateutil.parser.parse(sprint["completeDate"]).date().isoformat()
-                    if "completeDate" in sprint
-                    else None)
-            }
-            sprints.append(sprint_data)
+        for sprint in response_json["values"]:
+            if sprint["originBoardId"] == cfg["board"]["id"]:
+                sprint_data = {
+                    "id": sprint["id"],
+                    "name": sprint["name"],
+                    "state": sprint["state"],
+                    "start_date": (
+                        dateutil.parser.parse(sprint["startDate"]).date().isoformat()
+                        if "startDate" in sprint
+                        else None),
+                    "end_date": (
+                        dateutil.parser.parse(sprint["endDate"]).date().isoformat()
+                        if "endDate" in sprint
+                        else None),
+                    "complete_date": (
+                        dateutil.parser.parse(sprint["completeDate"]).date().isoformat()
+                        if "completeDate" in sprint
+                        else None)
+                }
+                sprints.append(sprint_data)
+
+        if response_json["isLast"]:
+            break
+
+        start_at += max_results
 
     if options.json_output:
         print(json.dumps(sprints, indent=4, sort_keys=False))
