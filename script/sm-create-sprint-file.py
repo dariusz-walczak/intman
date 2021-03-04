@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""Command line script creating sprint definition file"""
 
 # Standard library imports
 import sys
@@ -7,7 +8,6 @@ import datetime
 import json
 
 # Third party imports
-import isoweek
 import jsonschema
 import tabulate
 
@@ -26,6 +26,7 @@ _PROJECT_KEY_ARG_NAME = "--project-key"
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -100,6 +101,7 @@ def parse_options(args):
 
 
 def determine_start_date(options):
+    """Determine sprint start date basing on provided CLI options"""
     if options.start_date is not None:
         return options.start_date
     else:
@@ -109,6 +111,7 @@ def determine_start_date(options):
 
 
 def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
     cfg["project"]["key"] = options.project_key
 
@@ -133,11 +136,11 @@ def main(options):
     sprint = {
         "start date": start_date.isoformat(),
         "end date": end_date.isoformat(),
-        "name": cjm.sprint.generate_sprint_name(project_json["name"], start_date, end_date),
+        "name": cjm.sprint.generate_sprint_name(cfg, project_json["name"], start_date, end_date),
         "id": sprint_id,
         "comment prefix": "Mobica/{0:s}/{1:s}/{2:s}".format(
             options.project_sow, options.project_code,
-            cjm.sprint.generate_sprint_period_name(start_date, end_date)),
+            cjm.sprint.generate_sprint_period_name(cfg, start_date, end_date)),
         "project": {
             "key": cfg["project"]["key"],
             "name": project_json["name"]
@@ -150,9 +153,9 @@ def main(options):
         }
     }
 
-    sprint["file"]["capacity"] = cjm.data.make_default_file_name(sprint, "capacity")
-    sprint["file"]["commitment"] = cjm.data.make_default_file_name(sprint, "commitment")
-    sprint["file"]["delivery"] = cjm.data.make_default_file_name(sprint, "delivery")
+    sprint["file"]["capacity"] = cjm.data.make_default_file_name(cfg, sprint, "capacity")
+    sprint["file"]["commitment"] = cjm.data.make_default_file_name(cfg, sprint, "commitment")
+    sprint["file"]["delivery"] = cjm.data.make_default_file_name(cfg, sprint, "delivery")
 
     sprint_schema = cjm.schema.load(cfg, "sprint.json")
     jsonschema.validate(sprint, sprint_schema)

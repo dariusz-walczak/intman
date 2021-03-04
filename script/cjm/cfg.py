@@ -15,6 +15,9 @@ SCHEME_ARG_NAME = "--scheme"
 USER_NAME_ARG_NAME = "--user"
 USER_TOKEN_ARG_NAME = "--token"
 
+CALENDAR_WEEK_SYSTEM_NORTH_AMERICAN = "North American"
+CALENDAR_WEEK_SYSTEM_ISO = "ISO"
+
 
 def init_defaults():
     """Init invocation context data tree
@@ -62,6 +65,20 @@ def init_defaults():
             "code": None,
             "sow": None,
             "id": None
+        },
+        "calendar": {
+            "week": {
+                "system": None, # Week numbering system (CALENDAR_WEEK_SYSTEM_ISO or
+                                #  CALENDAR_WEEK_SYSTEM_NORTH_AMERICAN)
+                "name": {
+                    "lower offset": 0, # Number of days to be added to the sprint start date (may
+                                       #  be negative) to determine sprint start week name
+                                       #  (affects starting weeks split between years)
+                    "upper offset": 0  # Number of days to be added to the sprint end date to (may
+                                       #  be negative) to determine sprint end week name (affects
+                                       #  ending weeks split between years)
+                }
+            }
         },
         "report": {
             "capacity": {
@@ -113,6 +130,28 @@ def apply_options(cfg, options):
     cfg["path"]["capacity"] = options.capacity_file_path
     cfg["path"]["commitment"] = options.commitment_file_path
     cfg["path"]["delivery"] = options.delivery_file_path
+    cfg["calendar"]["week"]["system"] = options.week_numbering_system
+    return cfg
+
+
+def apply_config(cfg, defaults):
+    """
+    Apply selected defaults file entries directly to the config data structure. These specific
+    parameters can't typically be overridden by the command-line options
+    """
+    cfg = copy.copy(cfg)
+    pb_config = defaults.get("report", {}).get("capacity", {}).get("page break", {})
+    cfg["report"]["capacity"]["page break"]["absence section"] = pb_config.get(
+        "absence section", cfg["report"]["capacity"]["page break"]["absence section"])
+    cfg["report"]["capacity"]["page break"]["weekly table"] = pb_config.get(
+        "weekly table", cfg["report"]["capacity"]["page break"]["weekly table"])
+
+    wn_config = defaults.get("calendar", {}).get("week", {}).get("name", {})
+    cfg["calendar"]["week"]["name"]["lower offset"] = wn_config.get(
+        "lower offset", cfg["calendar"]["week"]["name"]["lower offset"])
+    cfg["calendar"]["week"]["name"]["upper offset"] = wn_config.get(
+        "upper offset", cfg["calendar"]["week"]["name"]["upper offset"])
+
     return cfg
 
 
@@ -154,6 +193,8 @@ def make_common_parser(defaults):
     default_user_token = defaults.get("jira", {}).get("user", {}).get("token")
     default_host_name = defaults.get("jira", {}).get("host")
     default_scheme = defaults.get("jira", {}).get("scheme")
+    default_wns = defaults.get("calendar", {}).get("week", {}).get(
+        "system", CALENDAR_WEEK_SYSTEM_ISO)
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -199,6 +240,14 @@ def make_common_parser(defaults):
     parser.add_argument(
         "--delivery-file", action="store", metavar="PATH", dest="delivery_file_path",
         help="Override of the default delivery data file associated with given sprint")
+    parser.add_argument(
+        "--week-system", action="store", metavar="SYSTEM",
+        choices=(CALENDAR_WEEK_SYSTEM_ISO, CALENDAR_WEEK_SYSTEM_NORTH_AMERICAN),
+        dest="week_numbering_system", default=default_wns,
+        help=(
+            "Week numbering system ('{0:s}' or '{1:s}', default: '{2:s}')".format(
+                CALENDAR_WEEK_SYSTEM_NORTH_AMERICAN, CALENDAR_WEEK_SYSTEM_ISO,
+                default_wns)))
     parser.add_argument(
         "--verbose", action="store_true", dest="verbose",
         help="Provide verbose diagnostic information")

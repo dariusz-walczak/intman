@@ -95,7 +95,7 @@ def make_sprint_duration_val(sprint_data):
 def make_sprint_period_val(cfg):
     """Compose sprint period name to be put into the report head table"""
     return cjm.sprint.generate_sprint_period_name(
-        cfg["sprint"]["start date"], cfg["sprint"]["end date"])
+        cfg, cfg["sprint"]["start date"], cfg["sprint"]["end date"])
 
 
 def make_sprint_workdays_val(capacity_data):

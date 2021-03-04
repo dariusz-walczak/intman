@@ -5,11 +5,9 @@
 # Standard library imports
 import datetime
 import os
-import sys
 
 # Third party imports
 import dateutil.parser
-import isoweek
 import odf.dc
 import odf.draw
 import odf.opendocument
@@ -34,9 +32,8 @@ import cjm.sprint
 import cjm.team
 
 
-def parse_options(args):
+def parse_options(args, defaults):
     """Parse command line options"""
-    defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
     default_output_file_path = "capacity_report.odt"
@@ -200,8 +197,11 @@ def append_capacity_table(doc, sprint_data, people):
                     odf.text.P(
                         stylename=doc.getStyleByName("Mobica Table Header Right"))))))
 
-def create_weekly_table(doc, week, people):
+def create_weekly_table(cfg, doc, week_date, people):
     """Create single week absence table element"""
+
+    monday = cjm.sprint.get_monday(cfg, week_date)
+
     def __make_person_date_cell(person, date):
         return cjm.report.add_elements(
             odf.table.TableCell(stylename=doc.getStyleByName(
@@ -221,7 +221,7 @@ def create_weekly_table(doc, week, people):
                 odf.text.P(
                     stylename=doc.getStyleByName("Mobica Table Cell"),
                     text="{0:s}, {1:s}".format(person["last name"], person["first name"]))),
-            *[__make_person_date_cell(person, week.monday()+datetime.timedelta(days=offset))
+            *[__make_person_date_cell(person, monday+datetime.timedelta(days=offset))
               for offset in range(5)])
 
     return cjm.report.add_elements(
@@ -240,27 +240,27 @@ def create_weekly_table(doc, week, people):
                 cjm.report.add_elements(
                     odf.table.TableCell(stylename=doc.getStyleByName("Table.Weekly.x.1")),
                     odf.text.P(
-                        text=week.monday().strftime("%b %d"),
+                        text=monday.strftime("%b %d"),
                         stylename=doc.getStyleByName("Mobica Table Header Left"))),
                 cjm.report.add_elements(
                     odf.table.TableCell(stylename=doc.getStyleByName("Table.Weekly.x.1")),
                     odf.text.P(
-                        text=week.tuesday().strftime("%b %d"),
+                        text=(monday + datetime.timedelta(days=1)).strftime("%b %d"),
                         stylename=doc.getStyleByName("Mobica Table Header Left"))),
                 cjm.report.add_elements(
                     odf.table.TableCell(stylename=doc.getStyleByName("Table.Weekly.x.1")),
                     odf.text.P(
-                        text=week.wednesday().strftime("%b %d"),
+                        text=(monday + datetime.timedelta(days=2)).strftime("%b %d"),
                         stylename=doc.getStyleByName("Mobica Table Header Left"))),
                 cjm.report.add_elements(
                     odf.table.TableCell(stylename=doc.getStyleByName("Table.Weekly.x.1")),
                     odf.text.P(
-                        text=week.thursday().strftime("%b %d"),
+                        text=(monday + datetime.timedelta(days=3)).strftime("%b %d"),
                         stylename=doc.getStyleByName("Mobica Table Header Left"))),
                 cjm.report.add_elements(
                     odf.table.TableCell(stylename=doc.getStyleByName("Table.Weekly.x.1")),
                     odf.text.P(
-                        text=week.friday().strftime("%b %d"),
+                        text=(monday + datetime.timedelta(days=4)).strftime("%b %d"),
                         stylename=doc.getStyleByName("Mobica Table Header Left"))))),
         *[__make_row(p) for p in people])
 
@@ -344,13 +344,15 @@ def append_weekly_section(cfg, doc, people):
             outlinelevel=2, stylename=doc.getStyleByName("Section.Absence.Header"),
             text="Weekly Absence View"))
 
-    first_week = isoweek.Week.withdate(cfg["sprint"]["start date"])
-    weeks_cnt = isoweek.Week.withdate(cfg["sprint"]["end date"]) - first_week + 1
+    weeks_cnt = ((cfg["sprint"]["end date"] - cfg["sprint"]["start date"]).days + 1) // 7
 
     cjm.report.join_elements(
         doc.text,
         odf.text.P(text="", stylename=doc.getStyleByName("Section.Absence.Separator")),
-        *[create_weekly_table(doc, first_week + week_delta, people)
+        *[create_weekly_table(
+            cfg, doc,
+            cfg["sprint"]["start date"] + datetime.timedelta(days=7*week_delta),
+            people)
           for week_delta in range(weeks_cnt)])
 
 
@@ -375,18 +377,10 @@ def generate_odt_document(cfg, sprint_data, capacity_data):
     doc.save(cfg["path"]["output"])
 
 
-def apply_config(cfg):
-    """Apply selected defaults file entries to the config data structure. These specific parameters
-    can't be overridden by the command-line options"""
-    defaults = cjm.cfg.load_defaults()
-    pb_config = defaults.get("report", {}).get("capacity", {}).get("page break", {})
-    cfg["report"]["capacity"]["page break"]["absence section"] = pb_config.get("absence section")
-    cfg["report"]["capacity"]["page break"]["weekly table"] = pb_config.get("weekly table")
-    return cfg
-
-def main(options):
+def main(options, defaults):
     """Entry function"""
-    cfg = cjm.cfg.apply_options(apply_config(cjm.cfg.init_defaults()), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.apply_config(cjm.cfg.init_defaults(), defaults), options)
+
     cfg["path"]["output"] = options.output_file_path
     cfg["client"]["name"] = options.client_name
 
@@ -405,4 +399,4 @@ def main(options):
 
 
 if __name__ == "__main__":
-    cjm.run.run(main, parse_options(sys.argv[1:]))
+    cjm.run.run_2(main, parse_options)

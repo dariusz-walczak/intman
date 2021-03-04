@@ -28,3 +28,21 @@ def run(main, options):
         if options.verbose:
             traceback.print_exc(file=sys.stderr)
         sys.exit(e.code)
+
+
+def run_2(main_cb, parse_options_cb, argv=None, defaults=None):
+    """
+    Alternative wrapper executing provided GEM application entry function. Load defaults if not
+    specified, invoke options parsing callback and finally execute the entry funtion.
+    """
+    defaults = cjm.cfg.load_defaults() if defaults is None else defaults
+    argv = sys.argv[1:] if argv is None else argv
+
+    options = parse_options_cb(argv, defaults)
+
+    try:
+        sys.exit(main_cb(options, defaults))
+    except cjm.codes.CjmError as e:
+        if options.verbose:
+            traceback.print_exc(file=sys.stderr)
+        sys.exit(e.code)

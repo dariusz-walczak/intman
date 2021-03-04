@@ -31,7 +31,7 @@ def load(cfg, file_name, schema_name):
     return data
 
 
-def make_default_file_name(sprint_data, variant):
+def make_default_file_name(cfg, sprint_data, variant):
     """Construct default sprint data file name"""
     start_date = dateutil.parser.parse(sprint_data["start date"]).date()
     end_date = dateutil.parser.parse(sprint_data["end date"]).date()
@@ -39,7 +39,7 @@ def make_default_file_name(sprint_data, variant):
     return "{0:s}_{1:d}-{2:s}_{3:s}.json".format(
         sprint_data["project"]["name"].lower(),
         isoweek.Week.withdate(start_date).year,
-        cjm.sprint.generate_sprint_period_name(start_date, end_date).lower(), variant)
+        cjm.sprint.generate_sprint_period_name(cfg, start_date, end_date).lower(), variant)
 
 
 def make_flag_filter(field_name, filter_directive):
