@@ -4,7 +4,6 @@
 
 # Standard library imports
 import os
-import sys
 
 # Third party imports
 import dateutil.parser
@@ -30,9 +29,8 @@ import cjm.sprint
 import cjm.team
 
 
-def parse_options(args):
+def parse_options(args, defaults):
     """Parse command line options"""
-    defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
     default_output_file_path = "commitment_report.odt"
@@ -222,9 +220,10 @@ def _calc_team_capacity(capacity_data, team_capacity):
         for p in capacity_data["people"])
 
 
-def main(options):
+def main(options, defaults):
     """Entry function"""
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.apply_config(cjm.cfg.init_defaults(), defaults), options)
+
     cfg["path"]["output"] = options.output_file_path
     cfg["client"]["name"] = options.client_name
 
@@ -244,4 +243,4 @@ def main(options):
 
 
 if __name__ == "__main__":
-    cjm.run.run(main, parse_options(sys.argv[1:]))
+    cjm.run.run_2(main, parse_options)
