@@ -28,9 +28,8 @@ import cjm.sprint
 _PROJECT_KEY_ARG_NAME = "--project-key"
 
 
-def parse_options(args):
+def parse_options(args, defaults):
     """Parse command line options"""
-    defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
     default_length = 14
@@ -113,9 +112,9 @@ def determine_start_date(options):
         return today - datetime.timedelta(days=today.weekday()+week_offset)
 
 
-def main(options):
+def main(options, defaults):
     """Entry function"""
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.apply_config(cjm.cfg.init_defaults(), defaults), options)
     cfg["project"]["key"] = options.project_key
 
     if cfg["project"]["key"] is None:
@@ -141,7 +140,8 @@ def main(options):
         "end date": end_date.isoformat(),
         "name": cjm.sprint.generate_sprint_name(cfg, project_json["name"], start_date, end_date),
         "id": sprint_id,
-        "comment prefix": "Mobica/{0:s}/{1:s}/{2:s}".format(
+        "comment prefix": "{0:s}/{1:s}/{2:s}/{3:s}".format(
+            cfg["project"]["comment ns"],
             options.project_sow, options.project_code,
             cjm.sprint.generate_sprint_period_name(cfg, start_date, end_date)),
         "project": {
@@ -177,4 +177,4 @@ def main(options):
 
 
 if __name__ == '__main__':
-    cjm.run.run(main, parse_options(sys.argv[1:]))
+    cjm.run.run_2(main, parse_options)

@@ -66,7 +66,8 @@ def init_defaults():
             "key": None,
             "code": None,
             "sow": None,
-            "id": None
+            "id": None,
+            "comment ns": "Mobica"
         },
         "calendar": {
             "week": {
@@ -153,6 +154,9 @@ def apply_config(cfg, defaults):
         "lower offset", cfg["calendar"]["week"]["name"]["lower offset"])
     cfg["calendar"]["week"]["name"]["upper offset"] = wn_config.get(
         "upper offset", cfg["calendar"]["week"]["name"]["upper offset"])
+
+    cfg["project"]["comment ns"] = defaults.get("project", {}).get(
+        "comment ns", cfg["project"]["comment ns"])
 
     return cfg
 

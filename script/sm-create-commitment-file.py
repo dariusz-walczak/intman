@@ -7,6 +7,7 @@
 
 # Standard library imports
 import json
+import re
 import sys
 
 # Third party imports
@@ -21,6 +22,7 @@ import cjm.cfg
 import cjm.codes
 import cjm.data
 import cjm.issue
+import cjm.presentation
 import cjm.request
 import cjm.run
 import cjm.schema
@@ -28,9 +30,8 @@ import cjm.sprint
 import cjm.team
 
 
-def parse_options(args):
+def parse_options(args, defaults):
     """Parse command line options"""
-    defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
     parser.add_argument(
@@ -93,9 +94,29 @@ def _process_commented_issues(cfg, sprint_data, team_data, issue_lut, comment_po
     return issue_lut
 
 
-def main(options):
+def _process_delivered_issues(cfg, sprint_data, issues, warnings):
+    for issue in issues:
+        comments = cjm.issue.request_issue_comments_regexp(
+            cfg, issue["key"],
+            re.compile("{0:s}/.+/Delivered".format(re.escape(cfg["project"]["comment ns"]))))
+
+        current_sprint_comment = "/".join((sprint_data["comment prefix"], "Delivered"))
+
+        for comment in comments:
+            # Make sure that an issue already reported as delivered is not committed again.
+            #  It is however acceptable for a committed jira to be already marked as delivered in
+            #  the current sprint (it happens in past sprint reporting scenario).
+            if comment.group() != current_sprint_comment:
+                cjm.data.add_warning(
+                    warnings, issue["key"],
+                    "Issue marked as delivered in a different sprint: {0:s}"
+                    "".format(comment.group()))
+
+    return issues
+
+def main(options, defaults):
     """Entry function"""
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.apply_config(cjm.cfg.init_defaults(), defaults), options)
     cfg["issue"]["include unassigned"] = options.include_unassigned
 
     # Load sprint data:
@@ -133,6 +154,7 @@ def main(options):
     issue_lut = _process_commented_issues(cfg, sprint_data, team_data, issue_lut, "Extended")
 
     issues = [issue_lut[k] for k in sorted(issue_lut.keys())]
+
     if options.exclude_ids is not None:
         issues = [i for i in issues if i["key"] not in options.exclude_ids]
     issues = list(filter(
@@ -141,6 +163,9 @@ def main(options):
         cjm.data.make_flag_filter("by comment", options.comment_filter), issues))
     issues = list(filter(
         cjm.data.make_flag_filter("by sprint", options.sprint_filter), issues))
+
+    warnings = {}
+    issues = _process_delivered_issues(cfg, sprint_data, issues, warnings)
 
     for issue in issues:
         if issue["story points"] is not None:
@@ -161,6 +186,7 @@ def main(options):
         else:
             print_issue_list(commitment, team_data)
 
+    cjm.presentation.print_data_warnings(warnings)
 
     return cjm.codes.NO_ERROR
 
@@ -251,4 +277,4 @@ def print_summary(cfg, team_data, sprint_data, capacity_data, commitment_data):
 
 
 if __name__ == '__main__':
-    cjm.run.run(main, parse_options(sys.argv[1:]))
+    cjm.run.run_2(main, parse_options)
