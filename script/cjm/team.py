@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Team data processing helpers"""
 
 # Standard library imports

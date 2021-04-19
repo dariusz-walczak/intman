@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Common functionality used by cjm-* and sm-* scripts"""
 
 SM_CREATE_CAPACITY_FILE = "sm-create-capacity-file.py"

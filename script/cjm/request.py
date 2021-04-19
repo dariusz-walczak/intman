@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Jira API request wrappers and helpers"""
 
 # Standard library imports

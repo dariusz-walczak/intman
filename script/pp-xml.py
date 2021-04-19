@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 # Standard library imports
 import argparse
 import sys

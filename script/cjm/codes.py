@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Provide error handling helpers"""
 
 NO_ERROR = 0

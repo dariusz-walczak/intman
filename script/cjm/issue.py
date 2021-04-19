@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Issue related helper functions"""
 
 # Standard library imports

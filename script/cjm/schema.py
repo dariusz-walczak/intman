@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """JSON schema data handling helpers"""
 
 # Standard library imports

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Command line script pushing task list into jira"""
 
 # Standard library imports

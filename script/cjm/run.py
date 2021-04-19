@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Application startup utilities
 
 This is MIT licensed contribution. Copyright (C) 2020 by Dariusz Walczak

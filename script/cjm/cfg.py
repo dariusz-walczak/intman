@@ -1,3 +1,5 @@
+# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+
 """Support configurability of cjm applications"""
 
 # Standard library imports
