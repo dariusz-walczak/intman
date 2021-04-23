@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+# SPDX-License-Identifier: MIT
+# Copyright (C) 2020-2021 Mobica Limited
 
 """Command line script generating delivery report odt file"""
 

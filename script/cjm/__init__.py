@@ -1,4 +1,5 @@
-# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+# SPDX-License-Identifier: MIT
+# Copyright (C) 2020-2021 Mobica Limited
 
 """Common functionality used by cjm-* and sm-* scripts"""
 

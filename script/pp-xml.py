@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# Copyright © 2020-2021 Mobica Limited. All rights reserved.
+# SPDX-License-Identifier: MIT
+# Copyright (C) 2020-2021 Mobica Limited
 
 # Standard library imports
 import argparse
