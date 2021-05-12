@@ -98,7 +98,8 @@ def init_defaults():
             "team": None,
             "capacity": None,
             "commitment": None,
-            "delivery": None
+            "delivery": None,
+            "report template": None
         }
     }
 
@@ -186,16 +187,19 @@ def fmt_dft_token(val):
     return " (default: {0})".format(token)
 
 
+def make_default_data_path():
+        return os.path.relpath(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "..", "..", "data"))
+
 def make_common_parser(defaults):
     """Create a new command line argument parser (using argparse module) and populate it with
     common options
 
     In case of most applications the returned parser object will be extended by application
     specific arguments"""
-    default_data_path = os.path.relpath(
-        os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "..", "..", "data"))
+    default_data_path = make_default_data_path()
     default_user_name = defaults.get("jira", {}).get("user", {}).get("name")
     default_user_token = defaults.get("jira", {}).get("user", {}).get("token")
     default_host_name = defaults.get("jira", {}).get("host")
