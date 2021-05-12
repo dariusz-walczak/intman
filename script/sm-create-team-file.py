@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2020-2021 Mobica Limited
 
+"""Create team file basing on specified project members"""
+
 # Standard library imports
 import sys
 import json
@@ -14,14 +16,16 @@ import jsonschema
 # Project imports
 import cjm
 import cjm.cfg
-import cjm.request
 import cjm.codes
+import cjm.request
+import cjm.run
 import cjm.schema
 
 _PROJECT_KEY_ARG_NAME = "--project-key"
 _DEFAULT_DAILY_CAPACITY = 2
 
 def request_users(cfg):
+    """Retrieve list of project members"""
     users = []
 
     user_data_url = cjm.request.make_cj_url(cfg, "user", "search", "query")
@@ -44,8 +48,9 @@ def request_users(cfg):
     return users
 
 
-def main(options):
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
+def main(options, defaults):
+    """Entry function"""
+    cfg = cjm.cfg.apply_options(cjm.cfg.apply_config(cjm.cfg.init_defaults(), defaults), options)
     cfg["project"]["key"] = options.project_key
 
     if cfg["project"]["key"] is None:
@@ -54,8 +59,7 @@ def main(options):
             " file to specify it".format(_PROJECT_KEY_ARG_NAME))
         return cjm.codes.CONFIGURATION_ERROR
 
-    users_all = request_users(cfg)
-    users_active = [u for u in users_all if u["active"]]
+    users_active = [u for u in request_users(cfg) if u["active"]]
     users = []
 
     for user in users_active:
@@ -69,21 +73,31 @@ def main(options):
             firstname = user["displayName"]
             lastname = "PLEASE-FILL"
 
-        acc_id = user["accountId"]
-        code = str(firstname[0] + lastname[0]).upper()
-
-        user_url = cjm.request.make_cj_url(cfg, f"user?accountId={acc_id}")
-        response = cjm.request.make_cj_request(cfg, user_url)
-        user_json_2 = response.json()
-
         data = {
-            "code": code,
+            "code": str(firstname[0] + lastname[0]).upper(),
             "last name": lastname,
             "first name": firstname,
-            "account id": acc_id,
+            "account id": user["accountId"],
             "daily capacity": options.daily_capacity
         }
         users.append(data)
+
+    make_codes_unique(users)
+
+    people = {"people": users}
+
+    print(json.dumps(people, indent=4, separators=(',', ': ')))
+
+    jsonschema.validate(people, cjm.schema.load(cfg, "team.json"))
+
+    if options.json_output:
+        print(json.dumps(people, indent=4, sort_keys=False))
+
+    return cjm.codes.NO_ERROR
+
+
+def make_codes_unique(users):
+    """Ensure that user codes are unique by adding unique index postfix to all the duplicates"""
 
     codes = [user["code"] for user in users]
     unique_codes = []
@@ -96,22 +110,9 @@ def main(options):
     for idx, user in enumerate(users):
         user["code"] = unique_codes[idx]
 
-    people = {"people": users}
 
-    print(json.dumps(people, indent=4, separators=(',', ': ')))
-
-    team_schema = cjm.schema.load(cfg, "team.json")
-
-    jsonschema.validate(people, team_schema)
-
-    if options.json_output:
-        print(json.dumps(people, indent=4, sort_keys=False))
-
-    return cjm.codes.NO_ERROR
-
-
-def parse_options(args):
-    defaults = cjm.cfg.load_defaults()
+def parse_options(args, defaults):
+    """Parse command line options"""
     parser = cjm.cfg.make_common_parser(defaults)
 
     default_project_key = defaults.get("project", {}).get("key")
@@ -123,17 +124,14 @@ def parse_options(args):
             "Project for which the team will be associated{0:s}"
             "".format(cjm.cfg.fmt_dft(default_project_key))))
 
-    parser.add_argument("--daily_capacity", action="store", default=_DEFAULT_DAILY_CAPACITY , dest="daily_capacity",
-            help=("Change default daily capacity for every team memeber"
-                f"current default: {_DEFAULT_DAILY_CAPACITY }"
-                ))
-
+    parser.add_argument(
+        "--daily_capacity", action="store", default=_DEFAULT_DAILY_CAPACITY,
+        dest="daily_capacity",
+        help=("Change default daily capacity for every team member"
+              f"current default: {_DEFAULT_DAILY_CAPACITY }"))
 
     return parser.parse_args(args)
 
 
 if __name__ == "__main__":
-    try:
-        exit(main(parse_options(sys.argv[1:])))
-    except cjm.codes.CjmError as e:
-        exit(e.code)
+    cjm.run.run_2(main, parse_options)
