@@ -127,7 +127,7 @@ def _make_augment_issue_cb(cfg, extended, sprint_data, warnings):
 def _retrieve_issues(cfg, issue_keys, warnings):
     issues = cjm.issue.request_issues_by_keys(cfg, issue_keys)
 
-    response_keys = set([i["key"] for i in issues])
+    response_keys = {i["key"] for i in issues}
     request_keys = set(issue_keys)
 
     if response_keys != request_keys:
