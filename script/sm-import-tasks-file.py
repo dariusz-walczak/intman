@@ -35,14 +35,14 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def load_tasks(cfg, file_name):
+def load_tasks(file_name):
     """Load tasks from given CSV tasks file"""
     try:
         with open(file_name) as data_file:
             dialect = csv.Sniffer().sniff(data_file.read(1024))
             data_file.seek(0)
             reader = csv.DictReader(data_file, dialect=dialect)
-            return [row for row in reader]
+            return list(row for row in reader)
     except IOError as e:
         sys.stderr.write("ERROR: CSV tasks data file ('{0:s}') I/O error\n".format(file_name))
         sys.stderr.write("    {0}\n".format(e))
@@ -85,7 +85,7 @@ def _get_optional_int(idx, row, field_name, default=None):
 
     try:
         return int(val)
-    except ValueError as e:
+    except ValueError:
         sys.stderr.write(
             "ERROR: Row #{0:d}: The '{1:s}' field doesn't contain valid integer ('{2:s}')\n"
             "".format(idx, field_name, val))
@@ -121,7 +121,7 @@ def main(options):
     """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
 
-    tasks_raw = load_tasks(cfg, options.tasks_file)
+    tasks_raw = load_tasks(options.tasks_file)
 
     def __adapt_task(idx, row):
         task = {
