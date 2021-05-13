@@ -4,14 +4,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2020-2021 Mobica Limited
 
+"""Print sprint file contents"""
+
 # Standard library imports
 import sys
-import datetime
 
 # Third party imports
-import holidays
-import jsonschema
-import numpy
 import tabulate
 
 # Project imports
@@ -26,6 +24,7 @@ import cjm.team
 
 
 def parse_options(args):
+    """Parse command line options"""
     defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
@@ -38,8 +37,9 @@ def parse_options(args):
 
     return parser.parse_args(args)
 
-   
+
 def main(options):
+    """Entry function"""
     cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
 
     # Load sprint data:
@@ -55,12 +55,6 @@ def main(options):
         tablefmt="orgtbl"))
 
     return cjm.codes.NO_ERROR
-#       tabulate.tabulate(
-#            [[p["last name"], p["first name"], p["daily capacity"], p["sprint workday count"],
-#              p["sprint capacity"]] for p in people],
-#            headers=["Last Name", "First Name", "Daily Cap.", "Workdays", "Sprint Cap."],
-#            tablefmt="orgtbl"))
-
 
 
 if __name__ == "__main__":
