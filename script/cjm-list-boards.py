@@ -59,7 +59,7 @@ def main(options):
         board_project_key = board.get("location", {}).get("projectKey")
 
         if ((project_key is None) or options.all_boards or
-            (board_project_key is not None and project_key == board_project_key)):
+                (board_project_key is not None and project_key == board_project_key)):
             board_data = {
                 "id": board["id"],
                 "name": board["name"]
