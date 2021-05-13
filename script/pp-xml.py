@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2020-2021 Mobica Limited
 
+"""Pretty print given xml file"""
+
 # Standard library imports
 import argparse
 import sys
