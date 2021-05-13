@@ -112,6 +112,8 @@ def request_epic_update(cfg, issue_spec):
 
 def request_issue_comments_regexp(cfg, issue_key, comment_re):
     """Return these of specific issue's comments that match given regular expression"""
+    # pylint: disable=too-many-nested-blocks
+
     comments = []
     comments_url = cjm.request.make_cj_url(cfg, "issue", issue_key, "comment")
 
