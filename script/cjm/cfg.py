@@ -188,10 +188,11 @@ def fmt_dft_token(val):
 
 
 def make_default_data_path():
-        return os.path.relpath(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "..", "..", "data"))
+    """Construct default intman data directory path basing on the script file location"""
+    return os.path.relpath(
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..", "..", "data"))
 
 def make_common_parser(defaults):
     """Create a new command line argument parser (using argparse module) and populate it with
