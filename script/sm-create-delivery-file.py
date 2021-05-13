@@ -396,6 +396,7 @@ def calc_total(issues, field_key):
 
 def print_summary(delivery_data, team_data, sprint_data, capacity_data):
     """Print the report summary table"""
+    # pylint: disable=too-many-locals
     person_capacity_list = cjm.capacity.process_person_capacity_list(sprint_data, capacity_data)
     person_capacity_lut = cjm.capacity.make_person_capacity_lut(person_capacity_list)
     total_capacity = sum(p["sprint capacity"] for p in person_capacity_list)
