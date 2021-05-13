@@ -26,9 +26,8 @@ import cjm.request
 _COMMITMENT_PREFIX_ARG_NAME = "--prefix"
 
 
-def parse_options(args):
+def parse_options(args, defaults):
     """Parse command line options"""
-    defaults = cjm.cfg.load_defaults()
     parser = cjm.cfg.make_common_parser(defaults)
 
     default_commitment_prefix = ""  # defaults.get("project", {}).get("key")
@@ -54,9 +53,9 @@ def parse_options(args):
     return parser.parse_args(args)
 
 
-def main(options):
+def main(options, defaults):
     """Entry function"""
-    cfg = cjm.cfg.apply_options(cjm.cfg.init_defaults(), options)
+    cfg = cjm.cfg.apply_options(cjm.cfg.apply_config(cjm.cfg.init_defaults(), defaults), options)
     cfg["issue"]["include unassigned"] = True
 
     # Load sprint data:
@@ -85,8 +84,8 @@ def main(options):
 
     commitment_issues = commitment_data["issues"]
 
-    ids_commitment_issues = set([issue["id"] for issue in commitment_issues])
-    ids_all_issues_with_comments = set([issue["id"] for issue in all_issues_with_comments])
+    ids_commitment_issues = {issue["id"] for issue in commitment_issues}
+    ids_all_issues_with_comments = {issue["id"] for issue in all_issues_with_comments}
     ids_issues_without_comments = ids_commitment_issues - ids_all_issues_with_comments
 
     if options.dry_run:
@@ -111,7 +110,4 @@ def main(options):
 
 
 if __name__ == "__main__":
-    try:
-        exit(main(parse_options(sys.argv[1:])))
-    except cjm.codes.CjmError as e:
-        exit(e.code)
+    cjm.run.run_2(main, parse_options)
