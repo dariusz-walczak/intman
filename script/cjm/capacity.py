@@ -21,9 +21,9 @@ def deserialize_dates(iso_dates, start_date, end_date):
     def __date_in_sprint(date):
         return start_date <= date < end_date + datetime.timedelta(days=1)
 
-    return sorted(set([
+    return sorted({
         d for d in [dateutil.parser.parse(s).date() for s in iso_dates]
-        if __date_in_sprint(d)]))
+        if __date_in_sprint(d)})
 
 
 def process_team_capacity(sprint_data, capacity_data):
