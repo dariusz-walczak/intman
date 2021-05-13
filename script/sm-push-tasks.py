@@ -59,7 +59,7 @@ def _process_issue_types(cfg, issues):
     """Iterate through given issues and determine their jira type ids"""
     issue_types = cjm.issue.request_issue_types(cfg)
     issue_type_names = [i["name"] for i in issue_types]
-    duplicate_issue_types = set([i for i in issue_type_names if issue_type_names.count(i) > 1])
+    duplicate_issue_types = {i for i in issue_type_names if issue_type_names.count(i) > 1}
 
     if duplicate_issue_types:
         sys.stderr.write(
@@ -136,13 +136,13 @@ def _verify_relation_links(cfg, issues):
                 sys.stderr.write(
                     "ERROR: Undefined epic local id ({0:d})\n".format(epic_idx))
                 raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
-            else:
-                epic_type_name = cfg["jira"]["issue"]["type"]["epic"]
-                if issue_by_local_id[epic_idx].get("type name") != epic_type_name:
-                    sys.stderr.write(
-                        "ERROR: The issue referenced using local id ({0:d}) is not an Epic\n"
-                        "".format(epic_idx))
-                    raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
+
+            epic_type_name = cfg["jira"]["issue"]["type"]["epic"]
+            if issue_by_local_id[epic_idx].get("type name") != epic_type_name:
+                sys.stderr.write(
+                    "ERROR: The issue referenced using local id ({0:d}) is not an Epic\n"
+                    "".format(epic_idx))
+                raise cjm.codes.CjmError(cjm.codes.INPUT_DATA_ERROR)
 
 
 def _extract_links(issues):
@@ -158,8 +158,7 @@ def _extract_links(issues):
                 outward_key = outward_raw
             else:
                 outward_key = issue_by_local_id[outward_raw]["actual"]["key"]
-            if issue["actual"]["key"] is None or outward_key is None:
-                import pdb; pdb.set_trace()
+
             unique_related_links.add(tuple(sorted([issue["actual"]["key"], outward_key])))
 
     return [{"inward": i[0], "outward": i[1], "type": "Relates"} for i in unique_related_links]
